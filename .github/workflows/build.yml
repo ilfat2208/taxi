@@ -77,7 +77,7 @@ jobs:
         run: |
           set +e
           find . -path '*/failsafe-reports/*.txt' -type f | while read -r report; do
-            grep -A 4 -E '<<< (FAILURE|ERROR)' "$report" | head -40 | while IFS= read -r line; do
+            grep -A 12 -E '<<< (FAILURE|ERROR)' "$report" | head -60 | while IFS= read -r line; do
               test -z "$line" && continue
               echo "::error::$(printf '%s' "$line" | tr -d '\r\n' | sed 's/%/%25/g')"
             done
