@@ -114,7 +114,19 @@ test.describe('перевод по номеру телефона', () => {
       'CUSTOMER',
     ]);
     const recipientAccount = await ensureKztAccount(request, recipientToken.accessToken);
-    await ensureBalance(request, recipientToken.accessToken, recipientAccount, 100_000);
+    // Funded with the demo user's token, not the recipient's: topping up an account
+    // is an operator action and the platform refuses a customer token with 403 —
+    // correctly so. The new balance is read back with the recipient's token, because
+    // an operator sees his own accounts only. Using the recipient's token for both
+    // steps only worked while his balance happened to be non-zero already, and
+    // failed on every fresh database (CI).
+    await ensureBalance(
+      request,
+      session.accessToken,
+      recipientAccount,
+      100_000,
+      recipientToken.accessToken,
+    );
   });
 
   test('успешный перевод показывает состояние успеха с номером платежа', async ({

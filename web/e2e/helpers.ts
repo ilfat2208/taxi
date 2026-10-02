@@ -212,12 +212,18 @@ export async function ensureKztAccount(
  * Makes sure the account can fund a transfer by topping it up through the demo
  * operator endpoint (ADMIN role). Idempotent enough for a re-runnable suite: the
  * top-up is only sent when the available balance is below `minimumMinor`.
+ *
+ * `token` must be an operator token: funding is an ADMIN action, and a customer
+ * token is refused with 403 by design. `readToken` defaults to it and exists for
+ * the case where the funded account belongs to somebody else — the new balance is
+ * then read with the owner's token, because an operator lists only his own accounts.
  */
 export async function ensureBalance(
   request: APIRequestContext,
   token: string,
   account: RawAccount,
   minimumMinor: number,
+  readToken: string = token,
 ): Promise<number> {
   let available = account.availableMinor ?? account.balanceMinor ?? 0;
   if (available >= minimumMinor) {
@@ -231,7 +237,7 @@ export async function ensureBalance(
     data: { amountMinor: minimumMinor, reason: 'e2e playwright top-up' },
   });
   expect(topUp.status(), 'POST /v1/accounts/{id}/top-up').toBeLessThan(300);
-  const refreshed = (await listAccounts(request, token)).find(
+  const refreshed = (await listAccounts(request, readToken)).find(
     (candidate) => candidate.id === account.id,
   );
   available = refreshed?.availableMinor ?? refreshed?.balanceMinor ?? 0;
