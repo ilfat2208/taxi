@@ -82,6 +82,46 @@ spring:
                 redis-rate-limiter.replenishRate: 20
                 redis-rate-limiter.burstCapacity: 40
                 redis-rate-limiter.requestedTokens: 1
+        # ------------------------------------------------------------------
+        # Taxi vertical.
+        # ------------------------------------------------------------------
+        - id: driver-service
+          uri: ${DRIVER_SERVICE_URL:http://127.0.0.1:8085}
+          predicates:
+            - Path=/api/v1/drivers/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@principalOrIpKeyResolver}"
+                # the driver app polls its own state and duty toggle
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                redis-rate-limiter.requestedTokens: 1
+        - id: trip-service
+          uri: ${TRIP_SERVICE_URL:http://127.0.0.1:8086}
+          predicates:
+            - Path=/api/v1/trips/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@principalOrIpKeyResolver}"
+                # requesting a trip authorises money, so it is limited like a payment
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+        - id: dispatch-service
+          uri: ${DISPATCH_SERVICE_URL:http://127.0.0.1:8087}
+          predicates:
+            - Path=/api/v1/locations/**,/api/v1/dispatch/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@principalOrIpKeyResolver}"
+                # positions arrive every few seconds from every driver on duty:
+                # by far the busiest route, but still bounded
+                redis-rate-limiter.replenishRate: 200
+                redis-rate-limiter.burstCapacity: 400
+                redis-rate-limiter.requestedTokens: 1
       globalcors:
         cors-configurations:
           '[/**]':

@@ -16,7 +16,8 @@ class KafkaTopicsTest {
         List<String> topics = KafkaTopics.all();
 
         assertThat(topics).containsExactly(
-                "account.events", "payment.events", "catalog.events", "order.events", "settlement.events");
+                "account.events", "payment.events", "catalog.events", "order.events", "settlement.events",
+                "trip.events", "driver.events", "dispatch.events");
         assertThat(new HashSet<>(topics)).hasSameSizeAs(topics);
         assertThat(KafkaTopics.deadLetterTopics())
                 .hasSameSizeAs(topics)

@@ -33,11 +33,26 @@ public final class KafkaTopics {
      * notifications) and it must be replayable without replaying every payment.
      */
     public static final String SETTLEMENT_EVENTS = "settlement.events";
+    /** Events published by the trip service: the ride lifecycle. */
+    public static final String TRIP_EVENTS = "trip.events";
+    /** Events published by the driver service: drivers going on and off duty. */
+    public static final String DRIVER_EVENTS = "driver.events";
+    /**
+     * Events published by the dispatch service: offers sent to drivers and how
+     * they ended.
+     *
+     * <p>Driver <em>positions</em> deliberately do not live here. A position is
+     * valid for seconds and is never replayed, so it travels through Redis;
+     * putting the raw GPS stream in Kafka would cost a lot and buy nothing
+     * (see {@code docs/adr/0009-taxi-vertical.md}).
+     */
+    public static final String DISPATCH_EVENTS = "dispatch.events";
 
     public static final String DEAD_LETTER_SUFFIX = ".DLT";
 
-    private static final List<String> ALL =
-            List.of(ACCOUNT_EVENTS, PAYMENT_EVENTS, CATALOG_EVENTS, ORDER_EVENTS, SETTLEMENT_EVENTS);
+    private static final List<String> ALL = List.of(
+            ACCOUNT_EVENTS, PAYMENT_EVENTS, CATALOG_EVENTS, ORDER_EVENTS, SETTLEMENT_EVENTS,
+            TRIP_EVENTS, DRIVER_EVENTS, DISPATCH_EVENTS);
 
     private KafkaTopics() {
     }
@@ -84,6 +99,26 @@ public final class KafkaTopics {
         public static final String ORDER_CREATED = "order.created";
         public static final String ORDER_PAID = "order.paid";
         public static final String ORDER_CANCELLED = "order.cancelled";
+
+        /** A rider asked for a trip; the search for a driver has started. */
+        public static final String TRIP_REQUESTED = "trip.requested";
+        /** A driver accepted: the rider has a car on the way. */
+        public static final String TRIP_DRIVER_ASSIGNED = "trip.driver.assigned";
+        /** The car is at the pickup point and the free waiting time starts. */
+        public static final String TRIP_DRIVER_ARRIVED = "trip.driver.arrived";
+        public static final String TRIP_STARTED = "trip.started";
+        /** The trip is finished: this is where money actually moves. */
+        public static final String TRIP_COMPLETED = "trip.completed";
+        public static final String TRIP_CANCELLED = "trip.cancelled";
+
+        public static final String DRIVER_ONLINE = "driver.online";
+        public static final String DRIVER_OFFLINE = "driver.offline";
+
+        /** An offer was sent to a driver; it is not a booking yet. */
+        public static final String OFFER_CREATED = "offer.created";
+        public static final String OFFER_ACCEPTED = "offer.accepted";
+        /** Nobody accepted in time; the trip goes back to searching. */
+        public static final String OFFER_EXPIRED = "offer.expired";
 
         private Events() {
         }

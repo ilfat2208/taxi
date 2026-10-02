@@ -39,7 +39,9 @@ x-app-env: &app-env
 services:
   # ------------------------------------------------------------------ infra
   postgres:
-    image: postgres:16-alpine
+    # PostGIS, not plain postgres: the taxi vertical stores driver positions,
+    # trip tracks and geofences as geometry (see docs/adr/0009-taxi-vertical.md).
+    image: postgis/postgis:16-3.4
     container_name: taxi-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-taxi}
@@ -141,6 +143,7 @@ services:
       PAYMENT_SERVICE_URL: http://payment-service:8082
       CATALOG_SERVICE_URL: http://catalog-service:8083
       ORDER_SERVICE_URL: http://order-service:8084
+      DRIVER_SERVICE_URL: http://driver-service:8085
     ports:
       - "${GATEWAY_PORT:-8080}:8080"
     healthcheck:
@@ -223,6 +226,23 @@ services:
       # session. A real deployment uses T+1 or longer (taxi.settlement.hold-period).
     ports:
       - "${ORDER_SERVICE_PORT:-8084}:8084"
+
+  # ------------------------------------------------------------------ taxi
+  driver-service:
+    <<: *service-defaults
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: services/driver-service/Dockerfile
+    container_name: taxi-driver-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8085
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_driver
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-taxi}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-taxi}
+    ports:
+      - "${DRIVER_SERVICE_PORT:-8085}:8085"
 
 volumes:
   pgdata:

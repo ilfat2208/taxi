@@ -102,8 +102,10 @@ class JwtIssuerTest {
     void builds_authorities() {
         assertThat(Roles.authority("merchant")).isEqualTo("ROLE_MERCHANT");
         assertThat(Roles.authority("ROLE_ADMIN")).isEqualTo("ROLE_ADMIN");
-        assertThat(Roles.ALL).containsExactlyInAnyOrder("CUSTOMER", "MERCHANT", "SUPPORT", "ADMIN");
+        assertThat(Roles.ALL)
+                .containsExactlyInAnyOrder("CUSTOMER", "MERCHANT", "SUPPORT", "ADMIN", "DRIVER", "DISPATCHER");
         assertThat(Roles.isKnown("customer")).isTrue();
+        assertThat(Roles.isKnown("driver")).isTrue();
         assertThat(Roles.isKnown("nobody")).isFalse();
     }
 

@@ -1,25 +1,46 @@
-# Taxi — fintech super-app platform
+# Taxi — платформа сервиса такси
 
-Платформа супер-аппа в духе Kaspi.kz: **счета и переводы, платежи, маркетплейс с
-корзиной и оформлением заказа**. Монорепозиторий с микросервисами на Java 17 /
-Spring Boot, React-фронтендом и локальной инфраструктурой в docker-compose.
+Платформа райд-хейлинга: **заявки и поездки, водители с действующими документами,
+диспетчерская с живой картой, деньги пассажира в честном леджжере**. Монорепозиторий:
+микросервисы на Java 17 / Spring Boot, React-фронтенд, нативный Android-клиент и
+локальная инфраструктура в docker-compose.
 
-Цель проекта — не «ещё один CRUD», а честная демонстрация того, как устроены
-денежные системы: двойная запись в леджере, идемпотентность на уровне БД,
-транзакционный outbox вместо dual-write, саги с компенсациями и consumer dedup.
+Проект не начинался с нуля: он вырос из проверенной платформы супер-аппа с двойной
+записью в леджжере, идемпотентностью на уровне БД, транзакционным outbox и сагами.
+Маркетплейс-вертикаль (витрина, корзина, заказ, расчёты с мерчантами) осталась в
+репозитории **замороженной**: её e2e продолжают проходить и служат доказательством,
+что денежный контур не привязан к одной предметной области.
+
+**Состояние работ (Ф0 — каркас вертикали такси):**
+
+| Готово | Где |
+|---|---|
+| Решения по такси: сервисы, real-time, матчинг, гео, деньги поездки | `docs/adr/0009-taxi-vertical.md` |
+| Роли `DRIVER` и `DISPATCHER` в текущей модели JWT | `platform/common-security-core/.../Roles.java` |
+| Топики `trip.events`, `driver.events`, `dispatch.events` (+ DLT) | `platform/common-kafka/.../KafkaTopics.java` |
+| Роуты шлюза под `/api/v1/trips`, `/api/v1/drivers`, `/api/v1/locations`, `/api/v1/dispatch` | `services/api-gateway/src/main/resources/application.yml` |
+| PostGIS и базы `taxi_trip`, `taxi_driver`, `taxi_dispatch` | `infra/postgres/init/01-databases.sql` |
+| `driver-service`: профиль водителя, документы со сроком, выход на линию, событие в Kafka | `services/driver-service` |
+| Сквозной сценарий выхода на линию (33 проверки) | `scripts/e2e-driver-duty.ps1` |
+
+Дальше по плану: приём геопозиций и живая карта диспетчера (Ф1), поездка и деньги (Ф2),
+автоматический матчинг (Ф3), клиенты пассажира и водителя (Ф4). Полный план с оценками,
+рисками и критериями готовности — [`docs/taxi-roadmap.md`](docs/taxi-roadmap.md).
 
 ```
-                        ┌──────────────────────────────┐
-   React/TS (5173) ───► │  api-gateway (8080)          │  JWT, rate limit, корреляция
-                        └───────┬──────────────────────┘
-        ┌───────────────┬───────┴────────┬────────────────┐
-        ▼               ▼                ▼                ▼
-  account-service  payment-service  catalog-service  order-service
-      (8081)           (8082)           (8083)          (8084)
-   счета+леджер     платежи+сага    товары+сток      корзина+заказ
-        │               │                │                │
-        └───────────────┴──── Kafka (outbox) ─────────────┴────► account/ledger/...
-        Postgres         Postgres         Postgres         Postgres      Redis
+                        ┌───────────────────────────────┐
+   React/TS (5173) ───► │  api-gateway (8080)           │  JWT, rate limit, корреляция
+   Android (10.0.2.2)   └───────┬───────────────────────┘
+        ┌──────────────┬────────┴───────┬────────────────┬────────────────┐
+        ▼              ▼                ▼                ▼                ▼
+  account-service  payment-service  catalog-service  order-service  driver-service
+      (8081)          (8082)           (8083)          (8084)          (8085)
+   счета+леджер    платежи+сага     товары+сток     корзина+заказ    водители+смены
+        │              │                │                │                │
+        └──────────────┴──── Kafka (outbox) ─────────────┴────────────────┘
+        Postgres + PostGIS          Redis          Prometheus/actuator
+
+   План: trip-service (8086) — поездка и деньги; dispatch-service (8087) — гео и матчинг.
 ```
 
 ---
@@ -29,18 +50,17 @@ Spring Boot, React-фронтендом и локальной инфрастру
 ### 1. Всё одной командой
 
 ```powershell
-.\scripts\dev-up.ps1          # инфраструктура в Docker + все 5 сервисов на хосте
-.\scripts\smoke-test.ps1      # платформа: счёт, леджер, Kafka, RFC 7807
-.\scripts\e2e-marketplace.ps1 # покупка: витрина -> корзина -> checkout -> PAID
-.\scripts\e2e-settlement.ps1  # продавец -> продажа -> выплата мерчанту
-.\scripts\dev-down.ps1        # остановить сервисы (-WithInfra — ещё и контейнеры)
+.\scripts\dev-up.ps1            # инфраструктура в Docker + сервисы на хосте
+.\scripts\smoke-test.ps1        # платформа: счёт, леджер, Kafka, RFC 7807
+.\scripts\e2e-driver-duty.ps1   # такси: водитель с документами выходит на линию
+.\scripts\e2e-marketplace.ps1   # (заморожено) покупка: витрина -> корзина -> PAID
+.\scripts\e2e-settlement.ps1    # (заморожено) продавец -> продажа -> выплата
+.\scripts\dev-down.ps1          # остановить сервисы (-WithInfra — ещё и контейнеры)
 ```
 
-`dev-up.ps1` поднимает Postgres, Kafka и Redis, ждёт их готовности, запускает сервисы
-в фоне (логи — `.tools\logs\*.log`) и дожидается их health-проверок.
 `smoke-test.ps1` проверяет не «отвечает 200», а инварианты: идемпотентность открытия
-счёта, корректность баланса, формат ошибок RFC 7807 с `correlationId`, доставку
-событий через outbox и сбалансированность леджера.
+счёта, корректность баланса, формат ошибок RFC 7807 с `correlationId`, доставку событий
+через outbox и сбалансированность леджера.
 
 ### 2. Вручную (если хочется видеть каждый шаг)
 
@@ -56,6 +76,7 @@ docker compose --profile tools up -d
 .\mvnw.cmd -pl services/payment-service spring-boot:run         # http://localhost:8082
 .\mvnw.cmd -pl services/catalog-service spring-boot:run         # http://localhost:8083
 .\mvnw.cmd -pl services/order-service   spring-boot:run         # http://localhost:8084
+.\mvnw.cmd -pl services/driver-service  spring-boot:run         # http://localhost:8085
 
 # либо всё в контейнерах
 docker compose --profile app up -d --build
@@ -85,30 +106,39 @@ cd mobile\android
 Для физического устройства: `adb reverse tcp:8080 tcp:8080`.
 Подробности и таблица адресов — в `docs/mobile.md`.
 
-### 5. Первый сценарий за 60 секунд
+### 5. Первый сценарий такси за минуту
 
 ```powershell
-# 1) токен (dev-identity: любой телефон + код 0000)
+# 1) водитель получает токен с ролью DRIVER (dev-identity: любой телефон + код 0000)
 $token = (Invoke-RestMethod -Method Post http://localhost:8080/api/v1/auth/token `
   -ContentType 'application/json' `
-  -Body '{"phone":"+77001234567","code":"0000","displayName":"Aisha","roles":["CUSTOMER","ADMIN"]}').accessToken
-
+  -Body '{"phone":"+77001234567","code":"0000","displayName":"Айдар","roles":["DRIVER"]}').accessToken
 $h = @{ Authorization = "Bearer $token" }
 
-# 2) счёт
-$acc = Invoke-RestMethod -Method Post http://localhost:8080/api/v1/accounts -Headers $h `
-  -ContentType 'application/json' -Body '{"currency":"KZT","type":"CUSTOMER"}'
+# 2) профиль водителя
+Invoke-RestMethod -Method Post http://localhost:8080/api/v1/drivers -Headers $h `
+  -ContentType 'application/json' -Body '{"displayName":"Айдар"}'
 
-# 3) пополнение (демо-эндпоинт оператора)
-Invoke-RestMethod -Method Post "http://localhost:8080/api/v1/accounts/$($acc.id)/top-up" -Headers $h `
-  -ContentType 'application/json' -Body '{"amountMinor":500000,"reason":"demo funds"}'
+# 3) без документов на линию не пустят: 422 DRIVER_DOCUMENTS_INCOMPLETE
+try {
+  Invoke-RestMethod -Method Post http://localhost:8080/api/v1/drivers/me/status -Headers $h `
+    -ContentType 'application/json' -Body '{"status":"ONLINE"}'
+} catch { "отказано: $($_.ErrorDetails.Message)" }
 
-# 4) перевод: ключ идемпотентности обязателен
-$transferHeaders = @{ Authorization = "Bearer $token"; 'Idempotency-Key' = [guid]::NewGuid().ToString() }
-Invoke-RestMethod -Method Post http://localhost:8080/api/v1/payments/transfers -Headers $transferHeaders `
-  -ContentType 'application/json' `
-  -Body (@{ sourceAccountId = $acc.id; targetPhone = '+77009998877'; amountMinor = 150000;
-             currency = 'KZT'; description = 'обед' } | ConvertTo-Json)
+# 4) документы (права, техосмотр, медосмотр) со сроком действия
+$expires = (Get-Date).ToUniversalTime().AddYears(1).ToString('yyyy-MM-ddTHH:mm:ssZ')
+foreach ($kind in 'DRIVING_LICENCE','VEHICLE_INSPECTION','MEDICAL_CHECK') {
+  Invoke-RestMethod -Method Post http://localhost:8080/api/v1/drivers/me/documents -Headers $h `
+    -ContentType 'application/json' -Body (@{ kind = $kind; expiresAt = $expires } | ConvertTo-Json)
+}
+
+# 5) выход на линию
+Invoke-RestMethod -Method Post http://localhost:8080/api/v1/drivers/me/status -Headers $h `
+  -ContentType 'application/json' -Body '{"status":"ONLINE"}'
+
+# 6) событие ушло в Kafka через outbox — его и ждёт диспетчерская
+docker exec taxi-kafka /opt/kafka/bin/kafka-console-consumer.sh `
+  --bootstrap-server localhost:9092 --topic driver.events --from-beginning --max-messages 1
 ```
 
 Swagger UI: <http://localhost:8080/swagger-ui.html> (агрегирует все сервисы).
@@ -127,15 +157,16 @@ platform/                 общие библиотеки (не сервисы)
   common-kafka            outbox, consumer dedup, топики, DLT
 services/
   api-gateway             WebFlux-шлюз: токены, роутинг, rate limit
-  account-service         счета, двойная запись, holds
-  payment-service         переводы и платежи, сага, рефанды
-  catalog-service         мерчанты, товары, сток с резервированием
-  order-service           корзина, заказ, checkout-сага
+  driver-service          водители, авто, документы со сроком, выход на линию
+  account-service         счета, двойная запись, holds          <- деньги пассажира
+  payment-service         переводы и платежи, сага, выплаты      <- оплата и расчёты
+  catalog-service         мерчанты, товары, сток (заморожено)
+  order-service           корзина, заказ, checkout-сага (заморожено)
 web/                      React 19 + TypeScript + Vite
 mobile/android/           нативный клиент: Kotlin + Jetpack Compose
-infra/                    init-скрипты Postgres
-scripts/                  dev-up / dev-down / smoke-test / e2e-marketplace
-docs/                     архитектура, API, ADR
+infra/                    init-скрипты Postgres (включая PostGIS)
+scripts/                  dev-up / dev-down / smoke-test / e2e-driver-duty / e2e-marketplace / e2e-settlement
+docs/                     архитектура, API, ADR, план такси, мобильный клиент
 ```
 
 ---
@@ -143,47 +174,39 @@ docs/                     архитектура, API, ADR
 ## Проверено на живом стеке
 
 ```
-mvnw clean install                     -> BUILD SUCCESS, 505 unit-тестов, 0 падений
-                                          (platform 105, gateway 20, account 61, payment 116, catalog 109, order 178)
+mvnw clean install                     -> BUILD SUCCESS, 617 unit-тестов, 0 падений
+                                          (platform 105, gateway 20, account 61, payment 116,
+                                           catalog 109, order 178, driver 28)
 scripts/smoke-test.ps1                 -> платформа: счёт, леджер, Kafka, RFC 7807
-scripts/e2e-marketplace.ps1            -> покупка: витрина -> корзина -> checkout -> PAID
-scripts/e2e-settlement.ps1             -> продавец -> продажа -> выплата мерчанту
+scripts/e2e-driver-duty.ps1            -> такси: 33 проверки, водитель выходит на линию,
+                                          событие driver.online в Kafka, инварианты в БД
+scripts/e2e-marketplace.ps1            -> (заморожено) покупка: витрина -> корзина -> PAID
+scripts/e2e-settlement.ps1             -> (заморожено) продавец -> продажа -> выплата
 web: pnpm build && pnpm test           -> сборка без ошибок TS, 16 тестов
 web: pnpm e2e                          -> 14 браузерных сценариев (Playwright, chromium)
 mobile/android: gradlew testDebugUnitTest "-Dtaxi.liveTest=true"
                                        -> 42 теста, 0 падений, из них 4 — против живого шлюза
-                                          (Money 12, PhoneNumbers 5, ApiErrorMapper 15,
-                                           IdempotencyKeyHolder 6, live 4)
-эмулятор Android 14 (x86_64)           -> вход, перевод 250 ₸ из UI (P01M3W5ECJ2V9D6W04MR80JJJ5J),
-                                          покупка из UI -> заказ ORD-261001-00036 (PAID)
+эмулятор Android 14 (x86_64)           -> вход, перевод 250 ₸ из UI, покупка из UI -> заказ PAID
 
 docker compose --profile app up -d --build
-  -> 5 образов собраны, все контейнеры healthy
+  -> 9 контейнеров healthy (включая taxi-driver-service), PostGIS 3.4.3
   -> все сценарии прогнаны повторно уже против контейнерного стека
 ```
 
-Сквозной сценарий (`scripts/e2e-marketplace.ps1`) проходит через публичный API шлюза:
-вход по телефону → счёт → демо-пополнение → анонимная витрина → корзина → checkout →
-резерв стока у catalog-service → платёж мерчанту в payment-service (hold → capture в
-account-service) → заказ `PAID`. Проверяется в том числе:
+Что именно проверяет сценарий такси (`scripts/e2e-driver-duty.ps1`):
 
-* **деньги**: списано ровно `amount + fee` (комиссия 1.5% считается в базисных пунктах);
-* **идемпотентность**: повтор checkout с тем же `Idempotency-Key` возвращает тот же
-  заказ, а не создаёт второй;
-* **анонимность витрины**: `GET /api/v1/catalog/products` без токена → 200,
-  при этом `GET /api/v1/orders` без токена → 401;
-* **инварианты БД**: баланс каждого счёта равен сумме его проводок, каждая транзакция
-  леджера сбалансирована (Σ = 0), outbox пуст по `PENDING`, резерв стока `COMMITTED`;
-* **трассировка**: один `correlationId` объединяет события `order.created`, `order.paid`,
-  `payment.initiated`, `payment.completed` и записи в логах всех трёх сервисов.
+* **документы — это правило, а не поле**: выход на линию без прав, техосмотра или
+  медосмотра → `422 DRIVER_DOCUMENTS_INCOMPLETE`, и статус в БД не меняется;
+* **истёкший документ равен отсутствующему**: проверка идёт по дате, а не по факту загрузки;
+* **одно состояние на водителя**: повторный выход на линию → `409 DRIVER_ALREADY_ON_DUTY`,
+  а `status=BUSY` от клиента → `400` (занятость выставляет только диспетчер);
+* **события доезжают**: `driver.online` публикуется через outbox (строка `PUBLISHED`)
+  и увеличивает end-offset топика `driver.events`;
+* **чужой профиль недоступен**: в API водителя нет `/drivers/{id}` вообще, а без токена → 401;
+* **инварианты БД**: один профиль на пользователя, три документа, outbox без `PENDING`.
 
-Проверка платформы отдельно: `scripts/smoke-test.ps1` (счёт, леджер, RFC 7807,
-доставка событий через outbox, инварианты).
-
-> Интеграционные тесты (`*IT`, Testcontainers) написаны и компилируются, но в этом
-> окружении не запускались: Java-клиент Testcontainers не может достучаться до
-> Docker-демона (CLI работает, `docker-java` получает непригодный endpoint).
-> На машине с обычным Docker-сокетом — `.\mvnw.cmd verify -Pintegration`.
+> Интеграционные тесты (`*IT`, Testcontainers) написаны и компилируются и прогоняются в CI
+> на GitHub-hosted runner.
 
 ---
 
@@ -198,13 +221,15 @@ account-service) → заказ `PAID`. Проверяется в том чис�
 | Ошибки | Единый RFC 7807 с машинным `code` и `correlationId` | `platform/common-web/.../GlobalExceptionHandler.java` |
 | Трассировка | Один id: HTTP → MDC → Kafka header → логи сервиса | `CorrelationContext` |
 | Деньги в БД | Append-only леджер, баланс — проекция; CHECK-инварианты | `account-service/.../V1__init_accounts.sql` |
+| Право выйти на линию | Документы со сроком действия + правило в агрегате, а не в контроллере | `driver-service/.../DriverDuty.java` |
+| Стейт-машина водителя | `OFFLINE → ONLINE → BUSY → ONLINE`, невозможные переходы запрещены | `driver-service/.../Driver.java` |
+| Геоданные | PostGIS 3.4 для треков и геозон, Redis — для горячего поиска | `infra/postgres/init/01-databases.sql` |
 | Сток | Резервирование (ACTIVE → COMMITTED/RELEASED) вместо декремента | `catalog-service/.../V1__init_catalog.sql` |
 | Сага checkout | Оркестратор в order-service + асинхронное доразбирательство по Kafka | `order-service/.../CheckoutSagaService.java` |
-| Раздельные платежи | Корзина с товарами нескольких мерчантов оплачивается по платежу на каждого; частичный успех компенсируется возвратами | `order-service/.../MerchantAllocation.java` |
-| Расчёты с мерчантами | Долг (`PENDING`) и выплата (`PAID`) как разные факты; сумма выплаты = стоимость товаров, комиссия остаётся платформе | `payment-service/.../SettlementStateService.java` |
+| Расчёты с мерчантами | Долг (`PENDING`) и выплата (`PAID`) как разные факты; та же механика пойдёт на выплаты водителям | `payment-service/.../SettlementStateService.java` |
 | Лимиты и антифрод | Дневной/месячный лимит на счёт + проверка скорости операций; отказ происходит **до** резервирования денег | `account-service/.../AccountLimitGuard.java` |
 | Поддержка и аудит | Роль `SUPPORT` читает чужие данные, и **каждое** чтение оставляет строку в `support_audit_record` в той же транзакции | `catalog-service/.../SupportAuditService.java` |
-| Наблюдаемость продукта | Бизнес-метрики `taxi.<домен>.<факт>`: долг перед мерчантами, неопубликованные события, причины отказов платежей | `payment-service/.../PaymentMetrics.java` |
+| Наблюдаемость продукта | Бизнес-метрики `taxi.<домен>.<факт>`: долг перед мерчантами, неопубликованные события, отказы по документам | `payment-service/.../PaymentMetrics.java` |
 | Сверка данных | Фоновый job проверяет инварианты леджера и расчётов; находки — в лог и метрику, но не «чинятся» автоматически | `payment-service/.../PaymentReconciliationService.java` |
 | Безопасность | Stateless JWT, роли, 401/403 в том же problem-формате | `platform/common-security` |
 | Service-to-service | `X-Internal-Token` + фильтр на путях `/internal/` | `platform/common-security/.../InternalApiTokenFilter.java` |
@@ -214,12 +239,13 @@ account-service) → заказ `PAID`. Проверяется в том чис�
 
 ## Документация
 
+* [`docs/taxi-roadmap.md`](docs/taxi-roadmap.md) — план работ по такси: фазы, риски, оценки
+* [`docs/adr/0009-taxi-vertical.md`](docs/adr/0009-taxi-vertical.md) — ключевые решения по такси
 * [`docs/architecture.md`](docs/architecture.md) — границы сервисов, потоки данных, саги
 * [`docs/api.md`](docs/api.md) — эндпоинты, коды ошибок, примеры
-* [`docs/adr/`](docs/adr/) — принятые решения и их альтернативы
+* [`docs/adr/`](docs/adr/) — остальные принятые решения и их альтернативы
 * [`docs/development.md`](docs/development.md) — окружение, тесты, отладка
 * [`docs/mobile.md`](docs/mobile.md) — нативный Android-клиент: сборка, эмулятор, живые тесты
-* [`docs/taxi-roadmap.md`](docs/taxi-roadmap.md) — план превращения платформы в сервис такси
 
 ## Требования
 

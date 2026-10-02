@@ -16,7 +16,7 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>taxi</name>
-    <description>Taxi fintech super-app: payments, transfers, accounts, marketplace</description>
+    <description>Ride-hailing platform: trips, dispatch, drivers, wallets and payments</description>
 
     <modules>
         <module>platform/common-core</module>
@@ -29,6 +29,7 @@
         <module>services/payment-service</module>
         <module>services/catalog-service</module>
         <module>services/order-service</module>
+        <module>services/driver-service</module>
     </modules>
 
     <properties>

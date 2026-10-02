@@ -19,10 +19,18 @@ public final class Roles {
     public static final String SUPPORT = "SUPPORT";
     /** Platform operator: can mint demo funds, freeze accounts. */
     public static final String ADMIN = "ADMIN";
+    /** Driver: goes on duty, receives offers, performs trips. */
+    public static final String DRIVER = "DRIVER";
+    /**
+     * Dispatcher: sees the live fleet, assigns trips by hand and resolves
+     * incidents. Never a superset of {@link #SUPPORT}: the dispatcher changes
+     * trips, support only reads.
+     */
+    public static final String DISPATCHER = "DISPATCHER";
 
     public static final String PREFIX = "ROLE_";
 
-    public static final Set<String> ALL = Set.of(CUSTOMER, MERCHANT, SUPPORT, ADMIN);
+    public static final Set<String> ALL = Set.of(CUSTOMER, MERCHANT, SUPPORT, ADMIN, DRIVER, DISPATCHER);
 
     private Roles() {
     }
