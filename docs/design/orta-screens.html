@@ -1,0 +1,2607 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ORTA — дизайн-борд экранов · 2 октября 2026</title>
+<style>
+/* ============================================================================
+   ORTA design board — self-contained: no CDN, no external fonts, no images.
+   Every illustration is inline SVG or a CSS gradient.
+   ========================================================================== */
+
+:root{
+  /* brand — ORTA Blue (client app, Theme.kt: TaxiBlue 0xFF1F5FA9) */
+  --brand-50:#EAF1FA;  --brand-100:#D6E3F5; --brand-200:#B3CCEA; --brand-300:#7FA8DA;
+  --brand-400:#4A83C4; --brand-500:#1F5FA9; --brand-600:#1A5192; --brand-700:#164A85;
+  --brand-800:#103A69; --brand-900:#0A2540;
+
+  /* ink — neutral ramp (web tailwind tokens) */
+  --ink-50:#F8FAFC;  --ink-100:#F1F5F9; --ink-200:#E2E8F0; --ink-300:#CBD5E1;
+  --ink-400:#94A3B8; --ink-500:#64748B; --ink-600:#475569; --ink-700:#334155;
+  --ink-800:#1E293B; --ink-900:#0F172A;
+
+  /* surfaces */
+  --bg:#F5F6F8;          /* Android background 0xFFF5F6F8 */
+  --surface:#FFFFFF;
+  --surface-variant:#E7EAEF;
+
+  /* semantic */
+  --success-50:#ECFDF5; --success-500:#1B7F4B; --success-700:#14532D;
+  --warning-50:#FFFBEB; --warning-500:#B26A00; --warning-700:#92400E;
+  --danger-50:#FEF2F2;  --danger-500:#B3261E;  --danger-700:#88121A;
+  --info-50:#EFF6FF;    --info-500:#2563EB;    --info-700:#1E40AF;
+
+  /* decorative tile accents (HomeServices.kt) */
+  --tile-taxi:#1F5FA9; --tile-cargo:#0E7C7B; --tile-market:#1B7F4B; --tile-home:#6A4FA3;
+  --tile-services:#B26A00; --tile-build:#8D5B2B; --tile-delivery:#0F6E8C; --tile-business:#44474E;
+  --teal:#0E7C7B;
+  /* web console accent (web/src/index.css brand-500) — see note in palette */
+  --console:#E11D2E;
+
+  --font:'Inter','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+  --mono:'Cascadia Mono','SFMono-Regular','Consolas','Liberation Mono',monospace;
+
+  --r-xs:6px; --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r-2xl:24px; --r-pill:999px;
+  --sh-xs:0 1px 2px rgba(15,23,42,.06);
+  --sh-sm:0 1px 3px rgba(15,23,42,.08),0 1px 2px rgba(15,23,42,.04);
+  --sh-md:0 4px 12px rgba(15,23,42,.08),0 1px 3px rgba(15,23,42,.04);
+  --sh-lg:0 12px 28px rgba(15,23,42,.12),0 2px 6px rgba(15,23,42,.05);
+  --sh-xl:0 24px 60px rgba(15,23,42,.16);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink-900);font-family:var(--font);
+  font-size:14px;line-height:20px;-webkit-font-smoothing:antialiased;
+}
+.board{max-width:1720px;margin:0 auto;padding:32px 32px 80px}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ---------------------------------------------------------------- hero */
+.hero{
+  background:var(--surface);border:1px solid var(--ink-200);border-radius:var(--r-2xl);
+  box-shadow:var(--sh-md);padding:28px 32px;display:flex;gap:32px;align-items:flex-start;
+  justify-content:space-between;flex-wrap:wrap;position:relative;overflow:hidden;
+}
+.hero::after{
+  content:"";position:absolute;right:-120px;top:-160px;width:420px;height:420px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,rgba(14,124,123,.16),rgba(31,95,169,.06) 60%,transparent 70%);
+}
+.hero-main{max-width:820px;position:relative}
+.brandline{display:flex;align-items:center;gap:14px}
+.logo{
+  width:52px;height:52px;border-radius:var(--r-lg);flex:none;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--brand-500),var(--brand-700));color:#fff;
+  font-size:24px;font-weight:700;letter-spacing:-.02em;box-shadow:var(--sh-sm);
+}
+.logo span{transform:translateY(-1px)}
+h1.brand{margin:0;font-size:34px;line-height:40px;font-weight:700;letter-spacing:-.02em}
+.brand-sub{margin:2px 0 0;font-size:15px;line-height:22px;color:var(--brand-500);font-weight:600}
+.hero p.lead{margin:16px 0 0;font-size:15px;line-height:24px;color:var(--ink-600);max-width:760px}
+.hero-meta{display:flex;flex-direction:column;gap:10px;align-items:flex-end;position:relative;z-index:1}
+.meta-card{
+  background:var(--ink-50);border:1px solid var(--ink-200);border-radius:var(--r-md);
+  padding:10px 14px;min-width:250px;
+}
+.meta-card dt{font-size:11px;line-height:14px;color:var(--ink-500);text-transform:uppercase;letter-spacing:.06em}
+.meta-card dd{margin:2px 0 0;font-size:14px;line-height:20px;font-weight:600;color:var(--ink-800)}
+
+/* legend of statuses */
+.legend{
+  margin-top:22px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  background:var(--surface);border:1px solid var(--ink-200);border-radius:var(--r-lg);
+  padding:12px 16px;box-shadow:var(--sh-xs);
+}
+.legend .legend-title{font-size:12px;font-weight:600;color:var(--ink-500);text-transform:uppercase;letter-spacing:.06em;margin-right:6px}
+
+.st{
+  display:inline-flex;align-items:center;gap:6px;border-radius:var(--r-pill);
+  padding:4px 11px 4px 9px;font-size:12px;line-height:16px;font-weight:600;white-space:nowrap;
+  border:1px solid transparent;
+}
+.st::before{content:"";width:7px;height:7px;border-radius:50%;flex:none;background:currentColor}
+.st-work{background:var(--success-50);color:var(--success-700);border-color:#BBE7CE}
+.st-f2{background:var(--warning-50);color:var(--warning-700);border-color:#F3DDAE}
+.st-plan{background:var(--ink-100);color:var(--ink-600);border-color:var(--ink-200)}
+.st-dev{background:var(--info-50);color:var(--info-700);border-color:#C7DBFB}
+
+/* ------------------------------------------------------------ sections */
+.sec{margin-top:36px}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:0 0 16px}
+.sec h2{margin:0;font-size:22px;line-height:28px;font-weight:700;letter-spacing:-.01em}
+.sec .sec-num{
+  display:inline-grid;place-items:center;width:26px;height:26px;border-radius:var(--r-sm);
+  background:var(--brand-50);color:var(--brand-600);font-size:13px;font-weight:700;
+  margin-right:10px;transform:translateY(-2px);
+}
+.sec .sec-note{margin:6px 0 0;font-size:13px;line-height:20px;color:var(--ink-500);max-width:900px}
+.card{background:var(--surface);border:1px solid var(--ink-200);border-radius:var(--r-lg);box-shadow:var(--sh-xs)}
+.pad{padding:20px}
+.cols{display:grid;gap:16px}
+.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card-h{
+  padding:14px 18px;border-bottom:1px solid var(--ink-100);display:flex;align-items:baseline;
+  justify-content:space-between;gap:12px;
+}
+.card-h h3{margin:0;font-size:15px;line-height:20px;font-weight:600}
+.card-h .hint{font-size:12px;line-height:16px;color:var(--ink-500)}
+.card-b{padding:18px}
+.mono{font-family:var(--mono);font-size:12px}
+.small{font-size:12px;line-height:17px;color:var(--ink-500)}
+.mut{color:var(--ink-500)}
+
+/* ------------------------------------------------------------- palette */
+.sw-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:10px}
+.sw{border:1px solid var(--ink-200);border-radius:var(--r-md);overflow:hidden;background:#fff}
+.sw-chip{height:56px}
+.sw-body{padding:7px 9px 9px}
+.sw-name{font-size:11px;font-weight:700;color:var(--ink-800)}
+.sw-hex{font-family:var(--mono);font-size:10.5px;color:var(--ink-500);text-transform:uppercase}
+.sw-note{font-size:10.5px;line-height:14px;color:var(--ink-400);margin-top:3px}
+.sw-cap{margin:10px 0 0;font-size:12px;font-weight:600;color:var(--ink-700)}
+.sw-row+.sw-cap{margin-top:18px}
+.dotacc{display:flex;gap:14px;flex-wrap:wrap;margin-top:4px}
+.dotacc .da{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-600)}
+.dotacc .da i{width:22px;height:22px;border-radius:8px;display:block;flex:none}
+
+/* ---------------------------------------------------------- typography */
+.type-row{display:grid;grid-template-columns:190px 1fr 210px;gap:16px;align-items:baseline;padding:12px 0;border-bottom:1px dashed var(--ink-200)}
+.type-row:last-child{border-bottom:0}
+.type-row .meta{font-size:11.5px;line-height:16px;color:var(--ink-500);font-family:var(--mono)}
+.t-display{font-size:34px;line-height:40px;font-weight:700;letter-spacing:-.02em}
+.t-h1{font-size:24px;line-height:30px;font-weight:600;letter-spacing:-.01em}
+.t-h2{font-size:20px;line-height:26px;font-weight:600}
+.t-h3{font-size:16px;line-height:22px;font-weight:600}
+.t-body{font-size:14px;line-height:20px}
+.t-label{font-size:12px;line-height:16px;font-weight:600}
+.t-cap{font-size:11px;line-height:14px;color:var(--ink-500)}
+.t-money{font-size:28px;line-height:34px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.t-title{font-size:10.5px;line-height:14px;color:var(--ink-400);font-family:var(--mono)}
+
+/* ------------------------------------------------- radii / shadows / grid */
+.demo-row{display:flex;gap:14px;flex-wrap:wrap}
+.rbox{width:104px;height:78px;background:var(--brand-50);border:1px solid var(--brand-200);display:grid;place-items:center;font-size:11px;color:var(--brand-700);font-family:var(--mono)}
+.shbox{width:150px;height:92px;background:#fff;border:1px solid var(--ink-100);border-radius:var(--r-lg);display:grid;place-items:center;font-size:11px;color:var(--ink-500);font-family:var(--mono)}
+.spbars{display:flex;flex-direction:column;gap:8px}
+.spbar{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--ink-600)}
+.spbar b{display:block;height:14px;background:linear-gradient(90deg,var(--brand-200),var(--brand-400));border-radius:4px}
+.spbar span{width:74px;font-family:var(--mono);font-size:11px;color:var(--ink-500)}
+.tapdemo{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
+.tapbox{
+  border:1.5px dashed var(--brand-400);border-radius:var(--r-md);background:var(--brand-50);
+  display:grid;place-items:center;font-size:11px;color:var(--brand-700);font-family:var(--mono);
+}
+.griddemo{
+  width:390px;border:1px solid var(--ink-200);border-radius:var(--r-lg);background:#fff;padding:16px;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
+}
+.griddemo .gcell{border:1px dashed var(--brand-300);border-radius:var(--r-md);background:var(--brand-50);height:56px;display:grid;place-items:center;font-size:10.5px;color:var(--brand-700);font-family:var(--mono)}
+
+/* -------------------------------------------------------------- money */
+.money-demo{display:flex;flex-direction:column;gap:14px}
+.mrow{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:baseline;border-bottom:1px dashed var(--ink-200);padding-bottom:12px}
+.mrow:last-child{border-bottom:0;padding-bottom:0}
+.mrow .lbl{font-size:12px;color:var(--ink-500)}
+.mval{font-size:22px;line-height:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.mval.neg{color:var(--danger-700)}
+.mval.pos{color:var(--success-700)}
+.mval.sm{font-size:16px;line-height:22px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:13px;border-bottom:1px solid var(--ink-100)}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--ink-500)}
+.kv .v{font-weight:600;font-variant-numeric:tabular-nums}
+.coderow{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.code{font-family:var(--mono);font-size:11.5px;padding:3px 8px;border-radius:var(--r-sm);background:var(--ink-100);color:var(--ink-700)}
+
+/* ------------------------------------------------------------ buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;
+  border-radius:var(--r-md);font-family:inherit;font-size:15px;font-weight:600;line-height:20px;
+  padding:0 20px;height:52px;cursor:default;white-space:nowrap;text-align:center;
+}
+.btn-md{height:44px;font-size:14px;padding:0 16px}
+.btn-sm{height:36px;font-size:13px;padding:0 12px;border-radius:var(--r-sm)}
+.btn-primary{background:var(--brand-500);color:#fff;box-shadow:var(--sh-xs)}
+.btn-primary.is-hover{background:var(--brand-600)}
+.btn-primary.is-press{background:var(--brand-700);box-shadow:inset 0 2px 4px rgba(0,0,0,.18)}
+.btn-secondary{background:#fff;color:var(--ink-800);border-color:var(--ink-300)}
+.btn-secondary.is-hover{background:var(--ink-50);border-color:var(--ink-400)}
+.btn-ghost{background:transparent;color:var(--brand-600)}
+.btn-ghost.is-hover{background:var(--brand-50)}
+.btn-danger{background:var(--danger-500);color:#fff}
+.btn-danger.is-hover{background:var(--danger-700)}
+.btn.is-disabled{background:var(--surface-variant);color:var(--ink-400);border-color:transparent;box-shadow:none}
+.btn.is-loading{background:var(--brand-500);color:#fff}
+.spin{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;display:block}
+.btn-caption{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.btn-caption .cap-sm{font-size:11.5px;color:var(--ink-500);font-family:var(--mono)}
+
+/* -------------------------------------------------------- phone frames */
+.stage{display:flex;flex-wrap:wrap;gap:38px 28px;align-items:flex-start}
+.swrap{width:390px}
+.swrap-mini{width:300px}
+.phone{
+  width:390px;height:844px;border-radius:44px;background:#fff;border:1px solid var(--ink-200);
+  box-shadow:var(--sh-xl);display:flex;flex-direction:column;overflow:hidden;position:relative;
+}
+.phone.mini{width:300px;height:620px;border-radius:36px}
+.phone.tablet{width:1024px;height:768px;border-radius:20px;border-width:1px}
+.sb{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 30px;font-size:13px;font-weight:600;color:var(--ink-900)}
+.phone.mini .sb{height:34px;padding:0 16px 0 20px;font-size:11px}
+.sb .sb-right{display:flex;align-items:center;gap:6px}
+.sb .ic{width:15px;height:15px}
+.phone.mini .sb .ic{width:12px;height:12px}
+.ph{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.pad-lr{padding:0 16px}
+.home-ind{height:22px;flex:none;display:grid;place-items:center}
+.home-ind span{width:134px;height:5px;border-radius:3px;background:var(--ink-900);opacity:.8}
+.phone.mini .home-ind{height:18px}
+.phone.mini .home-ind span{width:100px;height:4px}
+
+.cap{margin-top:14px}
+.cap-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cap-num{
+  width:22px;height:22px;border-radius:7px;background:var(--ink-900);color:#fff;font-size:11px;
+  font-weight:700;display:grid;place-items:center;flex:none;font-variant-numeric:tabular-nums;
+}
+.cap-title{font-size:14px;font-weight:600;line-height:20px}
+.cap-note{margin:6px 0 0;font-size:12px;line-height:18px;color:var(--ink-500)}
+.cap-note code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100);padding:1px 5px;border-radius:5px;color:var(--ink-700)}
+
+/* ------------------------------------------------------- app primitives */
+.appbar{padding:6px 16px 14px;background:#fff}
+.appbar-row{display:flex;align-items:center;gap:12px}
+.wordmark{font-size:26px;line-height:30px;font-weight:700;color:var(--brand-500);letter-spacing:-.01em}
+.tagline{font-size:12px;line-height:16px;color:var(--ink-500);margin-top:-2px}
+.appbar-spacer{flex:1}
+.city{
+  display:inline-flex;align-items:center;gap:6px;background:var(--brand-50);color:var(--brand-600);
+  border-radius:var(--r-pill);padding:7px 12px;font-size:13px;font-weight:600;
+}
+.city .ic{width:14px;height:14px}
+.iconbtn{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--brand-50);
+  color:var(--brand-600);position:relative;flex:none;
+}
+.iconbtn.solid{background:var(--brand-500);color:#fff}
+.iconbtn .ic{width:20px;height:20px}
+.iconbtn .dot{position:absolute;top:6px;right:7px;width:9px;height:9px;border-radius:50%;background:var(--danger-500);border:1.5px solid #fff}
+.searchbar{
+  margin:0 16px;display:flex;align-items:center;gap:10px;height:48px;border-radius:var(--r-md);
+  background:var(--ink-50);border:1px solid var(--ink-200);padding:0 14px;color:var(--ink-500);font-size:14px;
+}
+.searchbar .ic{width:18px;height:18px;color:var(--ink-400)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+.tile{
+  position:relative;background:#fff;border:1px solid var(--ink-200);border-radius:var(--r-lg);
+  padding:13px 12px 12px;box-shadow:var(--sh-xs);
+}
+.tile .ti{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff}
+.tile .ti .ic{width:23px;height:23px}
+.tile .tt{margin-top:10px;font-size:14.5px;line-height:20px;font-weight:600;color:var(--ink-900)}
+.tile .ts{font-size:11.5px;line-height:16px;color:var(--ink-500);margin-top:1px}
+.badge-soon{
+  position:absolute;top:10px;right:10px;background:var(--ink-100);color:var(--ink-600);
+  font-size:10.5px;line-height:14px;font-weight:600;border-radius:var(--r-pill);padding:3px 9px;
+}
+.badge-age{font-size:10.5px;font-weight:600;border-radius:var(--r-pill);padding:3px 8px;background:var(--success-50);color:var(--success-700)}
+.banner{
+  margin:0 16px 14px;height:104px;border-radius:var(--r-lg);position:relative;overflow:hidden;color:#fff;
+  background:linear-gradient(100deg,var(--brand-600) 0%,var(--brand-500) 42%,var(--teal) 100%);
+  display:flex;flex-direction:column;justify-content:center;padding:0 18px;
+}
+.banner::after{content:"";position:absolute;right:-40px;top:-40px;width:190px;height:190px;border-radius:50%;background:rgba(255,255,255,.14)}
+.banner .bt{font-size:15px;font-weight:600;position:relative}
+.banner .bb{font-size:12px;opacity:.9;margin-top:5px;max-width:250px;line-height:16px;position:relative}
+.dots{display:flex;gap:5px;margin-top:10px;position:relative}
+.dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.45)}
+.dots i.on{background:#fff;width:16px;border-radius:3px}
+
+.tabbar{
+  flex:none;height:64px;border-top:1px solid var(--ink-100);background:#fff;display:grid;
+  grid-template-columns:repeat(4,1fr);align-items:center;position:relative;
+}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--ink-500)}
+.tab .ic{width:22px;height:22px}
+.tab.on{color:var(--brand-500);font-weight:600}
+.tab.mid{visibility:hidden}
+.fab{
+  position:absolute;left:50%;top:-22px;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;
+  background:var(--brand-500);color:#fff;display:grid;place-items:center;
+  box-shadow:0 8px 20px rgba(31,95,169,.4),0 0 0 4px #fff;
+}
+.fab .ic{width:26px;height:26px}
+
+.nav-mini{height:52px;border-top:1px solid var(--ink-100);background:#fff;display:grid;grid-template-columns:repeat(4,1fr);align-items:center}
+.nav-mini .tab{font-size:0;gap:0}
+.nav-mini .tab .ic{width:18px;height:18px}
+
+/* cards inside frames */
+.fcard{background:#fff;border:1px solid var(--ink-200);border-radius:var(--r-lg);box-shadow:var(--sh-xs);padding:14px}
+.fcard+.fcard{margin-top:10px}
+.frow{display:flex;align-items:center;gap:10px}
+.frow+.frow{margin-top:10px}
+.fcol{display:flex;flex-direction:column}
+.grow{flex:1;min-width:0}
+.ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.f-title{font-size:14px;line-height:19px;font-weight:600}
+.f-sub{font-size:11.5px;line-height:16px;color:var(--ink-500)}
+.f-title,.f-sub,.tl-t,.tl-s,.tariff .tn,.tariff .td,.fn-t,.fn-s,.ban .bt,.banner .bt,.banner .bb{display:block}
+.f-money{font-size:15px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.f-money.lg{font-size:24px;line-height:30px;font-weight:700}
+.sec-title{font-size:15px;line-height:20px;font-weight:600;margin:0 0 8px}
+.sec-title.row{display:flex;align-items:center;justify-content:space-between}
+.link{font-size:12.5px;color:var(--brand-600);font-weight:600}
+.divider{height:1px;background:var(--ink-100);margin:12px 0}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;border-radius:var(--r-pill);padding:4px 10px;
+  font-size:11.5px;line-height:15px;font-weight:600;background:var(--ink-100);color:var(--ink-600);
+}
+.pill.ok{background:var(--success-50);color:var(--success-700)}
+.pill.warn{background:var(--warning-50);color:var(--warning-700)}
+.pill.bad{background:var(--danger-50);color:var(--danger-700)}
+.pill.info{background:var(--info-50);color:var(--info-700)}
+.pill.brand{background:var(--brand-50);color:var(--brand-600)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{
+  border:1px solid var(--ink-200);background:#fff;border-radius:var(--r-pill);padding:7px 13px;
+  font-size:12.5px;font-weight:600;color:var(--ink-600);white-space:nowrap;
+}
+.chip.on{background:var(--ink-900);border-color:var(--ink-900);color:#fff}
+.chip.brand-on{background:var(--brand-50);border-color:var(--brand-200);color:var(--brand-600)}
+
+.field{background:#fff;border:1px solid var(--ink-300);border-radius:var(--r-md);padding:9px 13px}
+.field .fl{font-size:11px;line-height:14px;color:var(--ink-500);font-weight:600}
+.field .fv{font-size:15px;line-height:22px;color:var(--ink-900);font-weight:600;font-variant-numeric:tabular-nums}
+.field.focus{border-color:var(--brand-500);box-shadow:0 0 0 3px var(--brand-100)}
+.field.err{border-color:var(--danger-500);box-shadow:0 0 0 3px var(--danger-50)}
+.hint{font-size:11px;line-height:15px;color:var(--ink-500);margin-top:5px}
+.hint.bad{color:var(--danger-700)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:var(--ink-100);border-radius:var(--r-md);padding:4px}
+.seg .sg{border-radius:var(--r-sm);padding:8px 0;text-align:center;font-size:13px;font-weight:600;color:var(--ink-500)}
+.seg .sg.on{background:#fff;color:var(--brand-600);box-shadow:var(--sh-xs)}
+
+.avatar{
+  width:46px;height:46px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;
+  font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--brand-500),var(--teal));
+}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--ink-200);border-radius:var(--r-md);background:#fff}
+.stepper b{width:36px;height:36px;display:grid;place-items:center;font-size:16px;color:var(--brand-600);font-weight:600}
+.stepper span{min-width:34px;text-align:center;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.stars{display:flex;gap:6px;color:#F0A020}
+.stars .ic{width:28px;height:28px}
+.stars .off{color:var(--ink-200)}
+.progress{height:6px;border-radius:3px;background:var(--ink-100);overflow:hidden}
+.progress i{display:block;height:100%;border-radius:3px;background:var(--brand-500)}
+.progress i.g{background:var(--success-500)}
+.tl{display:flex;gap:10px}
+.tl .tl-dot{width:10px;height:10px;border-radius:50%;background:var(--brand-500);flex:none;margin-top:5px;position:relative}
+.tl .tl-dot.g{background:var(--success-500)}
+.tl .tl-dot.mut{background:var(--ink-300)}
+.tl .tl-body{padding-bottom:14px;border-left:1.5px dashed var(--ink-200);padding-left:14px;margin-left:-19px;padding-top:0}
+.tl .tl-body.last{border-left-color:transparent}
+.tl .tl-t{font-size:13px;font-weight:600}
+.tl .tl-s{font-size:11.5px;color:var(--ink-500);margin-top:2px}
+.thumb{
+  width:56px;height:56px;border-radius:var(--r-md);flex:none;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(140deg,var(--brand-400),var(--brand-600));
+}
+.thumb.g{background:linear-gradient(140deg,#3FA76B,#1B7F4B)}
+.thumb.p{background:linear-gradient(140deg,#8A6FC0,#6A4FA3)}
+.thumb.a{background:linear-gradient(140deg,#D08A2A,#B26A00)}
+.thumb.t{background:linear-gradient(140deg,#2A9A99,#0E7C7B)}
+.thumb .ic{width:28px;height:28px}
+.notice{
+  border-radius:var(--r-md);padding:11px 13px;font-size:12.5px;line-height:18px;
+  background:var(--warning-50);border:1px solid #F3DDAE;color:var(--warning-700);
+}
+.notice.bad{background:var(--danger-50);border-color:#F5C6C2;color:var(--danger-700)}
+.notice.info{background:var(--info-50);border-color:#C7DBFB;color:var(--info-700)}
+.notice.ok{background:var(--success-50);border-color:#BBE7CE;color:var(--success-700)}
+.notice b{display:block;font-size:13px;margin-bottom:2px}
+
+/* map */
+.mapbox{position:relative;background:#EDF1F5;overflow:hidden;flex:none}
+.mapbox svg{display:block;width:100%;height:100%}
+.mk-fresh{color:var(--console)} .mk-stale{color:var(--ink-400)} .mk-cand{color:var(--info-500)}
+.map-legend{
+  position:absolute;left:10px;right:10px;bottom:10px;background:rgba(255,255,255,.94);
+  border:1px solid var(--ink-200);border-radius:var(--r-md);padding:7px 10px;font-size:10.5px;
+  color:var(--ink-600);display:flex;gap:12px;flex-wrap:wrap;box-shadow:var(--sh-sm);
+}
+.map-legend i{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
+.sheet{
+  background:#fff;border-radius:var(--r-2xl) var(--r-2xl) 0 0;box-shadow:0 -8px 24px rgba(15,23,42,.12);
+  padding:14px 16px 8px;position:relative;z-index:2;
+}
+.sheet::before{content:"";position:absolute;top:6px;left:50%;transform:translateX(-50%);width:40px;height:4px;border-radius:2px;background:var(--ink-200)}
+.tariff{
+  display:flex;align-items:center;gap:12px;padding:11px 12px;border:1.5px solid var(--ink-200);
+  border-radius:var(--r-md);background:#fff;
+}
+.tariff+.tariff{margin-top:8px}
+.tariff.on{border-color:var(--brand-500);background:var(--brand-50)}
+.tariff .tic{width:38px;height:38px;border-radius:12px;background:var(--ink-100);display:grid;place-items:center;color:var(--ink-600);flex:none}
+.tariff.on .tic{background:#fff;color:var(--brand-600)}
+.tariff .tn{font-size:14px;font-weight:600}
+.tariff .td{font-size:11px;color:var(--ink-500);margin-top:1px}
+.tariff .tp{text-align:right}
+.tariff .tp b{display:block;font-size:15px;font-variant-numeric:tabular-nums}
+.tariff .tp span{font-size:11px;color:var(--ink-500)}
+
+/* product tiles */
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pcard{border:1px solid var(--ink-200);border-radius:var(--r-lg);background:#fff;overflow:hidden;box-shadow:var(--sh-xs)}
+.pcard .pimg{height:104px;display:grid;place-items:center;color:#fff;position:relative}
+.pcard .pimg .ic{width:38px;height:38px}
+.pcard .pbody{padding:10px 11px 12px}
+.pcard .pn{font-size:12.5px;line-height:17px;font-weight:600;height:34px;overflow:hidden}
+.pcard .pp{font-size:14px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums}
+.pcard .ps{font-size:10.5px;color:var(--ink-500);margin-top:3px}
+.stockdot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;background:var(--success-500)}
+.stockdot.low{background:var(--warning-500)}
+.stockdot.out{background:var(--ink-400)}
+
+/* -------------------------------------------------------- mini skeletons */
+.sk{background:linear-gradient(90deg,var(--ink-100) 0%,var(--ink-200) 50%,var(--ink-100) 100%);border-radius:6px}
+.sk-line{height:11px}
+.sk-c{width:34px;height:34px;border-radius:50%}
+.sk-tile{height:78px;border-radius:var(--r-md)}
+.mini-note{font-size:11px;line-height:15px;color:var(--ink-500);margin:5px 0 0}
+
+/* --------------------------------------------------------------- flows */
+.flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;align-items:center}
+.fnode{
+  background:#fff;border:1px solid var(--ink-200);border-radius:var(--r-md);box-shadow:var(--sh-xs);
+  padding:10px 12px;min-width:158px;max-width:210px;
+}
+.fnode .fn-t{font-size:12.5px;font-weight:700;line-height:17px}
+.fnode .fn-s{font-size:11px;line-height:15px;color:var(--ink-500);margin-top:3px}
+.fnode .fn-e{font-family:var(--mono);font-size:10px;line-height:14px;color:var(--ink-400);margin-top:4px;word-break:break-all}
+.fnode.start{border-color:var(--brand-300);background:var(--brand-50)}
+.fnode.money{border-color:#BBE7CE;background:var(--success-50)}
+.fnode.event{border-color:#C7DBFB;background:var(--info-50)}
+.farr{display:flex;align-items:center;justify-content:center;color:var(--ink-300);padding:0 6px;min-width:46px}
+.farr svg{display:block}
+.flowwrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.legend-inline{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-600);margin-top:12px}
+.legend-inline span{display:inline-flex;align-items:center;gap:7px}
+.legend-inline i{width:14px;height:14px;border-radius:5px;display:block}
+.kafka{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;background:#fff;border:1px solid #C7DBFB;color:var(--info-700);border-radius:var(--r-pill);padding:2px 8px}
+.holdbadge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;background:#fff;border:1px solid #BBE7CE;color:var(--success-700);border-radius:var(--r-pill);padding:2px 8px}
+
+/* --------------------------------------------------------------- table */
+table.cov{width:100%;border-collapse:collapse;font-size:13px}
+table.cov th,table.cov td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--ink-100);vertical-align:top}
+table.cov th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-500);background:var(--ink-50)}
+table.cov tr:last-child td{border-bottom:0}
+table.cov td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100);padding:1px 5px;border-radius:5px;color:var(--ink-700)}
+.cover-wrap{border:1px solid var(--ink-200);border-radius:var(--r-lg);overflow:hidden;background:#fff;box-shadow:var(--sh-xs)}
+
+/* ------------------------------------------------------------- tablet */
+.tab-body{flex:1;display:flex;min-height:0;background:var(--bg)}
+.side{width:196px;flex:none;border-right:1px solid var(--ink-100);background:#fff;padding:16px 12px;display:flex;flex-direction:column;gap:4px}
+.side .sitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-md);font-size:13.5px;color:var(--ink-600)}
+.side .sitem .ic{width:17px;height:17px}
+.side .sitem.on{background:var(--danger-50);color:var(--console);font-weight:600}
+.tab-main{flex:1;padding:18px 22px;min-width:0;display:flex;flex-direction:column;gap:14px}
+.tab-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.tab-top h3{margin:0;font-size:22px;line-height:28px;font-weight:700}
+.tab-top p{margin:3px 0 0;font-size:12.5px;color:var(--ink-500)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.kpi{background:#fff;border:1px solid var(--ink-200);border-radius:var(--r-md);padding:11px 14px}
+.kpi .kk{font-size:11.5px;color:var(--ink-500)}
+.kpi .kv2{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+.tab-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;flex:1;min-height:0}
+.mapcard{background:#fff;border:1px solid var(--ink-200);border-radius:var(--r-md);overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.mapcard .mh{padding:10px 14px;border-bottom:1px solid var(--ink-100);display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+.mapcard .mh b{font-size:13.5px;white-space:nowrap;flex:none}
+.mapcard .mh span{font-size:11px;color:var(--ink-500);text-align:right}
+.mapbox .mk-stale{opacity:.72}
+.mapcard .mm{flex:1;min-height:0}
+.panel{background:#fff;border:1px solid var(--ink-200);border-radius:var(--r-md);padding:14px;min-height:0;overflow:hidden}
+.panel h4{margin:0 0 2px;font-size:15px}
+.dl{display:grid;grid-template-columns:118px 1fr;gap:6px 10px;font-size:12.5px;margin-top:10px}
+.dl .dk{color:var(--ink-500)}
+.dl .dv{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.nlist{margin-top:8px}
+.nlist .nl{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--ink-100);font-size:12.5px}
+.nlist .nl .nl-n{flex:1}
+.nlist .nl .nl-c{font-variant-numeric:tabular-nums;color:var(--ink-500);font-size:11.5px}
+.mini-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--console);color:#fff;font-size:10px;font-weight:700}
+
+/* utility */
+.mt-6{margin-top:6px}.mt-8{margin-top:8px}.mt-10{margin-top:10px}.mt-12{margin-top:12px}
+.mt-14{margin-top:14px}.mt-16{margin-top:16px}.mt-20{margin-top:20px}
+.center{text-align:center}
+.between{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ic{display:block;width:20px;height:20px;flex:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+
+<body>
+<!-- ===================== inline SVG library (icons + map art) ===================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+  <!-- status bar -->
+  <g id="i-signal"><rect x="2" y="13" width="3.2" height="7" rx="1.2" fill="currentColor"/><rect x="7.6" y="9.5" width="3.2" height="10.5" rx="1.2" fill="currentColor"/><rect x="13.2" y="6" width="3.2" height="14" rx="1.2" fill="currentColor"/></g>
+  <g id="i-wifi"><path d="M5.4 11.4a9.6 9.6 0 0 1 13.2 0M8.4 14.5a5.2 5.2 0 0 1 7.2 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="18" r="1.5" fill="currentColor"/></g>
+  <g id="i-battery"><rect x="1.5" y="7" width="18" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3.4" y="8.9" width="11" height="6.2" rx="1.6" fill="currentColor"/><path d="M21.2 10.6v2.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+
+  <!-- service icons -->
+  <g id="i-pin"><path d="M12 2.4c-3.7 0-6.7 3-6.7 6.7 0 4.8 6.7 12.5 6.7 12.5s6.7-7.7 6.7-12.5c0-3.7-3-6.7-6.7-6.7z" fill="currentColor"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></g>
+  <g id="i-send"><path d="M2.4 11.4 21.4 3l-6.4 18.4-3.1-7.4z" fill="currentColor"/></g>
+  <g id="i-cart"><path d="M2.6 3.4h2.3l2.5 11.8h11.3l2.2-8.2H6.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.2" cy="19.4" r="1.7" fill="currentColor"/><circle cx="17.6" cy="19.4" r="1.7" fill="currentColor"/></g>
+  <g id="i-home"><path d="M3.4 10.8 12 3.2l8.6 7.6V20a1.2 1.2 0 0 1-1.2 1.2H4.6A1.2 1.2 0 0 1 3.4 20z" fill="currentColor"/></g>
+  <g id="i-person"><circle cx="12" cy="8" r="4.1" fill="currentColor"/><path d="M3.8 21c0-4.2 3.5-6.6 8.2-6.6s8.2 2.4 8.2 6.6z" fill="currentColor"/></g>
+  <g id="i-build"><path d="M15.6 2.2a5.6 5.6 0 0 0-4.9 8.3L2.6 18.6l2.8 2.8 8.1-8.1a5.6 5.6 0 0 0 8.3-4.9l-3.4 3.3-3.6-.5-.5-3.6z" fill="currentColor"/></g>
+  <g id="i-mail"><rect x="2.6" y="4.8" width="18.8" height="14.4" rx="2.8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4.6 7.8 12 13.1l7.4-5.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g id="i-device"><rect x="6.6" y="2.4" width="10.8" height="19.2" rx="2.8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10.6 18.7h2.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+  <g id="i-laptop"><rect x="3.6" y="5" width="16.8" height="11" rx="2.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.4 18.4h19.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+  <g id="i-business"><rect x="3" y="3" width="18" height="18" rx="5.6" fill="currentColor"/><circle cx="12" cy="10" r="2.6" fill="#fff"/><path d="M6.8 18.4c1.2-2.3 3-3.4 5.2-3.4s4 1.1 5.2 3.4z" fill="#fff"/></g>
+  <g id="i-search"><circle cx="11" cy="11" r="6.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.8 15.8 21 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+  <g id="i-bell"><path d="M12 2.6a5.6 5.6 0 0 0-5.6 5.6v3.2L4.8 15.6h14.4l-1.6-4.2V8.2A5.6 5.6 0 0 0 12 2.6z" fill="currentColor"/><path d="M9.8 18.4a2.2 2.2 0 0 0 4.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+  <g id="i-plus"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></g>
+  <g id="i-star"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.4L12 17.4 6.2 20.4l1.1-6.4L2.6 9.4l6.5-.9z" fill="currentColor"/></g>
+  <g id="i-phone"><path d="M6.4 3.4h3l1.6 3.8-1.9 1.3a11.4 11.4 0 0 0 5.9 5.9l1.3-1.9 3.8 1.6v3a2.1 2.1 0 0 1-2.3 2.1A16.8 16.8 0 0 1 4.3 5.7a2.1 2.1 0 0 1 2.1-2.3z" fill="currentColor"/></g>
+  <g id="i-chat"><path d="M3 6.2A2.2 2.2 0 0 1 5.2 4h13.6A2.2 2.2 0 0 1 21 6.2v8a2.2 2.2 0 0 1-2.2 2.2H9.4L4.2 20.6v-4.2A2.2 2.2 0 0 1 3 14.2z" fill="currentColor"/></g>
+  <g id="i-card"><rect x="2.4" y="5.4" width="19.2" height="13.2" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.4 10.2h19.2" stroke="currentColor" stroke-width="2"/></g>
+  <g id="i-arrow-right"><path d="M4.6 12h14M12.6 6.4 18.4 12l-5.8 5.6" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g id="i-chevron-down"><path d="M6.4 9.6 12 15.2l5.6-5.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g id="i-clock"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.4V12l3.2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+  <g id="i-check"><path d="M5 12.6 10 17.6 19.2 6.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g id="i-check-circle"><circle cx="12" cy="12" r="9.2" fill="currentColor"/><path d="M7.6 12.4l3 3 5.8-6.4" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g id="i-alert"><path d="M12 3.2 21.4 20.4H2.6z" fill="currentColor"/><path d="M12 9.4v4.6M12 16.9h.01" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g>
+  <g id="i-car"><path d="M12 2.4 19.2 21 12 16.9 4.8 21z" fill="currentColor"/></g>
+  <g id="i-taxi"><path d="M5.4 11.4 7 7.2A2.6 2.6 0 0 1 9.5 5.4h5A2.6 2.6 0 0 1 16.9 7.2l1.7 4.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><rect x="3.2" y="10.8" width="17.6" height="7" rx="2.4" fill="currentColor"/><circle cx="7.4" cy="18.4" r="1.9" fill="currentColor"/><circle cx="16.6" cy="18.4" r="1.9" fill="currentColor"/><path d="M10.4 3.4h3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+  <g id="i-users"><circle cx="9.4" cy="8.2" r="3.5" fill="currentColor"/><path d="M3.2 19.6c0-3.4 2.8-5.4 6.2-5.4s6.2 2 6.2 5.4z" fill="currentColor"/><path d="M16.4 5.4a3.2 3.2 0 0 1 0 6.2 3.2 3.2 0 0 0 0-6.2zM18 19.6c0-2.2-.7-3.9-1.9-5 3-.2 5.5 1.5 5.5 5z" fill="currentColor"/></g>
+  <g id="i-list"><path d="M4.4 6.6h2.2M9.4 6.6h10.2M4.4 12h2.2M9.4 12h10.2M4.4 17.4h2.2M9.4 17.4h10.2" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></g>
+  <g id="i-refresh"><path d="M20 12a8 8 0 1 1-2.7-6M20.4 3.8v4.8h-4.8" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g id="i-shield"><path d="M12 2.8l7.2 2.6v6.2c0 4.4-3.1 7.9-7.2 9.8-4.1-1.9-7.2-5.4-7.2-9.8V5.4z" fill="currentColor"/></g>
+  <g id="i-logout"><path d="M14.6 4.4H6.6A1.6 1.6 0 0 0 5 6v12a1.6 1.6 0 0 0 1.6 1.6h8" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M11.4 12h9M17.4 8.6 20.8 12l-3.4 3.4" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g id="i-map"><path d="M9 3.4 3 5.6v15l6-2.2 6 2.2 6-2.2v-15l-6 2.2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 3.4v15M15 5.6v15" stroke="currentColor" stroke-width="2"/></g>
+  <g id="i-doc"><path d="M6.4 2.6h7.2l4.6 4.6v14.2H6.4z" fill="currentColor"/><path d="M9.2 12.6h6M9.2 16h4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></g>
+  <g id="i-route"><circle cx="6" cy="6.2" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="17.8" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.6 6.2h4.6a3.6 3.6 0 0 1 0 7.2h-2.6a3.6 3.6 0 0 0 0 7.2h4.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+  <g id="i-box"><path d="M12 2.6 20.8 7v10L12 21.4 3.2 17V7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3.2 7 12 11.4 20.8 7M12 11.4v10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></g>
+  <g id="i-wallet"><rect x="2.6" y="5.6" width="18.8" height="13" rx="3.4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="16.4" cy="12.1" r="1.7" fill="currentColor"/></g>
+  <g id="i-qr"><rect x="3" y="3" width="7.4" height="7.4" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13.6" y="3" width="7.4" height="7.4" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="13.6" width="7.4" height="7.4" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14.6" y="14.6" width="5.4" height="5.4" rx="1.6" fill="currentColor"/></g>
+  <g id="i-trend"><path d="M3.4 17.2 8.6 12l3.8 3 8-8.4" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.4 6.6h5.2v5.2" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g id="i-settings"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.6v3M12 18.4v3M4.4 12h-3M22.6 12h-3M6.6 6.6 4.5 4.5M19.5 19.5l-2.1-2.1M17.4 6.6l2.1-2.1M4.5 19.5l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+
+  <!-- map: phone 390x300 -->
+  <g id="mapPhone">
+    <rect x="0" y="0" width="390" height="300" fill="#EDF1F5"/>
+    <g fill="#E2E7EC">
+      <rect x="18" y="26" width="72" height="54" rx="5"/><rect x="100" y="18" width="58" height="40" rx="5"/>
+      <rect x="168" y="30" width="66" height="52" rx="5"/><rect x="246" y="14" width="80" height="46" rx="5"/>
+      <rect x="334" y="30" width="52" height="60" rx="5"/>
+      <rect x="24" y="98" width="60" height="48" rx="5"/><rect x="96" y="92" width="70" height="42" rx="5"/>
+      <rect x="176" y="100" width="54" height="46" rx="5"/><rect x="242" y="88" width="76" height="54" rx="5"/>
+      <rect x="330" y="104" width="56" height="42" rx="5"/>
+      <rect x="22" y="166" width="76" height="46" rx="5"/><rect x="108" y="158" width="52" height="40" rx="5"/>
+      <rect x="172" y="170" width="70" height="46" rx="5"/><rect x="252" y="162" width="58" height="44" rx="5"/>
+      <rect x="320" y="176" width="62" height="48" rx="5"/>
+      <rect x="30" y="240" width="64" height="44" rx="5"/><rect x="104" y="248" width="72" height="38" rx="5"/>
+      <rect x="188" y="244" width="58" height="42" rx="5"/><rect x="256" y="238" width="70" height="46" rx="5"/>
+      <rect x="336" y="246" width="48" height="40" rx="5"/>
+    </g>
+    <rect x="46" y="152" width="86" height="62" rx="10" fill="#DAE9DC"/>
+    <rect x="268" y="196" width="62" height="44" rx="10" fill="#DFEBE0"/>
+    <path d="M-12 268C58 250 108 282 196 264S336 226 402 246" fill="none" stroke="#CFE0EE" stroke-width="15"/>
+    <g stroke="#FFFFFF" stroke-linecap="round" fill="none">
+      <path d="M-10 122 400 74" stroke-width="12"/>
+      <path d="M-10 214 400 168" stroke-width="11"/>
+      <path d="M116-10 150 310" stroke-width="11"/>
+      <path d="M262-10 244 310" stroke-width="10"/>
+      <path d="M-10 40 400 40" stroke-width="6"/>
+      <path d="M-10 186 400 150" stroke-width="6"/>
+      <path d="M40-10 46 310" stroke-width="6"/>
+      <path d="M196-10 190 310" stroke-width="6"/>
+      <path d="M318-10 322 310" stroke-width="6"/>
+      <path d="M-10 96 400 60" stroke-width="6"/>
+    </g>
+    <g font-family="Inter,Segoe UI,sans-serif" font-size="8.5" fill="#94A3B8">
+      <text x="20" y="118">пр. Абая</text><text x="252" y="150">ул. Толе би</text>
+      <text x="156" y="196">Коктем</text><text x="60" y="146" fill="#6E8F72">Парк</text>
+      <text x="286" y="122" fill="#6E8F72">Сквер</text><text x="326" y="296" fill="#B0BAC6">Алматы</text>
+    </g>
+  </g>
+
+  <!-- map: tablet 640x420 (dispatcher) -->
+  <g id="mapTablet">
+    <rect x="0" y="0" width="640" height="420" fill="#EDF1F5"/>
+    <g fill="#E2E7EC">
+      <rect x="24" y="30" width="112" height="70" rx="6"/><rect x="150" y="22" width="86" height="56" rx="6"/>
+      <rect x="252" y="34" width="104" height="72" rx="6"/><rect x="372" y="20" width="120" height="64" rx="6"/>
+      <rect x="508" y="34" width="104" height="80" rx="6"/>
+      <rect x="30" y="126" width="96" height="66" rx="6"/><rect x="142" y="120" width="110" height="58" rx="6"/>
+      <rect x="268" y="130" width="88" height="64" rx="6"/><rect x="372" y="118" width="116" height="74" rx="6"/>
+      <rect x="504" y="134" width="110" height="60" rx="6"/>
+      <rect x="28" y="222" width="118" height="64" rx="6"/><rect x="162" y="214" width="84" height="56" rx="6"/>
+      <rect x="262" y="228" width="106" height="64" rx="6"/><rect x="384" y="218" width="92" height="60" rx="6"/>
+      <rect x="492" y="232" width="122" height="66" rx="6"/>
+      <rect x="34" y="318" width="104" height="62" rx="6"/><rect x="156" y="326" width="112" height="54" rx="6"/>
+      <rect x="286" y="320" width="94" height="60" rx="6"/><rect x="396" y="314" width="110" height="64" rx="6"/>
+      <rect x="520" y="324" width="94" height="58" rx="6"/>
+    </g>
+    <rect x="66" y="204" width="132" height="88" rx="12" fill="#DAE9DC"/>
+    <rect x="420" y="262" width="96" height="66" rx="12" fill="#DFEBE0"/>
+    <path d="M-16 376C92 352 172 396 312 372S552 318 660 344" fill="none" stroke="#CFE0EE" stroke-width="20"/>
+    <g stroke="#FFFFFF" stroke-linecap="round" fill="none">
+      <path d="M-14 168 654 104" stroke-width="16"/>
+      <path d="M-14 300 654 236" stroke-width="15"/>
+      <path d="M188-14 236 434" stroke-width="15"/>
+      <path d="M430-14 404 434" stroke-width="14"/>
+      <path d="M-14 56 654 56" stroke-width="8"/>
+      <path d="M-14 262 654 212" stroke-width="8"/>
+      <path d="M66-14 76 434" stroke-width="8"/>
+      <path d="M320-14 312 434" stroke-width="8"/>
+      <path d="M520-14 528 434" stroke-width="8"/>
+      <path d="M-14 134 654 84" stroke-width="8"/>
+    </g>
+    <g font-family="Inter,Segoe UI,sans-serif" font-size="11" fill="#94A3B8">
+      <text x="30" y="162">пр. Абая</text><text x="410" y="212">ул. Толе би</text>
+      <text x="250" y="272">Коктем</text><text x="92" y="196" fill="#6E8F72">Парк</text>
+      <text x="470" y="170" fill="#6E8F72">Сквер</text><text x="546" y="414" fill="#B0BAC6">Алматы</text>
+      <text x="26" y="322">Бостандык</text><text x="252" y="96">Абая — Желтоксан</text>
+    </g>
+  </g>
+
+  <!-- markers -->
+  <g id="m-car"><circle r="9.5" fill="currentColor" stroke="#FFFFFF" stroke-width="2.2"/><path d="M0 -4.8 2.8 4.4 0 2.7 -2.8 4.4z" fill="#FFFFFF"/></g>
+  <g id="m-cand"><circle r="5.4" fill="currentColor" stroke="#FFFFFF" stroke-width="1.8"/></g>
+  <g id="m-carBig"><circle r="14" fill="currentColor" stroke="#FFFFFF" stroke-width="2.6"/><path d="M0 -7 4.2 6.6 0 4 -4.2 6.6z" fill="#FFFFFF"/></g>
+  <g id="m-pinA"><circle r="11.5" fill="#1F5FA9" stroke="#FFFFFF" stroke-width="2.6"/><text y="4.2" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="11.5" font-weight="700" fill="#FFFFFF">А</text></g>
+  <g id="m-pinB"><circle r="11.5" fill="#0E7C7B" stroke="#FFFFFF" stroke-width="2.6"/><text y="4.2" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="11.5" font-weight="700" fill="#FFFFFF">Б</text></g>
+</defs>
+</svg>
+
+<div class="board">
+
+<!-- =============================== HERO =============================== -->
+<header class="hero">
+  <div class="hero-main">
+    <div class="brandline">
+      <div class="logo"><span>O</span></div>
+      <div>
+        <h1 class="brand">ORTA</h1>
+        <p class="brand-sub">Всё рядом</p>
+      </div>
+    </div>
+    <p class="lead">
+      Супер-приложение: такси, маркетплейс, деньги и кабинет водителя — на одной платформе
+      с общим леджжером двойной записи, идемпотентностью на уровне БД, транзакционным outbox
+      и единым контрактом ошибок RFC 7807. Этот борд — дизайн-предложение по экранам клиента:
+      он не спорит с уже работающим приложением и честно помечает то, чего в коде ещё нет.
+    </p>
+  </div>
+  <div class="hero-meta">
+    <dl class="meta-card"><dt>Дата борда</dt><dd>2 октября 2026</dd></dl>
+    <dl class="meta-card"><dt>Готовность вертикалей</dt><dd>Ф1 закрыта · Ф2 в работе</dd></dl>
+    <dl class="meta-card"><dt>Платформа</dt><dd>Java 17 / Spring Boot · React 19 · Kotlin + Compose</dd></dl>
+  </div>
+</header>
+
+<div class="legend">
+  <span class="legend-title">Легенда статусов</span>
+  <span class="st st-work">Работает — проверено e2e на живом стеке</span>
+  <span class="st st-dev">Работает, но с ограничениями</span>
+  <span class="st st-f2">Дизайн для Ф2–Ф4 — в коде ещё нет</span>
+  <span class="st st-plan">План — вертикаль не начата</span>
+</div>
+
+<!-- ======================= 1. ДИЗАЙН-СИСТЕМА ======================= -->
+<section class="sec">
+  <div class="sec-head">
+    <div>
+      <h2><span class="sec-num">1</span>Дизайн-система</h2>
+      <p class="sec-note">
+        Токены взяты из работающего кода, а не придуманы: палитра — <code>mobile/android/.../core/ui/theme/Theme.kt</code>
+        и <code>web/src/index.css</code>, акценты плиток — <code>HomeServices.kt</code>, правила сумм — <code>web/src/api/money.ts</code>.
+      </p>
+    </div>
+  </div>
+
+  <div class="cols cols-2">
+    <div class="card">
+      <div class="card-h"><h3>ORTA Blue — основная палитра клиента</h3><span class="hint">brand 50 → 900</span></div>
+      <div class="card-b">
+        <div class="sw-grid">
+          <div class="sw"><div class="sw-chip" style="background:#EAF1FA"></div><div class="sw-body"><div class="sw-name">brand-50</div><div class="sw-hex">#EAF1FA</div><div class="sw-note">фон чипов, иконок</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#D6E3F5"></div><div class="sw-body"><div class="sw-name">brand-100</div><div class="sw-hex">#D6E3F5</div><div class="sw-note">primaryContainer</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#B3CCEA"></div><div class="sw-body"><div class="sw-name">brand-200</div><div class="sw-hex">#B3CCEA</div><div class="sw-note">границы акцента</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#7FA8DA"></div><div class="sw-body"><div class="sw-name">brand-300</div><div class="sw-hex">#7FA8DA</div><div class="sw-note">графики</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#4A83C4"></div><div class="sw-body"><div class="sw-name">brand-400</div><div class="sw-hex">#4A83C4</div><div class="sw-note">hover на тёмном</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#1F5FA9"></div><div class="sw-body"><div class="sw-name">brand-500</div><div class="sw-hex">#1F5FA9</div><div class="sw-note">TaxiBlue: кнопки, ссылки</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#1A5192"></div><div class="sw-body"><div class="sw-name">brand-600</div><div class="sw-hex">#1A5192</div><div class="sw-note">hover</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#164A85"></div><div class="sw-body"><div class="sw-name">brand-700</div><div class="sw-hex">#164A85</div><div class="sw-note">TaxiBlueDark: pressed</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#103A69"></div><div class="sw-body"><div class="sw-name">brand-800</div><div class="sw-hex">#103A69</div><div class="sw-note">градиент баннера</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#0A2540"></div><div class="sw-body"><div class="sw-name">brand-900</div><div class="sw-hex">#0A2540</div><div class="sw-note">onPrimaryContainer</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Ink — нейтральная шкала</h3><span class="hint">текст, границы, фоны</span></div>
+      <div class="card-b">
+        <div class="sw-grid">
+          <div class="sw"><div class="sw-chip" style="background:#F8FAFC"></div><div class="sw-body"><div class="sw-name">ink-50</div><div class="sw-hex">#F8FAFC</div><div class="sw-note">поиск, вложенные поля</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#F1F5F9"></div><div class="sw-body"><div class="sw-name">ink-100</div><div class="sw-hex">#F1F5F9</div><div class="sw-note">разделители</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#E2E8F0"></div><div class="sw-body"><div class="sw-name">ink-200</div><div class="sw-hex">#E2E8F0</div><div class="sw-note">границы карточек</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#CBD5E1"></div><div class="sw-body"><div class="sw-name">ink-300</div><div class="sw-hex">#CBD5E1</div><div class="sw-note">границы полей</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#94A3B8"></div><div class="sw-body"><div class="sw-name">ink-400</div><div class="sw-hex">#94A3B8</div><div class="sw-note">disabled, stale-позиция</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#64748B"></div><div class="sw-body"><div class="sw-name">ink-500</div><div class="sw-hex">#64748B</div><div class="sw-note">подписи</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#475569"></div><div class="sw-body"><div class="sw-name">ink-600</div><div class="sw-hex">#475569</div><div class="sw-note">вторичный текст</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#334155"></div><div class="sw-body"><div class="sw-name">ink-700</div><div class="sw-hex">#334155</div><div class="sw-note">жирный вторичный</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#1E293B"></div><div class="sw-body"><div class="sw-name">ink-800</div><div class="sw-hex">#1E293B</div><div class="sw-note">заголовки карточек</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#0F172A"></div><div class="sw-body"><div class="sw-name">ink-900</div><div class="sw-hex">#0F172A</div><div class="sw-note">основной текст</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cols cols-3 mt-16">
+    <div class="card">
+      <div class="card-h"><h3>Семантика и поверхности</h3><span class="hint">статус всегда одного цвета</span></div>
+      <div class="card-b">
+        <div class="sw-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+          <div class="sw"><div class="sw-chip" style="background:#1B7F4B"></div><div class="sw-body"><div class="sw-name">success-500</div><div class="sw-hex">#1B7F4B</div><div class="sw-note">TaxiColors.positive · ONLINE, PAID, COMPLETED</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#B26A00"></div><div class="sw-body"><div class="sw-name">warning-500</div><div class="sw-hex">#B26A00</div><div class="sw-note">TaxiAmber · PENDING, stale-позиция, «Скоро»</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#B3261E"></div><div class="sw-body"><div class="sw-name">danger-500</div><div class="sw-hex">#B3261E</div><div class="sw-note">TaxiRed · FAILED, BLOCKED, отмена</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#2563EB"></div><div class="sw-body"><div class="sw-name">info-500</div><div class="sw-hex">#2563EB</div><div class="sw-note">кандидаты на карте диспетчера, подсказки</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#FFFFFF;box-shadow:inset 0 0 0 1px #E2E8F0"></div><div class="sw-body"><div class="sw-name">surface</div><div class="sw-hex">#FFFFFF</div><div class="sw-note">карточки, листы</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#F5F6F8;box-shadow:inset 0 0 0 1px #E2E8F0"></div><div class="sw-body"><div class="sw-name">background</div><div class="sw-hex">#F5F6F8</div><div class="sw-note">фон экрана (Android 0xFFF5F6F8)</div></div></div>
+        </div>
+        <div class="notice info mt-12">
+          <b>Важное расхождение, которое стоит решить</b>
+          Клиент (Android + иконка на скриншоте) — синий <code>#1F5FA9</code>, а веб-консоль сейчас
+          носит красный акцент <code>#E11D2E</code> (<code>web/src/index.css</code>, им же нарисованы маркеры
+          и активный пункт «Диспетчерская»). Этот борд рисует всё клиентское в синем, а консоль — в её
+          нынешнем красном, чтобы борд не врал про текущее состояние. Долгосрочно нужен один акцент.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Акценты плиток сервисов</h3><span class="hint">HomeServices.kt, дословно</span></div>
+      <div class="card-b">
+        <div class="dotacc">
+          <span class="da"><i style="background:var(--tile-taxi)"></i>ORTA Taxi · #1F5FA9</span>
+          <span class="da"><i style="background:var(--tile-cargo)"></i>ORTA Cargo · #0E7C7B</span>
+          <span class="da"><i style="background:var(--tile-market)"></i>ORTA Market · #1B7F4B</span>
+          <span class="da"><i style="background:var(--tile-home)"></i>ORTA Home · #6A4FA3</span>
+          <span class="da"><i style="background:var(--tile-services)"></i>ORTA Services · #B26A00</span>
+          <span class="da"><i style="background:var(--tile-build)"></i>ORTA Build · #8D5B2B</span>
+          <span class="da"><i style="background:var(--tile-delivery)"></i>ORTA Delivery · #0F6E8C</span>
+          <span class="da"><i style="background:var(--tile-business)"></i>ORTA Business · #44474E</span>
+        </div>
+        <p class="small mt-12">
+          Акценты декоративные: в коде они заданы литералами намеренно, вне семантической палитры.
+          Иконка всегда белая на цветной плашке 44×44 с радиусом 14; бейдж «Скоро» — серый
+          ink-100/ink-600, чтобы обещание не выглядело как доступная функция.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Радиусы</h3><span class="hint">–radius-card = 1rem</span></div>
+      <div class="card-b">
+        <div class="demo-row">
+          <div class="rbox" style="border-radius:6px">6 · чипы</div>
+          <div class="rbox" style="border-radius:8px">8 · мелкие</div>
+          <div class="rbox" style="border-radius:12px">12 · поля, кнопки</div>
+        </div>
+        <div class="demo-row mt-12">
+          <div class="rbox" style="border-radius:16px">16 · карточки</div>
+          <div class="rbox" style="border-radius:20px">20 · плитки</div>
+          <div class="rbox" style="border-radius:24px">24 · листы</div>
+        </div>
+        <p class="small mt-12">Правило: чем больше поверхность, тем больше радиус. Вложенный элемент всегда на шаг меньше контейнера.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cols cols-3 mt-16">
+    <div class="card">
+      <div class="card-h"><h3>Тени</h3><span class="hint">мягкие, без чёрного</span></div>
+      <div class="card-b">
+        <div class="demo-row">
+          <div class="shbox" style="box-shadow:var(--sh-xs)">xs</div>
+          <div class="shbox" style="box-shadow:var(--sh-md)">md</div>
+          <div class="shbox" style="box-shadow:var(--sh-lg)">lg</div>
+        </div>
+        <p class="small mt-12">Тень — это подсказка о слое, а не украшение: у списка карточек xs, у всплывающего листа lg, у рамки телефона xl.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Сетка и отступы</h3><span class="hint">шаг 4, экран 390</span></div>
+      <div class="card-b">
+        <div class="spbars">
+          <div class="spbar"><span>4 / 8</span><b style="width:24px"></b></div>
+          <div class="spbar"><span>12 · gutter</span><b style="width:56px"></b></div>
+          <div class="spbar"><span>16 · margin</span><b style="width:76px"></b></div>
+          <div class="spbar"><span>20 / 24</span><b style="width:110px"></b></div>
+          <div class="spbar"><span>32 · секция</span><b style="width:150px"></b></div>
+        </div>
+        <div class="griddemo mt-14">
+          <div class="gcell">плитка 171</div><div class="gcell">плитка 171</div>
+          <div class="gcell">плитка 171</div><div class="gcell">плитка 171</div>
+        </div>
+        <p class="small mt-10">390 − 16 − 16 = 358; две колонки при gutter 12 → по 173. Все числа кратны 4.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Размеры тапаемых зон</h3><span class="hint">минимум 44dp</span></div>
+      <div class="card-b">
+        <div class="tapdemo">
+          <div><div class="tapbox" style="width:44px;height:44px">44</div><p class="mini-note">иконка в шапке,<br>чип города</p></div>
+          <div><div class="tapbox" style="width:52px;height:52px">52</div><p class="mini-note">главная кнопка<br>экрана</p></div>
+          <div><div class="tapbox" style="width:58px;height:58px;border-radius:50%">58</div><p class="mini-note">кнопка «+»<br>в таббаре</p></div>
+          <div><div class="tapbox" style="width:64px;height:64px;border-radius:16px">64</div><p class="mini-note">плитка вкладки<br>внизу</p></div>
+        </div>
+        <p class="small mt-12">
+          Ничего интерактивного меньше 44×44dp. Кнопки <code>sm</code> (36dp) допустимы только в
+          веб-консоли, где есть курсор, — в мобильных экранах борда их нет.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cols cols-2 mt-16">
+    <div class="card">
+      <div class="card-h"><h3>Типографика</h3><span class="hint">Inter → system-ui, Inter не скачивается</span></div>
+      <div class="card-b">
+        <div class="type-row"><div class="meta">display · 34/40 · 700</div><div class="t-display">4 119 986,50 ₸</div><div class="meta">баланс счёта, крупный итог</div></div>
+        <div class="type-row"><div class="meta">h1 · 24/30 · 600</div><div class="t-h1">Диспетчерская</div><div class="meta">заголовок экрана</div></div>
+        <div class="type-row"><div class="meta">h2 · 20/26 · 600</div><div class="t-h2">Ближайшие водители</div><div class="meta">заголовок блока</div></div>
+        <div class="type-row"><div class="meta">h3 · 16/22 · 600</div><div class="t-h3">Смартфон Samsung Galaxy A55 128GB</div><div class="meta">название товара, заголовок карточки</div></div>
+        <div class="type-row"><div class="meta">body · 14/20 · 400</div><div class="t-body">Курс 153°, скорость 22 км/ч, позиция 3 с назад.</div><div class="meta">основной текст</div></div>
+        <div class="type-row"><div class="meta">label · 12/16 · 600</div><div class="t-label">Оплачено счётом ORTA</div><div class="meta">подписи в строках, бейджи</div></div>
+        <div class="type-row"><div class="meta">caption · 11/14 · 400</div><div class="t-cap">Демо-провайдер идентичности: код 0000</div><div class="meta">пояснения, дисклеймеры</div></div>
+        <div class="type-row"><div class="meta">money · 28/34 · 700 · tnum</div><div class="t-money">1 848,00 ₸</div><div class="meta">суммы: всегда табличные цифры</div></div>
+        <div class="type-row"><div class="meta">mono · 12/16</div><div class="mono">01M3XZ5DXRHACB56BANH5SX5</div><div class="meta">ULID, correlationId, коды</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Правила для денег</h3><span class="hint">web/src/api/money.ts · ADR 0004</span></div>
+      <div class="card-b">
+        <div class="money-demo">
+          <div class="mrow"><span class="lbl">минорные единицы (long)<br>411 998 650</span><span class="mval">4 119 986,50 ₸</span></div>
+          <div class="mrow"><span class="lbl">в выписке со знаком<br>+ 1 500 000</span><span class="mval pos">+15 000,00 ₸</span></div>
+          <div class="mrow"><span class="lbl">долг водителя<br>− 250 000</span><span class="mval neg">−2 500,00 ₸</span></div>
+          <div class="mrow"><span class="lbl">в карточке товара<br>(без копеек)</span><span class="mval sm">189 990 ₸</span></div>
+        </div>
+        <div class="divider"></div>
+        <div class="kv"><span class="k">Разделитель разрядов</span><span class="v">узкий пробел (U+202F / U+00A0)</span></div>
+        <div class="kv"><span class="k">Дробная часть</span><span class="v">запятая, ровно 2 знака</span></div>
+        <div class="kv"><span class="k">Минус</span><span class="v">типографский U+2212, не дефис</span></div>
+        <div class="kv"><span class="k">Символ валюты</span><span class="v">после суммы, через пробел: ₸</span></div>
+        <div class="kv"><span class="k">Цифры</span><span class="v">tabular-nums, выравнивание по правому краю</span></div>
+        <div class="kv"><span class="k">Округление</span><span class="v">не округляем никогда: только целые минорные единицы</span></div>
+        <p class="small mt-10">
+          Валюта приходит с деньгами (<code>currency</code>), а не берётся из локали: в одном ответе
+          могут встретиться KZT и счёт другого типа. Сумма без валюты — это баг, а не мелочь.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-16">
+    <div class="card-h"><h3>Кнопки и состояния</h3><span class="hint">нажатие, фокус, ожидание, запрет</span></div>
+    <div class="card-b">
+      <div class="cols cols-4">
+        <div class="btn-caption"><span class="btn btn-primary">Заказать · 1 848 ₸</span><span class="cap-sm">primary · default</span></div>
+        <div class="btn-caption"><span class="btn btn-primary is-hover">Заказать · 1 848 ₸</span><span class="cap-sm">primary · hover / press</span></div>
+        <div class="btn-caption"><span class="btn btn-primary is-loading"><span class="spin"></span>Оформляем заказ</span><span class="cap-sm">primary · loading (текст не меняет ширину)</span></div>
+        <div class="btn-caption"><span class="btn btn-primary is-disabled">Заказать</span><span class="cap-sm">disabled · нет доступного счёта</span></div>
+        <div class="btn-caption"><span class="btn btn-secondary">Перевести</span><span class="cap-sm">secondary · default</span></div>
+        <div class="btn-caption"><span class="btn btn-secondary is-hover">Перевести</span><span class="cap-sm">secondary · hover</span></div>
+        <div class="btn-caption"><span class="btn btn-ghost">Снять выделение</span><span class="cap-sm">ghost · третьестепенное действие</span></div>
+        <div class="btn-caption"><span class="btn btn-danger">Отменить поездку</span><span class="cap-sm">danger · необратимое действие, всегда с подтверждением</span></div>
+      </div>
+      <div class="divider"></div>
+      <p class="small">
+        Правила: одна главная кнопка на экран; денежная операция никогда не отправляется дважды —
+        повтор запроса идёт с тем же <code>Idempotency-Key</code>, поэтому при ошибке кнопка
+        возвращается в активное состояние, а не превращается в вечный спиннер. Отключённая кнопка
+        всегда объясняет причину текстом рядом (например, «Недостаточно средств на счёте»).
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= 2. ЭКРАНЫ ============================= -->
+<section class="sec">
+  <div class="sec-head">
+    <div>
+      <h2><span class="sec-num">2</span>Экраны клиента</h2>
+      <p class="sec-note">
+        Рамка 390×844 (iPhone 14 / Pixel 7 в dp), статус-бар 9:41, home-индикатор. Данные — настоящие:
+        город, товары и цены из сида <code>DemoCatalogSeeder</code>, парк из <code>simulate-fleet.ps1</code>,
+        суммы — из правил <code>money.ts</code>. Под каждой рамкой — статус и то, какие эндпоинты её кормят.
+      </p>
+    </div>
+  </div>
+
+  <div class="stage">
+
+  <!-- ---------------------------------------------------------- 1. ВХОД -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:#fff;padding:24px 20px 0">
+        <div class="center" style="margin-top:16px">
+          <div class="logo" style="width:60px;height:60px;font-size:27px;margin:0 auto">O</div>
+          <div style="font-size:26px;line-height:32px;font-weight:700;margin-top:12px">ORTA</div>
+          <div style="font-size:13px;color:var(--brand-500);font-weight:600;margin-top:2px">Всё рядом</div>
+          <p class="small" style="margin:10px 12px 0">
+            Войдите по номеру телефона: счёт, переводы, платежи, маркетплейс и поездки — в одном приложении.
+          </p>
+        </div>
+
+        <div class="field mt-16">
+          <div class="fl">Номер телефона</div>
+          <div class="fv">+7 700 123 45 67</div>
+        </div>
+        <p class="hint">Демо-номер уже подставлен — подойдёт любой +7XXXXXXXXXX</p>
+
+        <div class="field focus mt-12">
+          <div class="fl">Код из SMS</div>
+          <div class="frow" style="gap:10px;margin-top:6px">
+            <span style="width:38px;height:44px;border-radius:10px;background:var(--brand-50);display:grid;place-items:center;font-size:20px;font-weight:700">0</span>
+            <span style="width:38px;height:44px;border-radius:10px;background:var(--brand-50);display:grid;place-items:center;font-size:20px;font-weight:700">0</span>
+            <span style="width:38px;height:44px;border-radius:10px;background:var(--brand-50);display:grid;place-items:center;font-size:20px;font-weight:700">0</span>
+            <span style="width:38px;height:44px;border-radius:10px;background:var(--brand-50);display:grid;place-items:center;font-size:20px;font-weight:700">0</span>
+            <span class="small" style="margin-left:4px">демо-код</span>
+          </div>
+        </div>
+        <p class="hint">Код состоит из 4 цифр (в демо — 0000)</p>
+
+        <div class="divider"></div>
+        <p class="sec-title" style="margin-bottom:8px">Режим входа</p>
+        <div class="seg">
+          <span class="sg">Клиент</span>
+          <span class="sg on">Оператор</span>
+        </div>
+        <div class="chips mt-10">
+          <span class="chip brand-on">Диспетчер</span>
+          <span class="chip">Поддержка</span>
+          <span class="chip">Администратор</span>
+        </div>
+        <div class="notice info mt-10">
+          <b>Демо-провайдер идентичности</b>
+          Роли выдаются по запросу: <code class="mono">roles: ["DISPATCHER"]</code>. В продакшене здесь внешний OIDC, и этот экран его не замечает.
+        </div>
+        <div class="btn btn-primary mt-14" style="width:100%">Войти</div>
+        <p class="hint center" style="margin-top:10px">
+          <span class="mono">POST /api/v1/auth/token</span>
+        </p>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">1</span><span class="cap-title">Вход</span><span class="st st-work">Работает</span></div>
+      <p class="cap-note">
+        Телефон + код <code>0000</code>, демо-номер подставлен заранее; переключатель «Клиент / Оператор» —
+        честный вход в роли, которые dev-стенд умеет выдавать. Эндпоинты: <code>POST /api/v1/auth/token</code>,
+        <code>GET /api/v1/auth/me</code>. Ошибка неверного кода — <code>401 UNAUTHORIZED</code> в том же RFC 7807.
+      </p>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------------- 2. ГЛАВНАЯ -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg)">
+        <div class="appbar">
+          <div class="appbar-row">
+            <div>
+              <div class="wordmark">ORTA</div>
+              <div class="tagline">Всё рядом</div>
+            </div>
+            <span class="appbar-spacer"></span>
+            <span class="city"><svg class="ic" viewBox="0 0 24 24"><use href="#i-pin"/></svg>Шымкент<svg class="ic" viewBox="0 0 24 24"><use href="#i-chevron-down"/></svg></span>
+            <span class="iconbtn"><svg class="ic" viewBox="0 0 24 24"><use href="#i-bell"/></svg><span class="dot"></span></span>
+            <span class="iconbtn solid"><svg class="ic" viewBox="0 0 24 24"><use href="#i-plus"/></svg></span>
+          </div>
+        </div>
+        <div class="searchbar"><svg class="ic" viewBox="0 0 24 24"><use href="#i-search"/></svg>Найти товар, услугу или поездку</div>
+
+        <div class="tiles" style="padding:14px 16px 8px">
+          <div class="tile" style="padding:11px 12px">
+            <span class="ti" style="background:var(--tile-taxi)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-pin"/></svg></span>
+            <div class="tt" style="font-size:14px;margin-top:8px">ORTA Taxi</div><div class="ts">Поездки</div>
+          </div>
+          <div class="tile" style="padding:11px 12px">
+            <span class="badge-soon">Скоро</span>
+            <span class="ti" style="background:var(--tile-cargo)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-send"/></svg></span>
+            <div class="tt" style="font-size:14px;margin-top:8px">ORTA Cargo</div><div class="ts">Грузоперевозки</div>
+          </div>
+          <div class="tile" style="padding:11px 12px">
+            <span class="ti" style="background:var(--tile-market)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg></span>
+            <div class="tt" style="font-size:14px;margin-top:8px">ORTA Market</div><div class="ts">Товары и объявления</div>
+          </div>
+          <div class="tile" style="padding:11px 12px">
+            <span class="badge-soon">Скоро</span>
+            <span class="ti" style="background:var(--tile-home)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-home"/></svg></span>
+            <div class="tt" style="font-size:14px;margin-top:8px">ORTA Home</div><div class="ts">Недвижимость</div>
+          </div>
+          <div class="tile" style="padding:11px 12px">
+            <span class="badge-soon">Скоро</span>
+            <span class="ti" style="background:var(--tile-services)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-person"/></svg></span>
+            <div class="tt" style="font-size:14px;margin-top:8px">ORTA Services</div><div class="ts">Услуги специалистов</div>
+          </div>
+          <div class="tile" style="padding:11px 12px">
+            <span class="badge-soon">Скоро</span>
+            <span class="ti" style="background:var(--tile-build)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-build"/></svg></span>
+            <div class="tt" style="font-size:14px;margin-top:8px">ORTA Build</div><div class="ts">Стройматериалы</div>
+          </div>
+          <div class="tile" style="padding:11px 12px">
+            <span class="badge-soon">Скоро</span>
+            <span class="ti" style="background:var(--tile-delivery)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-mail"/></svg></span>
+            <div class="tt" style="font-size:14px;margin-top:8px">ORTA Delivery</div><div class="ts">Доставка</div>
+          </div>
+          <div class="tile" style="padding:11px 12px">
+            <span class="badge-soon">Скоро</span>
+            <span class="ti" style="background:var(--tile-business)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-business"/></svg></span>
+            <div class="tt" style="font-size:14px;margin-top:8px">ORTA Business</div><div class="ts">Для бизнеса</div>
+          </div>
+        </div>
+
+        <div class="banner" style="height:92px;margin-bottom:0">
+          <div class="bt">Всё нужное — в одном приложении</div>
+          <div class="bb">Такси, доставка, покупки и услуги — в одном приложении ORTA.</div>
+          <div class="dots"><i class="on"></i><i></i><i></i></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <span class="fab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-plus"/></svg></span>
+        <span class="tab on"><svg class="ic" viewBox="0 0 24 24"><use href="#i-home"/></svg>Главная</span>
+        <span class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg>Каталог</span>
+        <span class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-list"/></svg>Заказы</span>
+        <span class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-person"/></svg>Профиль</span>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">2</span><span class="cap-title">Главная ORTA</span><span class="st st-work">Работает</span></div>
+      <p class="cap-note">
+        Повторяет живой экран Android: бренд синим, «Всё рядом», чип города, поиск, восемь плиток
+        с цветными плашками и бейджами «Скоро», градиентный баннер, вкладки и выступающая «+».
+        Плитки честные: Taxi и Market открывают работающее, остальные объясняют, что появится позже.
+        Данные: <code>GET /api/v1/auth/me</code>, <code>GET /api/v1/catalog/products</code>.
+      </p>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------ 3. TAXI — ЗАКАЗ -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg)">
+        <div class="mapbox" style="height:266px">
+          <svg viewBox="0 0 390 300" preserveAspectRatio="xMidYMid slice">
+            <use href="#mapPhone"/>
+            <use href="#m-car" class="mk-fresh" transform="translate(96 148) rotate(28)"/>
+            <use href="#m-car" class="mk-fresh" transform="translate(232 96) rotate(196)"/>
+            <use href="#m-car" class="mk-fresh" transform="translate(300 218) rotate(112)"/>
+            <use href="#m-pinA" transform="translate(140 96)"/>
+            <use href="#m-pinB" transform="translate(268 214)"/>
+            <path d="M140 96 268 214" fill="none" stroke="#1F5FA9" stroke-width="3.4" stroke-dasharray="7 6"/>
+          </svg>
+          <span class="pill" style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,.95);box-shadow:var(--sh-sm)">
+            <span class="stockdot"></span>3 машины рядом
+          </span>
+          <span class="pill" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.95);box-shadow:var(--sh-sm)">6,4 км · 18 мин</span>
+        </div>
+
+        <div class="sheet" style="flex:1;display:flex;flex-direction:column;padding-top:16px">
+          <div class="frow" style="align-items:flex-start">
+            <div class="fcol" style="align-items:center;padding-top:3px">
+              <span style="width:10px;height:10px;border-radius:50%;background:var(--brand-500)"></span>
+              <span style="width:2px;height:22px;background:var(--ink-200);margin:3px 0"></span>
+              <span style="width:10px;height:10px;border-radius:3px;background:var(--teal)"></span>
+            </div>
+            <div class="grow">
+              <div class="f-title">просп. Абая, 150</div>
+              <div class="f-sub">Точка А · Желтоксан, Алматы</div>
+              <div class="f-title" style="margin-top:12px">ул. Толе би, 59</div>
+              <div class="f-sub">Точка Б · Золотой квадрат</div>
+            </div>
+            <span class="link">Изменить</span>
+          </div>
+
+          <div class="divider"></div>
+          <p class="sec-title">Тариф</p>
+          <div class="tariff on" style="padding:9px 11px">
+            <span class="tic"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-taxi"/></svg></span>
+            <span class="grow"><span class="tn">Эконом</span><span class="td">Подача 4 мин · Hyundai Accent</span></span>
+            <span class="tp"><b>890 ₸</b><span>4 мин</span></span>
+          </div>
+          <div class="tariff" style="padding:9px 11px">
+            <span class="tic"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-taxi"/></svg></span>
+            <span class="grow"><span class="tn">Комфорт</span><span class="td">Подача 3 мин · Toyota Camry</span></span>
+            <span class="tp"><b>1 290 ₸</b><span>3 мин</span></span>
+          </div>
+          <div class="tariff" style="padding:9px 11px">
+            <span class="tic"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-taxi"/></svg></span>
+            <span class="grow"><span class="tn">Бизнес</span><span class="td">Подача 6 мин · Mercedes E-class</span></span>
+            <span class="tp"><b>2 190 ₸</b><span>6 мин</span></span>
+          </div>
+
+          <div class="frow mt-12" style="padding:10px 12px;border-radius:var(--r-md);background:var(--ink-50)">
+            <svg class="ic" viewBox="0 0 24 24" style="color:var(--brand-600)"><use href="#i-card"/></svg>
+            <span class="grow"><span class="f-title">Счёт ORTA · KZT</span><span class="f-sub">Доступно 3 813 516,50 ₸</span></span>
+            <span class="link">Сменить</span>
+          </div>
+
+          <div class="btn btn-primary mt-12" style="width:100%">Заказать · 890 ₸</div>
+        </div>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">3</span><span class="cap-title">ORTA Taxi — заказ</span><span class="st st-f2">Дизайн для Ф2</span></div>
+      <p class="cap-note">
+        Карта с машинами, точки А и Б, три тарифа с ценой и ETA подачи, счёт списания, кнопка «Заказать».
+        Цена берётся из котировки: <code>POST /api/v1/trips/quote</code> (TTL 90 с, HMAC-подпись),
+        сама заявка — <code>POST /api/v1/trips</code> с <code>Idempotency-Key</code>. Ближайшие машины —
+        <code>GET /api/v1/dispatch/nearest?lat&lon&radiusM</code>.
+      </p>
+    </div>
+  </div>
+
+  <!-- --------------------------------------- 4. TAXI — ПОИСК ВОДИТЕЛЯ -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg)">
+        <div class="mapbox" style="height:248px">
+          <svg viewBox="0 0 390 300" preserveAspectRatio="xMidYMid slice">
+            <use href="#mapPhone"/>
+            <use href="#m-car" class="mk-cand" transform="translate(88 172) rotate(20)"/>
+            <use href="#m-car" class="mk-cand" transform="translate(238 92) rotate(200)"/>
+            <use href="#m-car" class="mk-cand" transform="translate(306 226) rotate(110)"/>
+            <use href="#m-car" class="mk-stale" transform="translate(60 78) rotate(0)"/>
+            <use href="#m-car" class="mk-fresh" transform="translate(176 150) rotate(84)"/>
+            <use href="#m-pinA" transform="translate(176 150)" opacity="0"/>
+            <circle cx="176" cy="150" r="34" fill="none" stroke="#1F5FA9" stroke-width="2" stroke-dasharray="6 6" opacity=".55"/>
+            <circle cx="176" cy="150" r="58" fill="none" stroke="#1F5FA9" stroke-width="2" stroke-dasharray="6 6" opacity=".3"/>
+          </svg>
+          <div class="map-legend">
+            <span><i style="background:var(--console)"></i>готова принять</span>
+            <span><i style="background:var(--info-500)"></i>кандидаты в радиусе</span>
+            <span><i style="background:var(--ink-400)"></i>позиция устарела</span>
+          </div>
+        </div>
+
+        <div class="sheet" style="flex:1;display:flex;flex-direction:column;align-items:center;padding-top:18px">
+          <div style="width:56px;height:56px;border-radius:50%;border:3px solid var(--brand-100);border-top-color:var(--brand-500)"></div>
+          <div class="t-h2 mt-14">Ищем водителя…</div>
+          <div class="small mt-6">Эконом · 890 ₸ · подача ≈ 4 мин</div>
+          <div class="tnum" style="font-size:30px;line-height:36px;font-weight:700;margin-top:10px">0:24</div>
+
+          <div class="fcard mt-16" style="width:100%">
+            <div class="frow"><svg class="ic" viewBox="0 0 24 24" style="color:var(--brand-600)"><use href="#i-users"/></svg><span class="grow f-title">7 машин на линии рядом</span><span class="pill ok">живые</span></div>
+            <div class="divider" style="margin:10px 0"></div>
+            <div class="frow"><svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-500)"><use href="#i-route"/></svg><span class="grow f-title">Радиус поиска расширен</span><span class="pill">1 → 3 км</span></div>
+            <div class="divider" style="margin:10px 0"></div>
+            <div class="frow"><svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-500)"><use href="#i-clock"/></svg><span class="grow f-title">Оффер держится 15 секунд</span><span class="pill">3 водителя</span></div>
+          </div>
+
+          <div class="notice mt-12" style="width:100%">
+            <b>Если никто не ответит</b>
+            Через 2 минуты поиск закончится кодом <code class="mono">NO_DRIVERS_FOUND</code> — деньги не списываются, холда нет.
+          </div>
+          <span class="appbar-spacer"></span>
+          <div class="btn btn-secondary" style="width:100%;margin-bottom:10px">Отменить поиск</div>
+        </div>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">4</span><span class="cap-title">ORTA Taxi — поиск водителя</span><span class="st st-f2">Дизайн для Ф3</span></div>
+      <p class="cap-note">
+        Состояние ожидания: счётчик времени, сколько машин рядом, расширение радиуса 1→3→5 км, оффер
+        15 секунд на трёх водителей, отмена. Устаревшие позиции показаны на карте, но в кандидаты не
+        попадают — ровно как в диспетчерской. Эндпоинты: <code>GET /api/v1/trips/{id}</code>,
+        <code>POST /api/v1/trips/{id}/cancel</code>; события <code>trip.requested</code>, <code>offer.created</code>.
+      </p>
+    </div>
+  </div>
+
+  <!-- --------------------------------------- 5. TAXI — ВОДИТЕЛЬ В ПУТИ -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg)">
+        <div class="mapbox" style="height:286px">
+          <svg viewBox="0 0 390 300" preserveAspectRatio="xMidYMid slice">
+            <use href="#mapPhone"/>
+            <use href="#m-pinA" transform="translate(140 210)"/>
+            <use href="#m-car" class="mk-fresh" transform="translate(226 138) rotate(212)"/>
+            <path d="M226 138 140 210" fill="none" stroke="#1F5FA9" stroke-width="3.6" stroke-dasharray="8 6" stroke-linecap="round"/>
+            <circle cx="140" cy="210" r="22" fill="none" stroke="#1F5FA9" stroke-width="2" opacity=".4"/>
+          </svg>
+          <span class="pill ok" style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,.95);box-shadow:var(--sh-sm)">
+            <span class="stockdot"></span>Водитель назначен
+          </span>
+        </div>
+
+        <div class="sheet" style="flex:1;display:flex;flex-direction:column;padding-top:16px">
+          <div class="frow" style="align-items:flex-start">
+            <span class="avatar">А</span>
+            <span class="grow">
+              <span class="f-title">Айдар</span>
+              <span class="f-sub"><svg class="ic" viewBox="0 0 24 24" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;color:#F0A020"><use href="#i-star"/></svg>
+                4,92 · 128 поездок</span>
+              <span class="f-sub" style="margin-top:3px">Toyota Camry · белый · <b style="color:var(--ink-800);font-variant-numeric:tabular-nums">727 ABC 02</b></span>
+            </span>
+            <span class="pill brand">Подача 3 мин</span>
+          </div>
+
+          <div class="frow mt-12" style="gap:8px">
+            <span class="btn btn-secondary btn-md grow"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><use href="#i-phone"/></svg>Позвонить</span>
+            <span class="btn btn-secondary btn-md grow"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><use href="#i-chat"/></svg>Написать</span>
+          </div>
+
+          <div class="divider"></div>
+          <div class="tl">
+            <span class="tl-dot g"></span>
+            <span class="tl-body">
+              <span class="tl-t">Заявка принята</span>
+              <span class="tl-s">9:38 · котировка 890 ₸ зафиксирована на 90 с</span>
+            </span>
+          </div>
+          <div class="tl" style="margin-top:-14px">
+            <span class="tl-dot"></span>
+            <span class="tl-body">
+              <span class="tl-t">Водитель в пути к вам</span>
+              <span class="tl-s">9:41 · ожидание бесплатно 3 минуты</span>
+            </span>
+          </div>
+          <div class="tl" style="margin-top:-14px">
+            <span class="tl-dot mut"></span>
+            <span class="tl-body last">
+              <span class="tl-t mut">Поездка начнётся после подачи</span>
+              <span class="tl-s">Холд 890 ₸ на счёте, списание — по завершении</span>
+            </span>
+          </div>
+
+          <span class="appbar-spacer"></span>
+          <div class="frow" style="padding:10px 12px;border-radius:var(--r-md);background:var(--ink-50)">
+            <svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-500)"><use href="#i-shield"/></svg>
+            <span class="grow f-sub" style="color:var(--ink-600)">Зарезервировано <b class="tnum" style="color:var(--ink-900)">890,00 ₸</b> по этой поездке, доступно на счёте <b class="tnum" style="color:var(--ink-900)">3 812 626,50 ₸</b></span>
+          </div>
+          <div class="btn btn-ghost btn-md mt-10" style="width:100%;color:var(--danger-700)">Отменить поездку</div>
+        </div>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">5</span><span class="cap-title">ORTA Taxi — водитель в пути</span><span class="st st-f2">Дизайн для Ф4</span></div>
+      <p class="cap-note">
+        Карточка водителя: имя, рейтинг, машина, номер; ETA подачи; «Позвонить», «Написать», «Отменить».
+        Деньги показаны честно: при назначении ставится <b>холд</b> на сумму котировки
+        (<code>POST /api/v1/accounts/internal/holds</code>), списания ещё нет. Данные:
+        <code>GET /api/v1/trips/{id}</code>, событие <code>trip.driver.assigned</code>.
+      </p>
+    </div>
+  </div>
+
+  <!-- ----------------------------------- 6. TAXI — В ПУТИ И ЗАВЕРШЕНИЕ -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">9:52</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg)">
+        <div class="mapbox" style="height:196px">
+          <svg viewBox="0 0 390 300" preserveAspectRatio="xMidYMid slice">
+            <use href="#mapPhone"/>
+            <path d="M140 210 226 138 268 214" fill="none" stroke="#1F5FA9" stroke-width="3.6" stroke-dasharray="8 6" stroke-linecap="round"/>
+            <path d="M140 210 226 138" fill="none" stroke="#0E7C7B" stroke-width="3.6" stroke-linecap="round"/>
+            <use href="#m-car" class="mk-fresh" transform="translate(226 138) rotate(212)"/>
+            <use href="#m-pinB" transform="translate(268 214)"/>
+          </svg>
+          <span class="pill brand" style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,.95);box-shadow:var(--sh-sm)">
+            В пути · осталось 8,2 км
+          </span>
+          <span class="pill" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.95);box-shadow:var(--sh-sm)">≈ 12 мин</span>
+        </div>
+
+        <div class="sheet" style="flex:1;display:flex;flex-direction:column;padding-top:16px">
+          <div class="between">
+            <div>
+              <div class="t-h2">Едем к точке Б</div>
+              <div class="small">ул. Толе би, 59 · Алматы</div>
+            </div>
+            <div class="center">
+              <div class="tnum" style="font-size:26px;line-height:30px;font-weight:700">1 848,00 ₸</div>
+              <div class="t-cap">счётчик растёт по факту</div>
+            </div>
+          </div>
+          <div class="progress mt-12"><i style="width:56%"></i></div>
+          <div class="between mt-6">
+            <span class="t-cap">проехали 6,4 км</span>
+            <span class="t-cap">всего 14,6 км</span>
+          </div>
+
+          <div class="fcard mt-12">
+            <div class="kv"><span class="k">Посадка</span><span class="v">450,00 ₸</span></div>
+            <div class="kv"><span class="k">Пробег 10,2 км × 120,00 ₸</span><span class="v">1 224,00 ₸</span></div>
+            <div class="kv"><span class="k">Время 22 мин × 35,00 ₸</span><span class="v">770,00 ₸</span></div>
+            <div class="kv"><span class="k">Ожидание подачи 2 мин</span><span class="v">0,00 ₸</span></div>
+            <div class="kv"><span class="k">Итого по котировке</span><span class="v">2 444,00 ₸</span></div>
+          </div>
+          <div class="notice info mt-10">
+            Котировка фиксировала 890 ₸ за 6,4 км. Факт считается по расстоянию и времени и
+            пересчитывается на сервере — сумма в чеке может отличаться от котировки, и это нормально.
+          </div>
+
+          <span class="appbar-spacer"></span>
+          <div class="btn btn-primary" style="width:100%;margin-top:10px" title="демо-действие">Завершить поездку</div>
+          <p class="hint center">В реальном клиенте поездку завершает водитель: <span class="mono">POST /api/v1/drivers/trips/{id}/finish</span></p>
+        </div>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">6</span><span class="cap-title">ORTA Taxi — в пути и завершение</span><span class="st st-f2">Дизайн для Ф2</span></div>
+      <p class="cap-note">
+        Прогресс поездки, счётчик суммы по факту, разбор тарифа (посадка + пробег + время + ожидание).
+        «Завершить» в макете — демо-действие для стенда: в жизни поездку закрывает водитель,
+        <code>POST /api/v1/drivers/trips/{id}/finish</code>, после чего происходит <b>capture</b> холда:
+        <code>RIDE_PAYMENT</code> (пассажир → suspense), затем начисление водителю и комиссия платформы.
+      </p>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------- 7. ЧЕК ПОЕЗДКИ -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">10:07</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg);padding:0 16px">
+        <div class="center mt-12">
+          <svg class="ic" viewBox="0 0 24 24" style="width:46px;height:46px;margin:0 auto;color:var(--success-500)"><use href="#i-check-circle"/></svg>
+          <div class="t-h2 mt-10">Поездка завершена</div>
+          <div class="small">2 октября 2026, 10:07 · 14,6 км · 22 мин</div>
+          <div class="t-money mt-10">1 848,00 ₸</div>
+          <div class="t-cap">списано со счёта ORTA KZT</div>
+        </div>
+
+        <div class="fcard mt-16">
+          <div class="kv"><span class="k">Посадка</span><span class="v">450,00 ₸</span></div>
+          <div class="kv"><span class="k">Пробег 10,2 км × 120,00 ₸</span><span class="v">1 224,00 ₸</span></div>
+          <div class="kv"><span class="k">Время 22 мин × 35,00 ₸</span><span class="v">770,00 ₸</span></div>
+          <div class="kv"><span class="k">Скидка промокода</span><span class="v">−596,00 ₸</span></div>
+          <div class="kv" style="border-top:1px solid var(--ink-200);margin-top:4px;padding-top:9px"><span class="k" style="color:var(--ink-800);font-weight:600">Итого</span><span class="v" style="font-size:16px">1 848,00 ₸</span></div>
+        </div>
+
+        <div class="fcard">
+          <div class="kv"><span class="k">Оплата</span><span class="v">Счёт ORTA · KZT</span></div>
+          <div class="kv"><span class="k">Комиссия платформы 12%</span><span class="v">221,76 ₸</span></div>
+          <div class="kv"><span class="k">Начислено водителю</span><span class="v" style="color:var(--success-700)">1 626,24 ₸</span></div>
+          <div class="kv"><span class="k">Платёж</span><span class="v mono" style="font-size:11px">01M4TR7K9QW2</span></div>
+        </div>
+
+        <div class="fcard">
+          <div class="f-title">Оцените водителя</div>
+          <div class="f-sub">Айдар · Toyota Camry 727 ABC 02</div>
+          <div class="stars mt-10">
+            <svg class="ic" viewBox="0 0 24 24"><use href="#i-star"/></svg>
+            <svg class="ic" viewBox="0 0 24 24"><use href="#i-star"/></svg>
+            <svg class="ic" viewBox="0 0 24 24"><use href="#i-star"/></svg>
+            <svg class="ic" viewBox="0 0 24 24"><use href="#i-star"/></svg>
+            <svg class="ic off" viewBox="0 0 24 24"><use href="#i-star"/></svg>
+          </div>
+          <p class="small mt-8">Оценка влияет на распределение заказов: водитель с 4,92 видит больше заявок.</p>
+        </div>
+
+        <span class="appbar-spacer"></span>
+        <div class="btn btn-primary" style="width:100%;margin-bottom:8px">Отправить оценку</div>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">7</span><span class="cap-title">Чек поездки и оценка</span><span class="st st-f2">Дизайн для Ф2</span></div>
+      <p class="cap-note">
+        Сумма, разбор тарифа, способ оплаты, комиссия платформы и начисление водителю — на одном экране,
+        потому что инвариант <code>driver_net + commission == fare</code> (1 626,24 + 221,76 = 1 848,00)
+        проверяется e2e и должен быть виден человеку. Оценка — <code>POST /api/v1/trips/{id}/rate</code>.
+      </p>
+    </div>
+  </div>
+
+  <!-- ----------------------------------------------------- 8. ВИТРИНА -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg)">
+        <div class="appbar" style="padding-bottom:10px">
+          <div class="appbar-row">
+            <div><div class="t-h1" style="font-size:20px">ORTA Market</div><div class="tagline">Каталог · Алматы</div></div>
+            <span class="appbar-spacer"></span>
+            <span class="iconbtn"><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg></span>
+          </div>
+        </div>
+        <div class="searchbar"><svg class="ic" viewBox="0 0 24 24"><use href="#i-search"/></svg>Смартфон Samsung</div>
+        <div class="chips" style="padding:10px 16px 4px;overflow:hidden">
+          <span class="chip on">Все</span>
+          <span class="chip">Электроника</span>
+          <span class="chip">Бытовая техника</span>
+          <span class="chip">Продукты</span>
+        </div>
+
+        <div class="pgrid" style="padding:8px 16px 0">
+          <div class="pcard">
+            <div class="pimg" style="height:78px;background:linear-gradient(140deg,#4A83C4,#1F5FA9)">
+              <svg class="ic" viewBox="0 0 24 24" style="width:30px;height:30px"><use href="#i-device"/></svg>
+            </div>
+            <div class="pbody" style="padding:9px 11px 10px">
+              <div class="pn" style="height:32px;font-size:12px;line-height:16px">Смартфон Samsung Galaxy A55 128GB</div>
+              <div class="pp" style="margin-top:4px;font-size:13.5px">189 990 ₸</div>
+              <div class="ps" style="margin-top:2px"><span class="stockdot"></span>24 шт · TechnoMart</div>
+            </div>
+          </div>
+          <div class="pcard">
+            <div class="pimg" style="height:78px;background:linear-gradient(140deg,#2A9A99,#0E7C7B)">
+              <svg class="ic" viewBox="0 0 24 24" style="width:28px;height:28px"><use href="#i-mail"/></svg>
+            </div>
+            <div class="pbody" style="padding:9px 11px 10px">
+              <div class="pn" style="height:32px;font-size:12px;line-height:16px">Наушники JBL Tune 510BT</div>
+              <div class="pp" style="margin-top:4px;font-size:13.5px">24 990 ₸</div>
+              <div class="ps" style="margin-top:2px"><span class="stockdot"></span>80 шт · TechnoMart</div>
+            </div>
+          </div>
+          <div class="pcard">
+            <div class="pimg" style="height:78px;background:linear-gradient(140deg,#D08A2A,#B26A00)">
+              <svg class="ic" viewBox="0 0 24 24" style="width:28px;height:28px"><use href="#i-box"/></svg>
+            </div>
+            <div class="pbody" style="padding:9px 11px 10px">
+              <div class="pn" style="height:32px;font-size:12px;line-height:16px">Кофе в зёрнах Lavazza Qualita Oro 1 кг</div>
+              <div class="pp" style="margin-top:4px;font-size:13.5px">12 490 ₸</div>
+              <div class="ps" style="margin-top:2px"><span class="stockdot"></span>60 шт · FreshMarket</div>
+            </div>
+          </div>
+          <div class="pcard">
+            <div class="pimg" style="height:78px;background:linear-gradient(140deg,#8A6FC0,#6A4FA3)">
+              <svg class="ic" viewBox="0 0 24 24" style="width:28px;height:28px"><use href="#i-box"/></svg>
+            </div>
+            <div class="pbody" style="padding:9px 11px 10px">
+              <div class="pn" style="height:32px;font-size:12px;line-height:16px">Телевизор LG 55UR78006 4K</div>
+              <div class="pp" style="margin-top:4px;font-size:13.5px">499 900 ₸</div>
+              <div class="ps" style="margin-top:2px"><span class="stockdot low"></span>7 шт · TechnoMart</div>
+            </div>
+          </div>
+          <div class="pcard">
+            <div class="pimg" style="height:78px;background:linear-gradient(140deg,#3FA76B,#1B7F4B)">
+              <svg class="ic" viewBox="0 0 24 24" style="width:28px;height:28px"><use href="#i-box"/></svg>
+            </div>
+            <div class="pbody" style="padding:9px 11px 10px">
+              <div class="pn" style="height:32px;font-size:12px;line-height:16px">Масло оливковое Monini Extra Virgin 500 мл</div>
+              <div class="pp" style="margin-top:4px;font-size:13.5px">4 290 ₸</div>
+              <div class="ps" style="margin-top:2px"><span class="stockdot"></span>120 шт · FreshMarket</div>
+            </div>
+          </div>
+          <div class="pcard">
+            <div class="pimg" style="height:78px;background:linear-gradient(140deg,#D08A2A,#B26A00)">
+              <svg class="ic" viewBox="0 0 24 24" style="width:28px;height:28px"><use href="#i-box"/></svg>
+            </div>
+            <div class="pbody" style="padding:9px 11px 10px">
+              <div class="pn" style="height:32px;font-size:12px;line-height:16px">Шоколад молочный Ritter Sport 100 г</div>
+              <div class="pp" style="margin-top:4px;font-size:13.5px">1 290 ₸</div>
+              <div class="ps" style="margin-top:2px"><span class="stockdot"></span>200 шт · FreshMarket</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <span class="fab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-plus"/></svg></span>
+        <span class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-home"/></svg>Главная</span>
+        <span class="tab on"><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg>Каталог</span>
+        <span class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-list"/></svg>Заказы</span>
+        <span class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-person"/></svg>Профиль</span>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">8</span><span class="cap-title">ORTA Market — витрина</span><span class="st st-work">Работает</span></div>
+      <p class="cap-note">
+        Поиск, категории, сетка карточек с ценой, остатком и продавцом. Товары и цены — из сида
+        <code>DemoCatalogSeeder</code>: 12 товаров, 3 мерчанта (TechnoMart, HomeComfort, FreshMarket).
+        Эндпоинты: <code>GET /api/v1/catalog/products?query=&category=&sort=</code>,
+        <code>GET /api/v1/catalog/categories</code>. Остаток — не декорация: при checkout он резервируется.
+      </p>
+    </div>
+  </div>
+
+  <!-- --------------------------------------------- 9. КАРТОЧКА ТОВАРА -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg)">
+        <div style="height:250px;background:linear-gradient(140deg,#4A83C4,#1F5FA9);display:grid;place-items:center;position:relative">
+          <svg class="ic" viewBox="0 0 24 24" style="width:78px;height:78px;color:rgba(255,255,255,.92)"><use href="#i-device"/></svg>
+          <span class="iconbtn" style="position:absolute;top:12px;left:12px;background:rgba(255,255,255,.9)"><svg class="ic" viewBox="0 0 24 24" style="transform:rotate(90deg)"><use href="#i-chevron-down"/></svg></span>
+          <span class="iconbtn" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.9)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg></span>
+        </div>
+
+        <div class="sheet" style="flex:1;display:flex;flex-direction:column;padding-top:16px">
+          <div class="between">
+            <span class="pill ok">В наличии · 24 шт</span>
+            <span class="pill">SKU TECH-0001</span>
+          </div>
+          <div class="t-h3 mt-10">Смартфон Samsung Galaxy A55 128GB</div>
+          <div class="f-sub mt-6">6.6" Super AMOLED, 8 ГБ ОЗУ, 5G, гарантия 1 год</div>
+          <div class="t-money mt-10" style="font-size:26px">189 990 ₸</div>
+
+          <div class="fcard mt-12">
+            <div class="frow">
+              <span class="thumb t" style="width:44px;height:44px"><svg class="ic" viewBox="0 0 24 24" style="width:22px;height:22px"><use href="#i-box"/></svg></span>
+              <span class="grow"><span class="f-title">TechnoMart Store</span><span class="f-sub">Алматы · 4,8 · 1 240 продаж</span></span>
+              <span class="link">Все товары</span>
+            </div>
+          </div>
+
+          <div class="frow mt-12">
+            <span class="f-title grow">Количество</span>
+            <span class="stepper"><b>−</b><span>1</span><b>+</b></span>
+          </div>
+          <div class="f-sub mt-6">Осталось 24 шт · больше 24 заказать нельзя</div>
+
+          <div class="divider"></div>
+          <div class="kv"><span class="k">Доставка по Алматы</span><span class="v">1 500,00 ₸ · завтра</span></div>
+          <div class="kv"><span class="k">Списание со счёта</span><span class="v">ORTA · KZT</span></div>
+          <div class="kv"><span class="k">Доступно</span><span class="v">3 813 516,50 ₸</span></div>
+
+          <span class="appbar-spacer"></span>
+          <div class="btn btn-primary" style="width:100%">В корзину · 189 990 ₸</div>
+        </div>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">9</span><span class="cap-title">Карточка товара</span><span class="st st-work">Работает</span></div>
+      <p class="cap-note">
+        Иллюстрация, цена, продавец, остаток, количество, «В корзину». Иллюстрация — градиент с иконкой:
+        в приложении нет ни одной картинки-ассета, и это осознанно. Эндпоинты:
+        <code>GET /api/v1/catalog/products/{id}</code>, <code>GET /api/v1/merchants/{id}</code>,
+        добавление — <code>POST /api/v1/cart/items</code>.
+      </p>
+    </div>
+  </div>
+
+  <!-- -------------------------------------- 10. КОРЗИНА И ОФОРМЛЕНИЕ -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg);padding:0 16px">
+        <div class="between mt-6" style="padding:4px 0 10px">
+          <div class="t-h1" style="font-size:20px">Корзина</div>
+          <span class="link">Очистить</span>
+        </div>
+
+        <div class="fcard">
+          <div class="frow">
+            <span class="thumb"><svg class="ic" viewBox="0 0 24 24"><use href="#i-laptop"/></svg></span>
+            <span class="grow">
+              <span class="f-title ell">Ноутбук Lenovo IdeaPad 3 15"</span>
+              <span class="f-sub">TechnoMart · SKU TECH-0002</span>
+            </span>
+            <span class="stepper" style="transform:scale(.9)"><b>−</b><span>1</span><b>+</b></span>
+          </div>
+          <div class="between mt-8"><span class="f-sub">279 990,00 ₸ за шт.</span><span class="f-money">279 990,00 ₸</span></div>
+        </div>
+
+        <div class="fcard">
+          <div class="frow">
+            <span class="thumb a"><svg class="ic" viewBox="0 0 24 24"><use href="#i-box"/></svg></span>
+            <span class="grow">
+              <span class="f-title ell">Кофе в зёрнах Lavazza Qualita Oro 1 кг</span>
+              <span class="f-sub">FreshMarket · SKU FOOD-0001</span>
+            </span>
+            <span class="stepper" style="transform:scale(.9)"><b>−</b><span>2</span><b>+</b></span>
+          </div>
+          <div class="between mt-8"><span class="f-sub">12 490,00 ₸ за шт.</span><span class="f-money">24 980,00 ₸</span></div>
+        </div>
+
+        <div class="fcard">
+          <div class="f-title">Доставка</div>
+          <div class="f-sub">Алматы, Абая 150 · завтра, 10:00–14:00</div>
+          <div class="field mt-10" style="padding:8px 12px">
+            <div class="fl">Счёт списания</div>
+            <div class="fv">ORTA · KZT · доступно 3 813 516,50 ₸</div>
+          </div>
+        </div>
+
+        <div class="fcard">
+          <div class="kv"><span class="k">Товары (2)</span><span class="v">304 970,00 ₸</span></div>
+          <div class="kv"><span class="k">Доставка</span><span class="v">1 500,00 ₸</span></div>
+          <div class="kv" style="border-top:1px solid var(--ink-200);margin-top:4px;padding-top:9px"><span class="k" style="color:var(--ink-800);font-weight:600">Итого</span><span class="v" style="font-size:17px">306 470,00 ₸</span></div>
+        </div>
+
+        <span class="appbar-spacer"></span>
+        <p class="hint center" style="margin-bottom:6px">Заказ создаётся один раз: повтор кнопки использует тот же <span class="mono">Idempotency-Key</span></p>
+        <div class="btn btn-primary" style="width:100%;margin-bottom:8px">Оплатить · 306 470,00 ₸</div>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">10</span><span class="cap-title">Корзина и оформление</span><span class="st st-work">Работает</span></div>
+      <p class="cap-note">
+        Позиции двух разных мерчантов, доставка, счёт списания, итог, «Оплатить». Дальше — сага:
+        <code>POST /api/v1/orders</code> с <code>Idempotency-Key</code> → резерв стока
+        (<code>POST /api/v1/catalog/internal/stock/reservations</code>) → платёж
+        (<code>POST /api/v1/payments/merchant</code>) → <code>PAID</code>. Каждая позиция знает своего
+        мерчанта, поэтому деньги разделяются по продавцам, а не приходят одному.
+      </p>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------- 11. ЗАКАЗ ОФОРМЛЕН -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">9:43</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg);padding:0 16px">
+        <div class="center mt-20">
+          <svg class="ic" viewBox="0 0 24 24" style="width:56px;height:56px;margin:0 auto;color:var(--success-500)"><use href="#i-check-circle"/></svg>
+          <div class="t-h2 mt-10">Заказ оплачен</div>
+          <div class="small">ORD-261002-7F3K · 2 октября 2026, 9:43</div>
+          <div class="t-money mt-10">306 470,00 ₸</div>
+          <div class="t-cap">списано со счёта ORTA · KZT</div>
+        </div>
+
+        <div class="fcard mt-16">
+          <div class="f-title">Что дальше</div>
+          <div class="tl mt-10">
+            <span class="tl-dot g"></span>
+            <span class="tl-body">
+              <span class="tl-t">Оплачен · деньги списаны</span>
+              <span class="tl-s">Продавцу ушёл долг, выплата — отдельным расчётом</span>
+            </span>
+          </div>
+          <div class="tl" style="margin-top:-14px">
+            <span class="tl-dot"></span>
+            <span class="tl-body">
+              <span class="tl-t">Собираем заказ</span>
+              <span class="tl-s">TechnoMart и FreshMarket подтверждают позиции</span>
+            </span>
+          </div>
+          <div class="tl" style="margin-top:-14px">
+            <span class="tl-dot mut"></span>
+            <span class="tl-body last">
+              <span class="tl-t mut">Доставка завтра 10:00–14:00</span>
+              <span class="tl-s">Адрес: Алматы, Абая 150 · +7 700 123 45 67</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="fcard">
+          <div class="kv"><span class="k">Товары</span><span class="v">304 970,00 ₸</span></div>
+          <div class="kv"><span class="k">Доставка</span><span class="v">1 500,00 ₸</span></div>
+          <div class="kv"><span class="k">Зарезервировано на счёте</span><span class="v">306 470,00 ₸</span></div>
+          <div class="kv"><span class="k">Платёж</span><span class="v mono" style="font-size:11px">01M4TS2B8D1Q</span></div>
+        </div>
+
+        <span class="appbar-spacer"></span>
+        <div class="btn btn-primary" style="width:100%">Открыть заказ</div>
+        <div class="btn btn-secondary btn-md mt-8" style="width:100%;margin-bottom:8px">Вернуться в магазин</div>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">11</span><span class="cap-title">Заказ оформлен</span><span class="st st-work">Работает</span></div>
+      <p class="cap-note">
+        Успех — это не только галочка: видно номер заказа, сумму, что деньги списаны и что будет дальше.
+        Состояния заказа по контракту: <code>DRAFT → PENDING_PAYMENT → PAID → CONFIRMED</code>.
+        Резерв стока к этому моменту <code>COMMITTED</code>, долг продавцу — <code>PENDING</code> в расчётах.
+      </p>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------------ 12. ЗАКАЗЫ -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg)">
+        <div class="appbar" style="padding-bottom:8px">
+          <div class="appbar-row">
+            <div><div class="t-h1" style="font-size:20px">Заказы</div><div class="tagline">4 заказа · с 12 сентября</div></div>
+            <span class="appbar-spacer"></span>
+            <span class="iconbtn"><svg class="ic" viewBox="0 0 24 24"><use href="#i-refresh"/></svg></span>
+          </div>
+        </div>
+        <div class="chips" style="padding:0 16px 10px">
+          <span class="chip on">Все</span>
+          <span class="chip">Оплачен</span>
+          <span class="chip">Подтверждён</span>
+          <span class="chip">Отменён</span>
+        </div>
+
+        <div style="padding:0 16px">
+          <div class="fcard">
+            <div class="frow">
+              <span class="grow"><span class="f-title">ORD-261002-7F3K</span><span class="f-sub">2 октября · 2 позиции · TechnoMart, FreshMarket</span></span>
+              <span class="pill ok">Оплачен</span>
+            </div>
+            <div class="between mt-8"><span class="f-sub">Доставка завтра 10:00–14:00</span><span class="f-money">306 470,00 ₸</span></div>
+          </div>
+
+          <div class="fcard">
+            <div class="frow">
+              <span class="grow"><span class="f-title">ORD-260928-3K9P</span><span class="f-sub">28 сентября · 1 позиция · TechnoMart</span></span>
+              <span class="pill info">Подтверждён</span>
+            </div>
+            <div class="between mt-8"><span class="f-sub">Курьер в пути · 2 остановки</span><span class="f-money">189 990,00 ₸</span></div>
+          </div>
+
+          <div class="fcard">
+            <div class="frow">
+              <span class="grow"><span class="f-title">ORD-260921-8QW2</span><span class="f-sub">21 сентября · 3 позиции · FreshMarket</span></span>
+              <span class="pill warn">Ожидает оплаты</span>
+            </div>
+            <div class="between mt-8"><span class="f-sub">Резерв стока истекает через 12 мин</span><span class="f-money">16 070,00 ₸</span></div>
+          </div>
+
+          <div class="fcard">
+            <div class="frow">
+              <span class="grow"><span class="f-title">ORD-260912-1AB7</span><span class="f-sub">12 сентября · 1 позиция · HomeComfort</span></span>
+              <span class="pill">Отменён</span>
+            </div>
+            <div class="between mt-8"><span class="f-sub">Отменён до оплаты · резерв снят</span><span class="f-money" style="color:var(--ink-500)">54 990,00 ₸</span></div>
+          </div>
+
+          <div class="fcard">
+            <div class="frow" style="align-items:center">
+              <svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-400)"><use href="#i-box"/></svg>
+              <span class="grow f-sub">История за прошлый год — в веб-кабинете</span>
+              <span class="link">Открыть</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <span class="fab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-plus"/></svg></span>
+        <span class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-home"/></svg>Главная</span>
+        <span class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg>Каталог</span>
+        <span class="tab on"><svg class="ic" viewBox="0 0 24 24"><use href="#i-list"/></svg>Заказы</span>
+        <span class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-person"/></svg>Профиль</span>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">12</span><span class="cap-title">Заказы — список и фильтры</span><span class="st st-work">Работает</span></div>
+      <p class="cap-note">
+        Фильтры по статусу, карточка заказа с номером, числом позиций, продавцами, суммой и понятным
+        «что происходит». Эндпоинты: <code>GET /api/v1/orders?page&size&status</code>,
+        <code>GET /api/v1/orders/{id}</code>. Позиция «ожидает оплаты» показывает срок жизни резерва стока —
+        иначе пользователь не понимает, почему заказ вдруг исчез.
+      </p>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------ 13. ДЕТАЛИ ЗАКАЗА -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">9:44</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg);padding:0 16px">
+        <div class="frow mt-6" style="padding:4px 0 12px">
+          <span class="iconbtn" style="background:var(--ink-100)"><svg class="ic" viewBox="0 0 24 24" style="transform:rotate(90deg)"><use href="#i-chevron-down"/></svg></span>
+          <span class="grow"><span class="f-title">ORD-261002-7F3K</span><span class="f-sub">2 октября 2026, 9:43</span></span>
+          <span class="pill ok">Оплачен</span>
+        </div>
+
+        <div class="fcard">
+          <div class="f-title">История статусов</div>
+          <div class="tl mt-10">
+            <span class="tl-dot g"></span>
+            <span class="tl-body"><span class="tl-t">PAID</span><span class="tl-s">9:43 · платёж 01M4TS2B8D1Q, деньги списаны</span></span>
+          </div>
+          <div class="tl" style="margin-top:-14px">
+            <span class="tl-dot g"></span>
+            <span class="tl-body"><span class="tl-t">PENDING_PAYMENT</span><span class="tl-s">9:43 · резерв стока по 2 позициям</span></span>
+          </div>
+          <div class="tl" style="margin-top:-14px">
+            <span class="tl-dot g"></span>
+            <span class="tl-body last"><span class="tl-t">DRAFT</span><span class="tl-s">9:42 · корзина собрана в приложении</span></span>
+          </div>
+        </div>
+
+        <div class="fcard">
+          <div class="f-title">Позиции</div>
+          <div class="frow mt-10">
+            <span class="thumb" style="width:44px;height:44px"><svg class="ic" viewBox="0 0 24 24" style="width:22px;height:22px"><use href="#i-laptop"/></svg></span>
+            <span class="grow"><span class="f-title" style="font-size:13px">Ноутбук Lenovo IdeaPad 3 15"</span><span class="f-sub">1 × 279 990,00 ₸ · TechnoMart</span></span>
+            <span class="f-money" style="font-size:13px">279 990,00 ₸</span>
+          </div>
+          <div class="frow">
+            <span class="thumb a" style="width:44px;height:44px"><svg class="ic" viewBox="0 0 24 24" style="width:22px;height:22px"><use href="#i-box"/></svg></span>
+            <span class="grow"><span class="f-title" style="font-size:13px">Кофе Lavazza Qualita Oro 1 кг</span><span class="f-sub">2 × 12 490,00 ₸ · FreshMarket</span></span>
+            <span class="f-money" style="font-size:13px">24 980,00 ₸</span>
+          </div>
+        </div>
+
+        <div class="fcard">
+          <div class="kv"><span class="k">Товары</span><span class="v">304 970,00 ₸</span></div>
+          <div class="kv"><span class="k">Доставка</span><span class="v">1 500,00 ₸</span></div>
+          <div class="kv"><span class="k">Итого</span><span class="v" style="font-size:16px">306 470,00 ₸</span></div>
+          <div class="kv"><span class="k">Расчёт с продавцами</span><span class="v">долг 300 470,00 ₸ · PENDING</span></div>
+        </div>
+
+        <span class="appbar-spacer"></span>
+        <div class="btn btn-primary is-disabled" style="width:100%">Отменить заказ</div>
+        <p class="hint center" style="margin-bottom:8px">
+          Оплаченный заказ не отменяется из приложения: <span class="mono">409 ORDER_NOT_CANCELLABLE</span> — нужен возврат через поддержку
+        </p>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">13</span><span class="cap-title">Детали заказа</span><span class="st st-work">Работает</span></div>
+      <p class="cap-note">
+        История статусов целиком (это append-only история переходов, а не поле), позиции с мерчантами,
+        итоги и состояние расчёта с продавцом. Кнопка отмены — заведомо выключена с объяснением:
+        контракт возвращает <code>409 ORDER_NOT_CANCELLABLE</code> для оплаченного заказа, и интерфейс
+        не должен обещать обратное. Возврат — <code>POST /api/v1/payments/{id}/refund</code>.
+      </p>
+    </div>
+  </div>
+
+  <!-- ----------------------------------------------------- 14. ПРОФИЛЬ -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg)">
+        <div class="appbar" style="padding-bottom:10px">
+          <div class="appbar-row">
+            <div><div class="t-h1" style="font-size:20px">Профиль</div><div class="tagline">Счёт, переводы, история</div></div>
+            <span class="appbar-spacer"></span>
+            <span class="iconbtn"><svg class="ic" viewBox="0 0 24 24"><use href="#i-settings"/></svg></span>
+          </div>
+        </div>
+
+        <div style="padding:0 16px">
+          <div class="fcard" style="background:linear-gradient(135deg,#1F5FA9,#164A85);border:0;color:#fff">
+            <div class="frow">
+              <span class="avatar" style="background:rgba(255,255,255,.22)">Д</span>
+              <span class="grow">
+                <span style="font-size:15px;font-weight:600">Данияр Сериков</span>
+                <span style="display:block;font-size:11.5px;opacity:.85;margin-top:2px">+7 700 123 45 67 · клиент</span>
+              </span>
+              <span class="pill" style="background:rgba(255,255,255,.2);color:#fff">KZT</span>
+            </div>
+            <div class="divider" style="background:rgba(255,255,255,.22)"></div>
+            <div class="between"><span style="font-size:11.5px;opacity:.85">Доступно</span><span class="tnum" style="font-size:20px;font-weight:700">3 813 516,50 ₸</span></div>
+            <div class="between mt-6"><span style="font-size:11.5px;opacity:.85">На счёте / зарезервировано</span><span class="tnum" style="font-size:11.5px">4 119 986,50 ₸ / 306 470,00 ₸</span></div>
+          </div>
+
+          <div class="frow mt-10" style="gap:8px">
+            <span class="btn btn-secondary btn-md grow" style="font-size:13px"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px"><use href="#i-send"/></svg>Перевести</span>
+            <span class="btn btn-secondary btn-md grow" style="font-size:13px"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px"><use href="#i-list"/></svg>История</span>
+            <span class="btn btn-secondary btn-md grow" style="font-size:13px"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px"><use href="#i-plus"/></svg>Пополнить</span>
+          </div>
+
+          <div class="fcard">
+            <div class="f-title">Мои сервисы</div>
+            <div class="frow mt-10">
+              <span class="thumb" style="width:36px;height:36px;border-radius:11px"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><use href="#i-pin"/></svg></span>
+              <span class="grow f-title" style="font-size:13px">ORTA Taxi</span><span class="f-sub">3 машины рядом</span>
+            </div>
+            <div class="frow">
+              <span class="thumb g" style="width:36px;height:36px;border-radius:11px"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><use href="#i-cart"/></svg></span>
+              <span class="grow f-title" style="font-size:13px">ORTA Market</span><span class="f-sub">4 заказа</span>
+            </div>
+            <div class="frow">
+              <span class="thumb p" style="width:36px;height:36px;border-radius:11px"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><use href="#i-doc"/></svg></span>
+              <span class="grow f-title" style="font-size:13px">Кабинет водителя</span><span class="pill ok">доступен</span>
+            </div>
+          </div>
+
+          <div class="fcard">
+            <div class="frow">
+              <svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-500)"><use href="#i-shield"/></svg>
+              <span class="grow f-sub" style="color:var(--ink-600)">Безопасность и лимиты: 100 000,00 ₸ в день, 60 000,00 ₸ израсходовано</span>
+              <svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--ink-400);transform:rotate(-90deg)"><use href="#i-chevron-down"/></svg>
+            </div>
+          </div>
+
+          <div class="btn btn-secondary btn-md mt-10" style="width:100%">
+            <svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px"><use href="#i-logout"/></svg>Выйти
+          </div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <span class="fab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-plus"/></svg></span>
+        <span class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-home"/></svg>Главная</span>
+        <span class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg>Каталог</span>
+        <span class="tab"><svg class="ic" viewBox="0 0 24 24"><use href="#i-list"/></svg>Заказы</span>
+        <span class="tab on"><svg class="ic" viewBox="0 0 24 24"><use href="#i-person"/></svg>Профиль</span>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">14</span><span class="cap-title">Профиль и счёт</span><span class="st st-work">Работает</span></div>
+      <p class="cap-note">
+        Баланс, зарезервированное и доступное — три разных числа, и это главное, что должен понимать
+        пользователь: <code>availableMinor = balanceMinor − heldMinor</code>. Быстрые действия ведут в
+        переводы и историю, ниже — сервисы и лимиты (100 000,00 ₸ в день, израсходовано 60 000,00 ₸).
+        Эндпоинты: <code>GET /api/v1/accounts</code>, <code>GET /api/v1/accounts/{id}/limits</code>,
+        <code>GET /api/v1/accounts/{id}/holds?status=ACTIVE</code>.
+      </p>
+    </div>
+  </div>
+
+  <!-- --------------------------------------------- 15. КАБИНЕТ ВОДИТЕЛЯ -->
+  <div class="swrap">
+    <div class="phone">
+      <div class="sb"><span class="tnum">6:20</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+      <div class="ph" style="background:var(--bg);padding:0 16px">
+        <div class="frow mt-6" style="padding:4px 0 12px">
+          <span class="grow"><span class="t-h1" style="font-size:20px">Кабинет водителя</span><span class="f-sub">Айдар · Toyota Camry 727 ABC 02</span></span>
+          <span class="pill">Не на линии</span>
+        </div>
+
+        <div class="fcard">
+          <div class="frow">
+            <svg class="ic" viewBox="0 0 24 24" style="color:var(--brand-600)"><use href="#i-shield"/></svg>
+            <span class="grow"><span class="f-title">Выйти на линию</span><span class="f-sub">Документы проверены, можно начинать смену</span></span>
+            <span style="width:52px;height:32px;border-radius:16px;background:var(--ink-200);position:relative;display:block">
+              <span style="position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:var(--sh-sm);display:block"></span>
+            </span>
+          </div>
+          <div class="divider"></div>
+          <div class="kv"><span class="k">Последняя смена</span><span class="v">1 окт · 6 ч 40 мин</span></div>
+          <div class="kv"><span class="k">Позиции уходят</span><span class="v">раз в 4 секунды</span></div>
+        </div>
+
+        <div class="fcard">
+          <div class="sec-title row"><span>Документы</span><span class="pill ok">все действуют</span></div>
+          <div class="frow">
+            <span class="grow"><span class="f-title" style="font-size:13px">Водительские права</span><span class="f-sub">DRIVING_LICENCE · до 14.03.2029</span></span>
+            <svg class="ic" viewBox="0 0 24 24" style="color:var(--success-500);width:18px;height:18px"><use href="#i-check"/></svg>
+          </div>
+          <div class="frow">
+            <span class="grow"><span class="f-title" style="font-size:13px">Техосмотр</span><span class="f-sub" style="color:var(--warning-700)">VEHICLE_INSPECTION · до 01.12.2026, осталось 60 дней</span></span>
+            <span class="pill warn">истекает</span>
+          </div>
+          <div class="frow">
+            <span class="grow"><span class="f-title" style="font-size:13px">Медосмотр</span><span class="f-sub">MEDICAL_CHECK · до 20.06.2027</span></span>
+            <svg class="ic" viewBox="0 0 24 24" style="color:var(--success-500);width:18px;height:18px"><use href="#i-check"/></svg>
+          </div>
+          <div class="divider"></div>
+          <div class="frow"><svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-500);width:18px;height:18px"><use href="#i-refresh"/></svg><span class="grow f-sub">Загрузить или продлить документ</span><span class="link">Выбрать</span></div>
+        </div>
+
+        <div class="notice">
+          <b>Правило сервиса, а не подсказка</b>
+          Просроченный документ равен отсутствующему: попытка выйти на линию вернёт
+          <code class="mono">422 DRIVER_DOCUMENT_EXPIRED</code>, а без трёх документов —
+          <code class="mono">422 DRIVER_DOCUMENTS_INCOMPLETE</code>.
+        </div>
+
+        <div class="fcard">
+          <div class="between">
+            <div><div class="f-sub">Заработано за сентябрь</div><div class="tnum" style="font-size:20px;font-weight:700">412 900,00 ₸</div></div>
+            <div class="center"><div class="f-sub">Выплата</div><div class="pill ok">выплачено 1 окт</div></div>
+          </div>
+        </div>
+
+        <span class="appbar-spacer"></span>
+        <div class="btn btn-primary" style="width:100%;margin-bottom:10px">Выйти на линию</div>
+      </div>
+      <div class="home-ind"><span></span></div>
+    </div>
+    <div class="cap">
+      <div class="cap-line"><span class="cap-num">15</span><span class="cap-title">Кабинет водителя</span><span class="st st-dev">API работает, экрана нет — Ф4</span></div>
+      <p class="cap-note">
+        Управление сменой и документами со сроком действия, заработок и выплата. Всё это уже есть на
+        сервере (<code>driver-service</code>), но в Android-клиенте отдельного приложения водителя пока
+        нет — этот экран дизайн-предложение для Ф4. Эндпоинты: <code>GET /api/v1/drivers/me</code>,
+        <code>POST /api/v1/drivers/me/documents</code>, <code>POST /api/v1/drivers/me/status</code>
+        (события <code>driver.online</code> / <code>driver.offline</code> через outbox).
+      </p>
+    </div>
+  </div>
+  </div>
+</section>
+
+<!-- ========================= 3. ДИСПЕТЧЕРСКАЯ ========================= -->
+<section class="sec">
+  <div class="sec-head">
+    <div>
+      <h2><span class="sec-num">3</span>Диспетчерская — планшет 1024×768</h2>
+      <p class="sec-note">
+        Единственный экран борда, который существует в вебе и уже работает: живая карта парка на
+        <code>/dispatch</code>. Показан как есть — с красным акцентом веб-приложения, списком ближайших
+        водителей и честной оговоркой про устаревшие позиции.
+      </p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div style="width:1024px">
+      <div class="phone tablet">
+        <div style="height:54px;flex:none;border-bottom:1px solid var(--ink-100);display:flex;align-items:center;gap:14px;padding:0 18px;background:#fff">
+          <span style="width:26px;height:26px;border-radius:8px;background:var(--console);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px">k</span>
+          <span style="font-size:15px;font-weight:700;letter-spacing:-.02em">taxi</span>
+          <span class="appbar-spacer"></span>
+          <span class="pill">Диспетчер · роль DISPATCHER</span>
+          <span class="chip" style="padding:6px 11px">Выйти</span>
+        </div>
+
+        <div class="tab-body">
+          <div class="side">
+            <span class="sitem"><svg class="ic" viewBox="0 0 24 24"><use href="#i-home"/></svg>Главная</span>
+            <span class="sitem"><svg class="ic" viewBox="0 0 24 24"><use href="#i-send"/></svg>Перевод</span>
+            <span class="sitem"><svg class="ic" viewBox="0 0 24 24"><use href="#i-card"/></svg>Платежи</span>
+            <span class="sitem"><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg>Маркет</span>
+            <span class="sitem"><svg class="ic" viewBox="0 0 24 24"><use href="#i-box"/></svg>Корзина</span>
+            <span class="sitem"><svg class="ic" viewBox="0 0 24 24"><use href="#i-list"/></svg>Заказы</span>
+            <span class="sitem on"><svg class="ic" viewBox="0 0 24 24"><use href="#i-map"/></svg>Диспетчерская</span>
+            <span class="appbar-spacer"></span>
+            <span class="f-sub" style="padding:0 12px">Роль нужна одна из трёх: диспетчер, поддержка, администратор</span>
+          </div>
+
+          <div class="tab-main">
+            <div class="tab-top">
+              <div>
+                <h3>Диспетчерская</h3>
+                <p>Живая карта водителей на линии</p>
+              </div>
+              <div class="frow" style="gap:8px">
+                <span class="pill ok">онлайн-опрос 2 с</span>
+                <span class="chip" style="padding:6px 12px">Обновить</span>
+              </div>
+            </div>
+
+            <div class="kpis">
+              <div class="kpi"><div class="kk">На линии</div><div class="kv2">7</div></div>
+              <div class="kpi"><div class="kk">С позицией</div><div class="kv2">7</div></div>
+              <div class="kpi"><div class="kk">Устаревших позиций</div><div class="kv2">1</div></div>
+            </div>
+
+            <div class="tab-grid">
+              <div class="mapcard">
+                <div class="mh">
+                  <b>Карта водителей</b>
+                  <span>Данные на 02.10.2026, 9:44 · устаревшими считаются позиции старше 20 с</span>
+                </div>
+                <div class="mm" style="position:relative">
+                  <svg viewBox="0 0 640 420" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%">
+                    <use href="#mapTablet"/>
+                    <use href="#m-carBig" class="mk-fresh" transform="translate(212 128) rotate(153)"/>
+                    <use href="#m-carBig" class="mk-fresh" transform="translate(360 236) rotate(88)"/>
+                    <use href="#m-carBig" class="mk-fresh" transform="translate(300 320) rotate(20)"/>
+                    <use href="#m-carBig" class="mk-fresh" transform="translate(180 300) rotate(260)"/>
+                    <use href="#m-carBig" class="mk-fresh" transform="translate(452 160) rotate(200)"/>
+                    <use href="#m-carBig" class="mk-fresh" transform="translate(464 356) rotate(120)"/>
+                    <use href="#m-carBig" class="mk-stale" transform="translate(168 368)"/>
+                    <use href="#m-cand" class="mk-cand" transform="translate(268 176)"/>
+                    <use href="#m-cand" class="mk-cand" transform="translate(316 268)"/>
+                    <use href="#m-cand" class="mk-cand" transform="translate(238 344)"/>
+                    <use href="#m-cand" class="mk-cand" transform="translate(400 208)"/>
+                    <circle cx="212" cy="128" r="22" fill="none" stroke="#0F172A" stroke-width="2.5" opacity=".55"/>
+                  </svg>
+                  <div class="map-legend">
+                    <span><i style="background:var(--console)"></i>Свежая позиция</span>
+                    <span><i style="background:var(--ink-400)"></i>Устаревшая позиция</span>
+                    <span><i style="background:var(--info-500)"></i>Ближайшие к выбранному</span>
+                    <span style="color:var(--ink-400)">Радиус 3,0 км · до 8 записей</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="between">
+                  <h4>Водитель 1</h4>
+                  <span class="pill ok">На линии</span>
+                </div>
+                <div class="mono" style="color:var(--ink-500);margin-top:2px">01M3XZ5DXRHACB56BANH5SX5</div>
+                <div class="dl">
+                  <span class="dk">Телефон</span><span class="dv">+77015677675</span>
+                  <span class="dk">Статус</span><span class="dv">На линии</span>
+                  <span class="dk">Скорость</span><span class="dv">22 км/ч</span>
+                  <span class="dk">Курс</span><span class="dv">153°</span>
+                  <span class="dk">Возраст позиции</span><span class="dv">3 с назад</span>
+                  <span class="dk">Координаты</span><span class="dv">43.24543, 76.90724</span>
+                </div>
+                <div class="nlist">
+                  <div class="f-title" style="font-size:13px;margin-top:6px">Ближайшие водители</div>
+                  <div class="f-sub">Радиус 3,0 км · до 8 записей, первая — сам водитель</div>
+                  <div class="nl"><span class="mini-num">1</span><span class="nl-n">Водитель 1 <span class="pill brand" style="font-size:10px;padding:2px 7px">выбранный</span></span><span class="nl-c">0 м · 3 с</span></div>
+                  <div class="nl"><span class="mini-num">2</span><span class="nl-n">Водитель 2</span><span class="nl-c">1,5 км · 3 с</span></div>
+                  <div class="nl"><span class="mini-num">3</span><span class="nl-n">Водитель 7</span><span class="nl-c">2,8 км · 2 с</span></div>
+                  <div class="nl"><span class="mini-num">4</span><span class="nl-n">Водитель 5</span><span class="nl-c">3,4 км · 4 с</span></div>
+                </div>
+                <div class="divider"></div>
+                <p class="small">
+                  «Замолчавший» водитель остаётся на карте с флагом <code>stale</code>, но кандидатом на
+                  поездку не становится: диспетчеру показать можно, пассажиру обещать — нет.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap">
+        <div class="cap-line"><span class="cap-num">16</span><span class="cap-title">Диспетчерская · <span class="mono">/dispatch</span></span><span class="st st-work">Работает (Ф1)</span></div>
+        <p class="cap-note">
+          Счётчики «на линии / с позицией / устаревших», карта со свежими и замолчавшими машинами,
+          панель выбранного водителя с телефоном, скоростью, курсом и координатами, список ближайших
+          кандидатов. Эндпоинты: <code>GET /api/v1/dispatch/drivers?includeStale=true</code> (опрос раз
+          в 2 с), <code>GET /api/v1/dispatch/nearest?lat&lon&radiusM&limit</code>; роль — <code>DISPATCHER</code>,
+          иначе <code>403 FORBIDDEN_FLEET_ACCESS</code>. Проверено e2e: 40 проверок, событие до карты за 277 мс.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================== 4. СОСТОЯНИЯ ========================== -->
+<section class="sec">
+  <div class="sec-head">
+    <div>
+      <h2><span class="sec-num">4</span>Состояния: загрузка, пусто, ошибка</h2>
+      <p class="sec-note">
+        Экран без этих трёх состояний не готов. Загрузка — скелетон той же формы, что и контент
+        (ничего не «прыгает»), пусто — объяснение и один следующий шаг, ошибка — код из контракта
+        и <code>correlationId</code>, по которому поддержка найдёт логи запроса.
+      </p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <!-- витрина -->
+    <div class="swrap swrap-mini">
+      <div class="phone mini">
+        <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+        <div class="ph" style="background:var(--bg);padding:0 14px">
+          <div class="sk sk-line" style="width:120px;height:16px;margin-top:8px"></div>
+          <div class="sk" style="height:40px;border-radius:12px;margin-top:10px"></div>
+          <div class="frow" style="gap:8px;margin-top:10px"><div class="sk" style="height:28px;width:64px;border-radius:999px"></div><div class="sk" style="height:28px;width:86px;border-radius:999px"></div><div class="sk" style="height:28px;width:54px;border-radius:999px"></div></div>
+          <div class="pgrid" style="padding:0;margin-top:12px">
+            <div><div class="sk sk-tile" style="height:96px"></div><div class="sk sk-line" style="margin-top:8px"></div><div class="sk sk-line" style="margin-top:6px;width:60%"></div></div>
+            <div><div class="sk sk-tile" style="height:96px"></div><div class="sk sk-line" style="margin-top:8px"></div><div class="sk sk-line" style="margin-top:6px;width:60%"></div></div>
+            <div><div class="sk sk-tile" style="height:96px"></div><div class="sk sk-line" style="margin-top:8px"></div><div class="sk sk-line" style="margin-top:6px;width:60%"></div></div>
+            <div><div class="sk sk-tile" style="height:96px"></div><div class="sk sk-line" style="margin-top:8px"></div><div class="sk sk-line" style="margin-top:6px;width:60%"></div></div>
+          </div>
+        </div>
+        <div class="home-ind"><span></span></div>
+      </div>
+      <div class="cap"><div class="cap-line"><span class="cap-title" style="font-size:13px">Витрина · загрузка</span></div>
+      <p class="cap-note">Скелетон повторяет сетку карточек: 2 колонки, те же отступы. Никаких «вращающихся кругов» на весь экран — форма известна заранее.</p></div>
+    </div>
+
+    <div class="swrap swrap-mini">
+      <div class="phone mini">
+        <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+        <div class="ph" style="background:var(--bg);padding:0 14px;display:flex;flex-direction:column">
+          <div class="frow" style="padding:8px 0 10px"><span class="iconbtn" style="width:32px;height:32px;background:var(--ink-100)"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;transform:rotate(90deg)"><use href="#i-chevron-down"/></svg></span><span class="f-title">ORTA Market</span></div>
+          <div class="searchbar" style="margin:0;height:42px;font-size:13px">Samsung S24 Ultra</div>
+          <div class="center" style="margin-top:60px">
+            <svg class="ic" viewBox="0 0 24 24" style="width:44px;height:44px;margin:0 auto;color:var(--ink-400)"><use href="#i-search"/></svg>
+            <div class="t-h3 mt-10">Ничего не найдено</div>
+            <p class="small" style="margin:8px 10px 0">По запросу «Samsung S24 Ultra» товаров нет. Поиск идёт по названию, бренду и описанию — попробуйте короче: «Samsung Galaxy».</p>
+          </div>
+          <span class="appbar-spacer"></span>
+          <div class="btn btn-secondary btn-md" style="width:100%;margin-bottom:10px">Сбросить фильтры</div>
+        </div>
+        <div class="home-ind"><span></span></div>
+      </div>
+      <div class="cap"><div class="cap-line"><span class="cap-title" style="font-size:13px">Витрина · пусто</span></div>
+      <p class="cap-note">Пустой ответ — не ошибка: <code>200</code> с пустым <code>items</code>. Поэтому здесь нет слова «ошибка», зато есть подсказка, как искать иначе.</p></div>
+    </div>
+
+    <div class="swrap swrap-mini">
+      <div class="phone mini">
+        <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+        <div class="ph" style="background:var(--bg);padding:0 14px">
+          <div class="frow" style="padding:8px 0 10px"><span class="f-title">ORTA Market</span></div>
+          <div class="notice bad">
+            <b>Не удалось загрузить каталог</b>
+            Сервис каталога не ответил вовремя. Мы уже повторили запрос — и он снова не прошёл.
+          </div>
+          <div class="fcard mt-10">
+            <div class="mono" style="color:var(--ink-700)">503 · SERVICE_UNAVAILABLE</div>
+            <div class="divider" style="margin:9px 0"></div>
+            <div class="f-sub">correlationId</div>
+            <div class="mono" style="font-size:12px;color:var(--ink-900);word-break:break-all">01J8ZCQ7Y4R3F0N5G8K2M9QW1T</div>
+            <p class="small mt-8">Назовите этот id поддержке — по нему найдутся все логи запроса, включая соседние сервисы.</p>
+          </div>
+          <span class="appbar-spacer"></span>
+          <div class="btn btn-primary btn-md" style="width:100%">Повторить</div>
+          <div class="btn btn-ghost btn-md mt-6" style="width:100%;margin-bottom:10px">Открыть заказы</div>
+        </div>
+        <div class="home-ind"><span></span></div>
+      </div>
+      <div class="cap"><div class="cap-line"><span class="cap-title" style="font-size:13px">Витрина · ошибка</span></div>
+      <p class="cap-note">RFC 7807 целиком: <code>status</code>, машинный <code>code</code>, <code>correlationId</code>. Кнопка «Повторить» — это тот же <code>Idempotency-Key</code>, поэтому дубля не будет.</p></div>
+    </div>
+
+    <!-- заказы -->
+    <div class="swrap swrap-mini">
+      <div class="phone mini">
+        <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+        <div class="ph" style="background:var(--bg);padding:0 14px">
+          <div class="frow" style="padding:8px 0 10px"><span class="f-title">Заказы</span></div>
+          <div class="frow" style="gap:8px"><div class="sk" style="height:28px;width:52px;border-radius:999px"></div><div class="sk" style="height:28px;width:78px;border-radius:999px"></div><div class="sk" style="height:28px;width:96px;border-radius:999px"></div></div>
+          <div class="fcard mt-10" style="padding:12px"><div class="sk sk-line" style="width:60%"></div><div class="sk sk-line" style="margin-top:8px;width:85%"></div><div class="sk sk-line" style="margin-top:12px;width:40%;height:14px"></div></div>
+          <div class="fcard" style="padding:12px"><div class="sk sk-line" style="width:52%"></div><div class="sk sk-line" style="margin-top:8px;width:78%"></div><div class="sk sk-line" style="margin-top:12px;width:40%;height:14px"></div></div>
+          <div class="fcard" style="padding:12px"><div class="sk sk-line" style="width:66%"></div><div class="sk sk-line" style="margin-top:8px;width:70%"></div><div class="sk sk-line" style="margin-top:12px;width:40%;height:14px"></div></div>
+        </div>
+        <div class="home-ind"><span></span></div>
+      </div>
+      <div class="cap"><div class="cap-line"><span class="cap-title" style="font-size:13px">Заказы · загрузка</span></div>
+      <p class="cap-note">Три карточки-заготовки вместо пустого экрана: пользователь видит, что список уже едет.</p></div>
+    </div>
+
+    <div class="swrap swrap-mini">
+      <div class="phone mini">
+        <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+        <div class="ph" style="background:var(--bg);padding:0 14px;display:flex;flex-direction:column">
+          <div class="frow" style="padding:8px 0 10px"><span class="f-title">Заказы</span></div>
+          <div class="center" style="margin-top:56px">
+            <svg class="ic" viewBox="0 0 24 24" style="width:44px;height:44px;margin:0 auto;color:var(--ink-300)"><use href="#i-box"/></svg>
+            <div class="t-h3 mt-10">Заказов пока нет</div>
+            <p class="small" style="margin:8px 8px 0">Как только вы оформите первый заказ, он появится здесь: номер, статус, сумма и что происходит с доставкой.</p>
+          </div>
+          <span class="appbar-spacer"></span>
+          <div class="btn btn-primary btn-md" style="width:100%;margin-bottom:10px">В магазин</div>
+        </div>
+        <div class="home-ind"><span></span></div>
+      </div>
+      <div class="cap"><div class="cap-line"><span class="cap-title" style="font-size:13px">Заказы · пусто</span></div>
+      <p class="cap-note">Пустое состояние заказов — самое частое у нового пользователя. Поэтому здесь не «нет данных», а приглашение купить.</p></div>
+    </div>
+
+    <div class="swrap swrap-mini">
+      <div class="phone mini">
+        <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+        <div class="ph" style="background:var(--bg);padding:0 14px">
+          <div class="frow" style="padding:8px 0 10px"><span class="f-title">Заказы</span></div>
+          <div class="notice bad">
+            <b>Что-то сломалось на нашей стороне</b>
+            Заказ мог быть создан, но ответ до нас не дошёл — поэтому мы не показываем «ошибка» красным по всему экрану.
+          </div>
+          <div class="fcard mt-10">
+            <div class="mono" style="color:var(--ink-700)">500 · INTERNAL_ERROR</div>
+            <div class="divider" style="margin:9px 0"></div>
+            <div class="f-sub">correlationId</div>
+            <div class="mono" style="font-size:12px;color:var(--ink-900);word-break:break-all">01J8ZD1F5K7M2P9Q4R6T8V0W3X</div>
+            <p class="small mt-8">Текст внутренней ошибки наружу не отдаётся — это осознанно. Проверьте заказ через минуту: повтор запроса идемпотентен.</p>
+          </div>
+          <span class="appbar-spacer"></span>
+          <div class="btn btn-secondary btn-md" style="width:100%">Проверить заказы</div>
+        </div>
+        <div class="home-ind"><span></span></div>
+      </div>
+      <div class="cap"><div class="cap-line"><span class="cap-title" style="font-size:13px">Заказы · ошибка 500</span></div>
+      <p class="cap-note">Тут важно не соврать: если запрос мог выполниться, экран не должен кричать «не создан». Отсюда формулировка «мог быть создан» и кнопка «Проверить».</p></div>
+    </div>
+
+    <!-- счёт -->
+    <div class="swrap swrap-mini">
+      <div class="phone mini">
+        <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+        <div class="ph" style="background:var(--bg);padding:0 14px">
+          <div class="frow" style="padding:8px 0 10px"><span class="f-title">Профиль</span></div>
+          <div class="sk" style="height:112px;border-radius:16px"></div>
+          <div class="frow" style="gap:8px;margin-top:10px"><div class="sk" style="height:40px;border-radius:12px;flex:1"></div><div class="sk" style="height:40px;border-radius:12px;flex:1"></div></div>
+          <div class="sk sk-line" style="width:110px;margin-top:16px"></div>
+          <div class="fcard mt-10" style="padding:12px"><div class="sk sk-line" style="width:70%"></div><div class="sk sk-line" style="margin-top:8px;width:45%"></div></div>
+          <div class="fcard" style="padding:12px"><div class="sk sk-line" style="width:62%"></div><div class="sk sk-line" style="margin-top:8px;width:52%"></div></div>
+        </div>
+        <div class="home-ind"><span></span></div>
+      </div>
+      <div class="cap"><div class="cap-line"><span class="cap-title" style="font-size:13px">Счёт · загрузка</span></div>
+      <p class="cap-note">Скелетон держит форму карточки счёта: баланс, холд, кнопки. Суммы появляются сразу целиком — частями деньги показывать нельзя.</p></div>
+    </div>
+
+    <div class="swrap swrap-mini">
+      <div class="phone mini">
+        <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+        <div class="ph" style="background:var(--bg);padding:0 14px;display:flex;flex-direction:column">
+          <div class="frow" style="padding:8px 0 10px"><span class="f-title">Профиль</span></div>
+          <div class="center" style="margin-top:50px">
+            <svg class="ic" viewBox="0 0 24 24" style="width:44px;height:44px;margin:0 auto;color:var(--ink-300)"><use href="#i-card"/></svg>
+            <div class="t-h3 mt-10">Счёт не открыт</div>
+            <p class="small" style="margin:8px 8px 0">Откройте счёт в тенге: на него приходят переводы, с него платятся заказы и поездки. Один счёт на валюту и тип.</p>
+          </div>
+          <div class="fcard mt-16">
+            <div class="kv"><span class="k">Валюта</span><span class="v">KZT</span></div>
+            <div class="kv"><span class="k">Тип</span><span class="v">Текущий счёт</span></div>
+          </div>
+          <span class="appbar-spacer"></span>
+          <div class="btn btn-primary btn-md" style="width:100%;margin-bottom:10px">Открыть счёт</div>
+        </div>
+        <div class="home-ind"><span></span></div>
+      </div>
+      <div class="cap"><div class="cap-line"><span class="cap-title" style="font-size:13px">Счёт · пусто</span></div>
+      <p class="cap-note">Создание счёта идемпотентно: повторное нажатие вернёт тот же счёт, а не второй. <code>POST /api/v1/accounts</code>.</p></div>
+    </div>
+
+    <div class="swrap swrap-mini">
+      <div class="phone mini">
+        <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+        <div class="ph" style="background:var(--bg);padding:0 14px">
+          <div class="frow" style="padding:8px 0 10px"><span class="f-title">Профиль</span></div>
+          <div class="notice bad">
+            <b>Сессия истекла</b>
+            Токен живёт час. Показывать баланс из кэша мы не станем: лучше попросить войти, чем показать устаревшую сумму.
+          </div>
+          <div class="fcard mt-10">
+            <div class="mono" style="color:var(--ink-700)">401 · UNAUTHORIZED</div>
+            <div class="divider" style="margin:9px 0"></div>
+            <div class="f-sub">correlationId</div>
+            <div class="mono" style="font-size:12px;color:var(--ink-900);word-break:break-all">01J8ZD9H2N4B6C8D0E2F4G6H8J</div>
+          </div>
+          <span class="appbar-spacer"></span>
+          <div class="btn btn-primary btn-md" style="width:100%;margin-bottom:10px">Войти заново</div>
+        </div>
+        <div class="home-ind"><span></span></div>
+      </div>
+      <div class="cap"><div class="cap-line"><span class="cap-title" style="font-size:13px">Счёт · ошибка 401</span></div>
+      <p class="cap-note">Истёкший токен — не «ошибка сервера»: экран объясняет причину и даёт ровно одно действие.</p></div>
+    </div>
+
+    <!-- поездка -->
+    <div class="swrap swrap-mini">
+      <div class="phone mini">
+        <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+        <div class="ph" style="background:var(--bg)">
+          <div class="sk" style="height:190px;border-radius:0"></div>
+          <div style="padding:0 14px">
+            <div class="sk sk-line" style="width:140px;height:15px;margin-top:14px"></div>
+            <div class="sk" style="height:64px;border-radius:14px;margin-top:12px"></div>
+            <div class="sk" style="height:44px;border-radius:12px;margin-top:10px"></div>
+            <div class="sk" style="height:48px;border-radius:12px;margin-top:12px"></div>
+          </div>
+        </div>
+        <div class="home-ind"><span></span></div>
+      </div>
+      <div class="cap"><div class="cap-line"><span class="cap-title" style="font-size:13px">Поездка · загрузка</span></div>
+      <p class="cap-note">Карта грузится отдельно от карточки тарифа: тайлы приходят по сети, и это не повод блокировать весь экран.</p></div>
+    </div>
+
+    <div class="swrap swrap-mini">
+      <div class="phone mini">
+        <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+        <div class="ph" style="background:var(--bg)">
+          <div class="mapbox" style="height:190px">
+            <svg viewBox="0 0 390 300" preserveAspectRatio="xMidYMid slice">
+              <use href="#mapPhone"/>
+              <use href="#m-pinA" transform="translate(176 150)"/>
+              <circle cx="176" cy="150" r="52" fill="none" stroke="#1F5FA9" stroke-width="2" stroke-dasharray="6 6" opacity=".4"/>
+            </svg>
+          </div>
+          <div style="padding:0 14px;display:flex;flex-direction:column;flex:1">
+            <div class="t-h3 mt-12">Свободных машин рядом нет</div>
+            <p class="small mt-6">Радиус расширен до 5 км, но никто не принял заявку за 2 минуты. Деньги не списаны: холда не было.</p>
+            <div class="notice mt-10"><code class="mono">NO_DRIVERS_FOUND</code> — это не ошибка сервиса, а честный ответ города. Попробуйте другой тариф или время.</div>
+            <span class="appbar-spacer"></span>
+            <div class="btn btn-primary btn-md" style="width:100%">Попробовать снова</div>
+            <div class="btn btn-ghost btn-md mt-6" style="width:100%;margin-bottom:10px">Выбрать другой тариф</div>
+          </div>
+        </div>
+        <div class="home-ind"><span></span></div>
+      </div>
+      <div class="cap"><div class="cap-line"><span class="cap-title" style="font-size:13px">Поездка · пусто (нет машин)</span></div>
+      <p class="cap-note">Код <code>NO_DRIVERS_FOUND</code> придёт с Ф3 (автоматический матчинг). Ключевое, что видит пользователь: деньги не тронуты.</p></div>
+    </div>
+
+    <div class="swrap swrap-mini">
+      <div class="phone mini">
+        <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
+        <div class="ph" style="background:var(--bg);padding:0 14px">
+          <div class="frow" style="padding:8px 0 10px"><span class="f-title">ORTA Taxi</span></div>
+          <div class="notice bad">
+            <b>Сервис поездок недоступен</b>
+            Заявка не создана, деньги не тронуты. Мы не показываем «ищем водителя», если искать некому.
+          </div>
+          <div class="fcard mt-10">
+            <div class="mono" style="color:var(--ink-700)">503 · DOWNSTREAM_UNAVAILABLE</div>
+            <div class="divider" style="margin:9px 0"></div>
+            <div class="f-sub">correlationId</div>
+            <div class="mono" style="font-size:12px;color:var(--ink-900);word-break:break-all">01J8ZE4M6P8R0T2V4X6Z8B0D2F</div>
+            <p class="small mt-8">Операция не выполнена — повторить безопасно: заявка идемпотентна по <code>Idempotency-Key</code>.</p>
+          </div>
+          <span class="appbar-spacer"></span>
+          <div class="btn btn-secondary btn-md" style="width:100%;margin-bottom:10px">Повторить</div>
+        </div>
+        <div class="home-ind"><span></span></div>
+      </div>
+      <div class="cap"><div class="cap-line"><span class="cap-title" style="font-size:13px">Поездка · ошибка 503</span></div>
+      <p class="cap-note">Отдельно от 500: <code>DOWNSTREAM_UNAVAILABLE</code> означает, что операция точно не выполнена, и так и надо написать.</p></div>
+    </div>
+  </div>
+
+  <div class="card mt-16">
+    <div class="card-h"><h3>Общие правила этих состояний</h3><span class="hint">одно для всех экранов</span></div>
+    <div class="card-b cols cols-3">
+      <div>
+        <div class="f-title">Никогда не показываем «пусто» вместо «не загрузилось»</div>
+        <p class="small mt-6">Пустой ответ (<code>200</code>, <code>items: []</code>) и ошибка запроса — разные экраны. Смешать их значит соврать пользователю.</p>
+      </div>
+      <div>
+        <div class="f-title">5xx всегда с correlationId</div>
+        <p class="small mt-6">Один и тот же id идёт по HTTP, MDC, Kafka-заголовку и логам сервисов — поддержке достаточно одной строки от пользователя.</p>
+      </div>
+      <div>
+        <div class="f-title">Тексты — из <code>code</code>, а не из <code>detail</code></div>
+        <p class="small mt-6">Клиент выбирает фразу по машинному коду, а <code>detail</code> показывает как есть: он для человека, но не для логики.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= 5. ПОТОКИ ============================= -->
+<section class="sec">
+  <div class="sec-head">
+    <div>
+      <h2><span class="sec-num">5</span>Потоки: где именно двигаются деньги</h2>
+      <p class="sec-note">
+        Зелёные узлы — деньги, синие — события Kafka, серые — обычные вызовы. Схемы показывают, в какой
+        момент ставится холд, где происходит списание и какое событие уходит наружу.
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h3>Перевод по номеру</h3><span class="hint">работает · проверено e2e</span></div>
+    <div class="card-b">
+      <div class="flowwrap">
+        <div class="fnode start"><div class="fn-t">Экран перевода</div><div class="fn-s">Сумма 15 000,00 ₸, номер получателя, счёт списания</div><div class="fn-e">GET /api/v1/accounts</div></div>
+        <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="fnode"><div class="fn-t">Проверки до денег</div><div class="fn-s">Лимит дня 100 000,00 ₸ (израсходовано 60 000,00 ₸) и скорость операций</div><div class="fn-e">422 LIMIT_EXCEEDED / VELOCITY_EXCEEDED</div></div>
+        <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="fnode money"><div class="fn-t">Холд</div><div class="fn-s">Резерв на счёте отправителя: деньги ещё не ушли, но недоступны</div><div class="fn-e">POST /api/v1/accounts/internal/holds</div></div>
+        <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="fnode money"><div class="fn-t">Capture: двойная запись</div><div class="fn-s"><span class="tnum">TRANSFER_OUT −15 000,00 ₸</span> и <span class="tnum">TRANSFER_IN +15 000,00 ₸</span> в одной транзакции</div><div class="fn-e">Σ debit = Σ credit</div></div>
+        <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="fnode event"><div class="fn-t">Событие</div><div class="fn-s">Транзакционный outbox → relay → Kafka; клиент видит чек и историю</div><div class="fn-e">payment.events · payment.completed</div></div>
+      </div>
+      <div class="legend-inline">
+        <span><i style="background:var(--danger-500)"></i>Идемпотентность: <code>Idempotency-Key</code> обязателен, повтор с тем же телом вернёт исходный ответ (<code>201</code> и тот же <code>paymentId</code>)</span>
+        <span><i style="background:var(--brand-500)"></i>Лимиты проверяются <b>до</b> резервирования: отказ не оставляет ни холда, ни проводки</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-16">
+    <div class="card-h"><h3>Покупка в маркетплейсе</h3><span class="hint">работает · заморожено, но e2e проходят</span></div>
+    <div class="card-b">
+      <div class="flowwrap">
+        <div class="fnode start"><div class="fn-t">Корзина и оформление</div><div class="fn-s">Товары 304 970,00 ₸ + доставка 1 500,00 ₸ = 306 470,00 ₸</div><div class="fn-e">POST /api/v1/orders · Idempotency-Key</div></div>
+        <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="fnode money"><div class="fn-t">Резерв стока</div><div class="fn-s">ACTIVE → COMMITTED (не декремент: видно, кто именно держит товар)</div><div class="fn-e">POST /api/v1/catalog/internal/stock/reservations</div></div>
+        <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="fnode money"><div class="fn-t">Оплата мерчантам</div><div class="fn-s">Платёж разделяется по продавцам: TechnoMart и FreshMarket — два получателя в одном заказе</div><div class="fn-e">POST /api/v1/payments/merchant</div></div>
+        <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="fnode event"><div class="fn-t">Статус заказа</div><div class="fn-s">DRAFT → PENDING_PAYMENT → PAID → CONFIRMED, история переходов append-only</div><div class="fn-e">order.paid</div></div>
+        <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="fnode money"><div class="fn-t">Долг и выплата продавцу</div><div class="fn-s">Покупатель заплатил 304 970,00 ₸ = продавцу 300 470,00 ₸ (net) + комиссия платформы 4 500,00 ₸</div><div class="fn-e">settlement.created → settlement.paid (PENDING → PAID)</div></div>
+      </div>
+      <div class="legend-inline">
+        <span><i style="background:var(--success-500)"></i><span class="holdbadge">reserve → capture</span> Комиссия удерживается на checkout, поэтому долг продавцу не зависит от того, когда пройдёт выплата</span>
+        <span><i style="background:var(--info-500)"></i><span class="kafka">kafka</span> Возврат успевает поглотиться до выплаты: <code>taxi.settlement.hold-period</code></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-16">
+    <div class="card-h"><h3>Заказ такси: котировка → холд → поездка → чек</h3><span class="hint">дизайн для Ф2–Ф3</span></div>
+    <div class="card-b">
+      <div class="flowwrap">
+        <div class="fnode start"><div class="fn-t">Котировка</div><div class="fn-s">Тариф + маршрут + цена 890,00 ₸, TTL 90 с, HMAC-подпись (подделать сумму нельзя)</div><div class="fn-e">POST /api/v1/trips/quote</div></div>
+        <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="fnode"><div class="fn-t">Заявка</div><div class="fn-s">Деньги пока не трогаем: создаётся поездка со статусом SEARCHING</div><div class="fn-e">POST /api/v1/trips</div></div>
+        <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="fnode event"><div class="fn-t">Веер офферов</div><div class="fn-s">3 водителя, оффер 15 с, радиус 1 → 3 → 5 км, ранжирование по ETA, а не по прямой</div><div class="fn-e">offer.created / offer.expired · trip.requested</div></div>
+        <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="fnode money"><div class="fn-t">Назначение → холд</div><div class="fn-s">Резерв 890,00 ₸ на счёте пассажира; нет денег — 422 INSUFFICIENT_FUNDS, поездка не стартует</div><div class="fn-e">POST /api/v1/accounts/internal/holds</div></div>
+        <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="fnode money"><div class="fn-t">Завершение → capture</div><div class="fn-s">Пересчёт по факту: 1 848,00 ₸ = водителю 1 626,24 ₸ + комиссия 221,76 ₸</div><div class="fn-e">RIDE_PAYMENT · DRIVER_ACCRUAL</div></div>
+        <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="fnode event"><div class="fn-t">Чек, оценка, выплата водителю</div><div class="fn-s">Чек — отдельная сущность (фискализация в РК обязательна), выплата — та же механика, что расчёт с мерчантом</div><div class="fn-e">trip.completed · settlement.paid</div></div>
+      </div>
+      <div class="legend-inline">
+        <span><i style="background:var(--warning-500)"></i>Отмена до подачи — <code>release</code> холда; после подачи — <code>cancellation_fee</code> и компенсация водителю со счёта suspense</span>
+        <span><i style="background:var(--ink-400)"></i>Двойное назначение запрещено уникальным индексом в БД, а не проверкой в коде: <code>trip_one_active_per_driver</code></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== 6. ПОКРЫТИЕ =========================== -->
+<section class="sec">
+  <div class="sec-head">
+    <div>
+      <h2><span class="sec-num">6</span>Карта покрытия: экран → статус → код</h2>
+      <p class="sec-note">
+        Честная таблица без «зелёных галочек»: у каждого экрана указано, работает ли он, где живёт в коде
+        и какие эндпоинты его кормят. Экран без статуса «работает» — это дизайн-предложение, а не обещание.
+      </p>
+    </div>
+  </div>
+
+  <div class="cover-wrap">
+    <table class="cov">
+      <thead>
+        <tr><th style="width:250px">Экран</th><th style="width:190px">Статус</th><th style="width:330px">Где в коде</th><th>Эндпоинты и события</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1. Вход</td><td><span class="st st-work">Работает</span></td><td><code>web/src/pages/LoginPage.tsx</code>, Android <code>feature/login</code></td><td><code>POST /api/v1/auth/token</code>, <code>GET /api/v1/auth/me</code></td></tr>
+        <tr><td>2. Главная ORTA</td><td><span class="st st-work">Работает</span></td><td>Android <code>feature/home/HomeScreen.kt</code>, <code>HomeServices.kt</code></td><td><code>GET /api/v1/auth/me</code>, <code>GET /api/v1/catalog/products</code></td></tr>
+        <tr><td>3. Taxi — заказ поездки</td><td><span class="st st-f2">Дизайн, Ф2</span></td><td>Сервиса нет: <code>trip-service</code> — план (<code>docs/taxi-roadmap.md</code> §10)</td><td><code>POST /api/v1/trips/quote</code>, <code>POST /api/v1/trips</code>, <code>GET /api/v1/dispatch/nearest</code></td></tr>
+        <tr><td>4. Taxi — поиск водителя</td><td><span class="st st-f2">Дизайн, Ф3</span></td><td>Матчинг — Ф3: веер офферов, <code>dispatch-service</code></td><td><code>GET /api/v1/trips/{id}</code>, <code>POST /api/v1/trips/{id}/cancel</code>; <code>trip.requested</code>, <code>offer.created</code></td></tr>
+        <tr><td>5. Taxi — водитель в пути</td><td><span class="st st-f2">Дизайн, Ф4</span></td><td>Клиент пассажира — Ф4; данные водителя уже есть: <code>driver-service</code></td><td><code>GET /api/v1/trips/{id}</code>; <code>trip.driver.assigned</code></td></tr>
+        <tr><td>6. Taxi — в пути и завершение</td><td><span class="st st-f2">Дизайн, Ф2</span></td><td>Сага поездки — по образцу <code>order-service/.../CheckoutSagaService.java</code></td><td><code>POST /api/v1/drivers/trips/{id}/finish</code>; <code>trip.started</code>, <code>trip.completed</code></td></tr>
+        <tr><td>7. Чек поездки и оценка</td><td><span class="st st-f2">Дизайн, Ф2</span></td><td>Леджер и комиссии готовы: <code>account-service</code>, <code>payment-service</code></td><td><code>POST /api/v1/trips/{id}/rate</code>; <code>RIDE_PAYMENT</code>, <code>DRIVER_ACCRUAL</code></td></tr>
+        <tr><td>8. Market — витрина</td><td><span class="st st-work">Работает</span></td><td><code>web/src/pages/MarketPage.tsx</code>, Android <code>feature/catalog</code></td><td><code>GET /api/v1/catalog/products</code>, <code>GET /api/v1/catalog/categories</code></td></tr>
+        <tr><td>9. Карточка товара</td><td><span class="st st-work">Работает</span></td><td><code>web/src/pages/ProductPage.tsx</code></td><td><code>GET /api/v1/catalog/products/{id}</code>, <code>GET /api/v1/merchants/{id}</code>, <code>POST /api/v1/cart/items</code></td></tr>
+        <tr><td>10. Корзина и оформление</td><td><span class="st st-work">Работает</span></td><td><code>web/src/pages/CartPage.tsx</code>, <code>order-service</code></td><td><code>GET /api/v1/cart</code>, <code>POST /api/v1/orders</code>, <code>POST /api/v1/payments/merchant</code></td></tr>
+        <tr><td>11. Заказ оформлен</td><td><span class="st st-work">Работает</span></td><td><code>order-service</code> (статус <code>PAID</code>), e2e <code>scripts/e2e-marketplace.ps1</code></td><td><code>GET /api/v1/orders/{id}</code>; <code>order.paid</code></td></tr>
+        <tr><td>12. Заказы — список</td><td><span class="st st-work">Работает</span></td><td><code>web/src/pages/OrdersPage.tsx</code>, Android <code>feature/orders</code></td><td><code>GET /api/v1/orders?page&size&status</code></td></tr>
+        <tr><td>13. Детали заказа</td><td><span class="st st-work">Работает</span></td><td><code>web/src/pages/OrderDetailPage.tsx</code></td><td><code>GET /api/v1/orders/{id}</code>, <code>POST /api/v1/orders/{id}/cancel</code>, <code>POST /api/v1/payments/{id}/refund</code></td></tr>
+        <tr><td>14. Профиль и счёт</td><td><span class="st st-work">Работает</span></td><td><code>web/src/pages/DashboardPage.tsx</code>, <code>TransferPage.tsx</code>, Android <code>feature/profile</code></td><td><code>GET /api/v1/accounts</code>, <code>GET /api/v1/accounts/{id}/limits</code>, <code>GET /api/v1/accounts/{id}/holds</code></td></tr>
+        <tr><td>15. Кабинет водителя</td><td><span class="st st-dev">API работает, экрана нет</span></td><td>Сервер: <code>services/driver-service</code>. Приложение водителя — <code>mobile/driver</code> — план на Ф4</td><td><code>GET /api/v1/drivers/me</code>, <code>POST /api/v1/drivers/me/documents</code>, <code>POST /api/v1/drivers/me/status</code>; <code>driver.online</code>, <code>driver.offline</code></td></tr>
+        <tr><td>16. Диспетчерская (планшет)</td><td><span class="st st-work">Работает, Ф1</span></td><td><code>web/src/pages/DispatchPage.tsx</code> + <code>services/dispatch-service</code>; e2e <code>scripts/e2e-dispatch.ps1</code> (40 проверок)</td><td><code>GET /api/v1/dispatch/drivers?includeStale=true</code>, <code>GET /api/v1/dispatch/nearest</code>, <code>POST /api/v1/locations/batch</code></td></tr>
+        <tr><td>Состояния: загрузка / пусто / ошибка</td><td><span class="st st-work">Работает</span> <span class="st st-dev">не везде</span></td><td><code>web/src/components/ui/Spinner.tsx</code>, <code>EmptyState.tsx</code>, <code>Alerts.tsx</code>; в Android — свои</td><td>RFC 7807: <code>code</code>, <code>detail</code>, <code>correlationId</code></td></tr>
+        <tr><td>Сверх борда: грузоперевозки, недвижимость, услуги, стройматериалы, доставка, кабинет бизнеса</td><td><span class="st st-plan">План</span></td><td>Плитки уже стоят на главной с бейджем «Скоро» и объяснением, что появится позже</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cols cols-3 mt-16">
+    <div class="card">
+      <div class="card-h"><h3>Что в борде упрощено</h3></div>
+      <div class="card-b">
+        <div class="kv"><span class="k">Карта</span><span class="v">иллюстрация, не тайлы OSM</span></div>
+        <div class="kv"><span class="k">Маршрут А→Б</span><span class="v">прямая линия вместо OSRM</span></div>
+        <div class="kv"><span class="k">Комиссия в маркетплейсе</span><span class="v">фиксированные 4 500,00 ₸</span></div>
+        <div class="kv"><span class="k">Рейтинг продавца</span><span class="v">4,8 · 1 240 продаж — правдоподобный пример</span></div>
+        <div class="kv"><span class="k">Тени и «дорогой» вид</span><span class="v">чуть мягче, чем в коде сейчас</span></div>
+        <p class="small mt-10">Всё остальное — из репозитория: названия, цены, остатки, статусы, коды ошибок, id.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>Спорные места, которые нужно решить</h3></div>
+      <div class="card-b">
+        <div class="kv"><span class="k">Акцент</span><span class="v">синий клиент vs красный веб</span></div>
+        <div class="kv"><span class="k">Имя веб-консоли</span><span class="v">логотип «taxi» остался от прошлой жизни</span></div>
+        <div class="kv"><span class="k">Комиссия в цене товара</span><span class="v">покупатель платит больше прайса?</span></div>
+        <div class="kv"><span class="k">«Завершить поездку» у пассажира</span><span class="v">в макете — демо; в жизни закрывает водитель</span></div>
+        <div class="kv"><span class="k">Хранение треков</span><span class="v">срок и партиционирование не решены</span></div>
+        <p class="small mt-10">Это не «мелочи на потом», а вопросы, от которых зависит контракт. Лучше решить до кода Ф2.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>Как читать борд</h3></div>
+      <div class="card-b">
+        <div class="kv"><span class="k">Суммы</span><span class="v">в минорных единицах, ₸ после числа</span></div>
+        <div class="kv"><span class="k">Скриншоты экранов</span><span class="v">это макет, а не «живой стек»</span></div>
+        <div class="kv"><span class="k">Живые экраны</span><span class="v">README: <code>docs/img/orta-home.png</code>, <code>dispatch-live-map.png</code></span></div>
+        <div class="kv"><span class="k">Контракты</span><span class="v">взяты из <code>docs/api.md</code></span></div>
+        <div class="kv"><span class="k">План работ</span><span class="v"><code>docs/taxi-roadmap.md</code></span></div>
+        <p class="small mt-10">Борд — один самостоятельный HTML: без CDN, внешних шрифтов и картинок. Он открывается двойным щелчком и переживёт любой офлайн-показ.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<p class="small center" style="margin-top:36px">
+  ORTA · «Всё рядом» · дизайн-борд от 2 октября 2026 · один файл, без внешних зависимостей
+</p>
+
+</div>
+</body>
+</html>

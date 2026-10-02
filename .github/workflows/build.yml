@@ -70,12 +70,15 @@ jobs:
       # Отчёт Maven сам в аннотации не попадает, а логи GitHub читаются только с
       # токеном. Поэтому на падении превращаем строки отчёта в ::error:: — тогда
       # упавший сценарий виден прямо на коммите и доступен через check-runs API.
+      # Контекст (-A 4) важен не меньше имени теста: именно в следующих строках
+      # лежит текст исключения, без которого причину не понять.
       - name: Annotate integration failures
         if: failure()
         run: |
           set +e
           find . -path '*/failsafe-reports/*.txt' -type f | while read -r report; do
-            grep -E 'Tests run|<<< (FAILURE|ERROR)' "$report" | head -15 | while IFS= read -r line; do
+            grep -A 4 -E '<<< (FAILURE|ERROR)' "$report" | head -40 | while IFS= read -r line; do
+              test -z "$line" && continue
               echo "::error::$(printf '%s' "$line" | tr -d '\r\n' | sed 's/%/%25/g')"
             done
           done
