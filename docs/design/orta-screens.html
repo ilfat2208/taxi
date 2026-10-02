@@ -36,8 +36,7 @@
   --tile-taxi:#1F5FA9; --tile-cargo:#0E7C7B; --tile-market:#1B7F4B; --tile-home:#6A4FA3;
   --tile-services:#B26A00; --tile-build:#8D5B2B; --tile-delivery:#0F6E8C; --tile-business:#44474E;
   --teal:#0E7C7B;
-  /* web console accent (web/src/index.css brand-500) — see note in palette */
-  --console:#E11D2E;
+  /* один акцент: веб-консоль после унификации носит тот же ORTA Blue, что и клиент */
 
   --font:'Inter','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
   --mono:'Cascadia Mono','SFMono-Regular','Consolas','Liberation Mono',monospace;
@@ -112,7 +111,7 @@ h1.brand{margin:0;font-size:34px;line-height:40px;font-weight:700;letter-spacing
 .sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:0 0 16px}
 .sec h2{margin:0;font-size:22px;line-height:28px;font-weight:700;letter-spacing:-.01em}
 .sec .sec-num{
-  display:inline-grid;place-items:center;width:26px;height:26px;border-radius:var(--r-sm);
+  display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 7px;border-radius:var(--r-sm);
   background:var(--brand-50);color:var(--brand-600);font-size:13px;font-weight:700;
   margin-right:10px;transform:translateY(-2px);
 }
@@ -407,7 +406,7 @@ h1.brand{margin:0;font-size:34px;line-height:40px;font-weight:700;letter-spacing
 /* map */
 .mapbox{position:relative;background:#EDF1F5;overflow:hidden;flex:none}
 .mapbox svg{display:block;width:100%;height:100%}
-.mk-fresh{color:var(--console)} .mk-stale{color:var(--ink-400)} .mk-cand{color:var(--info-500)}
+.mk-fresh{color:var(--brand-500)} .mk-stale{color:var(--ink-400)} .mk-cand{color:var(--info-500)}
 .map-legend{
   position:absolute;left:10px;right:10px;bottom:10px;background:rgba(255,255,255,.94);
   border:1px solid var(--ink-200);border-radius:var(--r-md);padding:7px 10px;font-size:10.5px;
@@ -461,7 +460,7 @@ h1.brand{margin:0;font-size:34px;line-height:40px;font-weight:700;letter-spacing
 }
 .fnode .fn-t{font-size:12.5px;font-weight:700;line-height:17px}
 .fnode .fn-s{font-size:11px;line-height:15px;color:var(--ink-500);margin-top:3px}
-.fnode .fn-e{font-family:var(--mono);font-size:10px;line-height:14px;color:var(--ink-400);margin-top:4px;word-break:break-all}
+.fnode .fn-e{font-family:var(--mono);font-size:10px;line-height:14px;color:var(--ink-400);margin-top:4px;overflow-wrap:anywhere}
 .fnode.start{border-color:var(--brand-300);background:var(--brand-50)}
 .fnode.money{border-color:#BBE7CE;background:var(--success-50)}
 .fnode.event{border-color:#C7DBFB;background:var(--info-50)}
@@ -488,7 +487,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
 .side{width:196px;flex:none;border-right:1px solid var(--ink-100);background:#fff;padding:16px 12px;display:flex;flex-direction:column;gap:4px}
 .side .sitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-md);font-size:13.5px;color:var(--ink-600)}
 .side .sitem .ic{width:17px;height:17px}
-.side .sitem.on{background:var(--danger-50);color:var(--console);font-weight:600}
+.side .sitem.on{background:var(--brand-50);color:var(--brand-600);font-weight:600}
 .tab-main{flex:1;padding:18px 22px;min-width:0;display:flex;flex-direction:column;gap:14px}
 .tab-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 .tab-top h3{margin:0;font-size:22px;line-height:28px;font-weight:700}
@@ -513,7 +512,67 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
 .nlist .nl{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--ink-100);font-size:12.5px}
 .nlist .nl .nl-n{flex:1}
 .nlist .nl .nl-c{font-variant-numeric:tabular-nums;color:var(--ink-500);font-size:11.5px}
-.mini-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--console);color:#fff;font-size:10px;font-weight:700}
+.mini-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--brand-500);color:#fff;font-size:10px;font-weight:700}
+
+/* ------------------------------------------------- product map / orbit */
+.orbit{position:relative;width:900px;height:660px;margin:6px auto 0}
+.orbit-lines{position:absolute;inset:0;width:100%;height:100%}
+.orbit-core{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:176px;height:176px;border-radius:50%;
+  background:linear-gradient(140deg,var(--brand-500),var(--brand-700) 55%,var(--teal));
+  color:#fff;display:grid;place-items:center;text-align:center;
+  box-shadow:0 20px 44px rgba(31,95,169,.3),0 0 0 12px rgba(31,95,169,.06);
+}
+.orbit-core b{display:block;font-size:30px;letter-spacing:-.02em;line-height:34px}
+.orbit-core i{display:block;font-style:normal;font-size:12px;opacity:.94;margin-top:5px}
+.orbit-core u{display:block;text-decoration:none;font-size:10.5px;opacity:.8;margin-top:8px;font-family:var(--mono)}
+.onode{
+  position:absolute;width:212px;transform:translate(-50%,-50%);background:#fff;border:1px solid var(--ink-200);
+  border-radius:var(--r-md);box-shadow:var(--sh-sm);padding:9px 11px;display:flex;align-items:center;gap:9px;
+}
+.onode i{width:32px;height:32px;border-radius:11px;flex:none;display:grid;place-items:center;color:#fff}
+.onode i .ic{width:17px;height:17px}
+.onode b{display:block;font-size:12.5px;line-height:16px}
+.onode span{display:block;font-size:10.5px;line-height:14px;color:var(--ink-500)}
+.onode.soon{border-style:dashed;background:var(--ink-50)}
+.onode.soon b{color:var(--ink-700)}
+.orbit-note{
+  margin-top:8px;text-align:center;font-size:11.5px;color:var(--ink-500);
+}
+.dir-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.dir-card{
+  background:#fff;border:1px solid var(--ink-200);border-top:3px solid var(--brand-500);
+  border-radius:var(--r-lg);box-shadow:var(--sh-xs);padding:14px;display:flex;flex-direction:column;
+}
+.dir-card .dh{display:flex;align-items:center;gap:10px}
+.dir-card .di{width:38px;height:38px;border-radius:12px;flex:none;display:grid;place-items:center;color:#fff}
+.dir-card .di .ic{width:20px;height:20px}
+.dir-card .dt{font-size:14px;font-weight:700;line-height:18px}
+.dir-card p{font-size:12.5px;line-height:18px;color:var(--ink-600);margin:11px 0 0;flex:1}
+.dir-card .df{margin-top:11px}
+.plat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.plat{background:#fff;border:1px solid var(--ink-200);border-radius:var(--r-md);padding:12px;display:flex;flex-direction:column}
+.plat b{font-size:13px;line-height:17px}
+.plat p{font-size:11.5px;line-height:16px;color:var(--ink-500);margin:6px 0 0;flex:1}
+.plat .pf{margin-top:9px}
+.growth{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+.gstep{
+  flex:1;min-width:250px;background:#fff;border:1px solid var(--ink-200);border-radius:var(--r-lg);
+  padding:16px;box-shadow:var(--sh-xs);display:flex;flex-direction:column;
+}
+.gstep .gnum{
+  width:26px;height:26px;border-radius:9px;background:var(--brand-50);color:var(--brand-700);
+  display:grid;place-items:center;font-size:12px;font-weight:700;
+}
+.gstep .gbar{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--brand-500),var(--teal));margin:12px 0 0}
+.gstep b{display:block;font-size:15px;margin-top:12px}
+.gstep p{font-size:12px;line-height:17px;color:var(--ink-600);margin:6px 0 0;flex:1}
+.cityrow{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.citychip{
+  font-size:11.5px;font-weight:600;border-radius:var(--r-pill);padding:4px 10px;
+  background:var(--brand-50);color:var(--brand-700);border:1px solid var(--brand-100);
+}
+.citychip.mut{background:var(--ink-100);color:var(--ink-600);border-color:var(--ink-200)}
 
 /* utility */
 .mt-6{margin-top:6px}.mt-8{margin-top:8px}.mt-10{margin-top:10px}.mt-12{margin-top:12px}
@@ -607,9 +666,9 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <path d="M-10 96 400 60" stroke-width="6"/>
     </g>
     <g font-family="Inter,Segoe UI,sans-serif" font-size="8.5" fill="#94A3B8">
-      <text x="20" y="118">пр. Абая</text><text x="252" y="150">ул. Толе би</text>
-      <text x="156" y="196">Коктем</text><text x="60" y="146" fill="#6E8F72">Парк</text>
-      <text x="286" y="122" fill="#6E8F72">Сквер</text><text x="326" y="296" fill="#B0BAC6">Алматы</text>
+      <text x="20" y="118">пр. Тауке хана</text><text x="238" y="150">ул. Байтурсынова</text>
+      <text x="146" y="196">пр. Республики</text><text x="56" y="146" fill="#6E8F72">парк Абая</text>
+      <text x="272" y="122" fill="#6E8F72">Ордабасы</text><text x="312" y="296" fill="#B0BAC6">Шымкент</text>
     </g>
   </g>
 
@@ -646,10 +705,10 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <path d="M-14 134 654 84" stroke-width="8"/>
     </g>
     <g font-family="Inter,Segoe UI,sans-serif" font-size="11" fill="#94A3B8">
-      <text x="30" y="162">пр. Абая</text><text x="410" y="212">ул. Толе би</text>
-      <text x="250" y="272">Коктем</text><text x="92" y="196" fill="#6E8F72">Парк</text>
-      <text x="470" y="170" fill="#6E8F72">Сквер</text><text x="546" y="414" fill="#B0BAC6">Алматы</text>
-      <text x="26" y="322">Бостандык</text><text x="252" y="96">Абая — Желтоксан</text>
+      <text x="176" y="196">пр. Тауке хана</text><text x="416" y="280">ул. Байтурсынова</text>
+      <text x="240" y="280">пр. Республики</text><text x="140" y="240" fill="#6E8F72">парк Абая</text>
+      <text x="336" y="118" fill="#6E8F72">Ордабасы</text><text x="430" y="404" fill="#B0BAC6">Шымкент</text>
+      <text x="388" y="92">площадь Ордабасы</text>
     </g>
   </g>
 
@@ -671,14 +730,16 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="logo"><span>O</span></div>
       <div>
         <h1 class="brand">ORTA</h1>
-        <p class="brand-sub">Всё рядом</p>
+        <p class="brand-sub">ORTA — всё рядом</p>
       </div>
     </div>
     <p class="lead">
-      Супер-приложение: такси, маркетплейс, деньги и кабинет водителя — на одной платформе
-      с общим леджжером двойной записи, идемпотентностью на уровне БД, транзакционным outbox
-      и единым контрактом ошибок RFC 7807. Этот борд — дизайн-предложение по экранам клиента:
-      он не спорит с уже работающим приложением и честно помечает то, чего в коде ещё нет.
+      <b>ORTA — универсальный суперапп для Казахстана:</b> повседневные услуги, покупки, транспорт
+      и решения для бизнеса в одном приложении. Идея — единая цифровая экосистема, где не нужно
+      ставить десятки приложений. Восемь направлений стоят на одной платформе: общий леджжер
+      двойной записи, холды, идемпотентность на уровне БД, транзакционный outbox и единый контракт
+      ошибок RFC 7807. Этот борд — дизайн-предложение по экранам клиента: он не спорит с уже
+      работающим приложением и честно помечает то, чего в коде ещё нет.
     </p>
   </div>
   <div class="hero-meta">
@@ -696,11 +757,286 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
   <span class="st st-plan">План — вертикаль не начата</span>
 </div>
 
-<!-- ======================= 1. ДИЗАЙН-СИСТЕМА ======================= -->
+<!-- ===================== 1. ПРОДУКТ И ВОСЕМЬ НАПРАВЛЕНИЙ ===================== -->
 <section class="sec">
   <div class="sec-head">
     <div>
-      <h2><span class="sec-num">1</span>Дизайн-система</h2>
+      <h2><span class="sec-num">1</span>Продукт: ORTA — всё рядом</h2>
+      <p class="sec-note">
+        <b>ORTA — универсальный суперапп для Казахстана:</b> повседневные услуги, покупки, транспорт
+        и решения для бизнеса в одном приложении. Идея — единая цифровая экосистема, где не нужно
+        ставить десятки приложений.
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h3>Одно приложение вместо десятков</h3><span class="hint">ORTA в центре, восемь направлений вокруг</span></div>
+    <div class="card-b">
+      <div class="orbit">
+        <svg class="orbit-lines" viewBox="0 0 900 660" aria-hidden="true">
+          <ellipse cx="450" cy="330" rx="330" ry="250" fill="none" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="5 7"/>
+          <ellipse cx="450" cy="330" rx="228" ry="172" fill="none" stroke="#EEF2F7" stroke-width="1.5"/>
+          <g stroke="#B3CCEA" stroke-width="2" stroke-dasharray="4 6">
+            <path d="M450 330 780 330"/><path d="M450 330 120 330"/>
+            <path d="M450 330 450 80"/><path d="M450 330 450 580"/>
+            <path d="M450 330 683 153"/><path d="M450 330 683 507"/>
+            <path d="M450 330 217 153"/><path d="M450 330 217 507"/>
+          </g>
+          <g fill="#1F5FA9">
+            <circle cx="780" cy="330" r="3.4"/><circle cx="120" cy="330" r="3.4"/>
+            <circle cx="450" cy="80" r="3.4"/><circle cx="450" cy="580" r="3.4"/>
+            <circle cx="683" cy="153" r="3.4"/><circle cx="683" cy="507" r="3.4"/>
+            <circle cx="217" cy="153" r="3.4"/><circle cx="217" cy="507" r="3.4"/>
+          </g>
+        </svg>
+
+        <div class="orbit-core">
+          <span>
+            <b>ORTA</b>
+            <i>всё рядом</i>
+            <u>единый аккаунт</u>
+          </span>
+        </div>
+
+        <div class="onode" style="left:450px;top:80px">
+          <i style="background:var(--tile-taxi)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-pin"/></svg></i>
+          <span><b>ORTA Taxi</b><span>транспорт</span></span>
+        </div>
+        <div class="onode soon" style="left:683px;top:153px">
+          <i style="background:var(--tile-cargo)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-send"/></svg></i>
+          <span><b>ORTA Cargo</b><span>грузы</span></span>
+        </div>
+        <div class="onode" style="left:780px;top:330px">
+          <i style="background:var(--tile-market)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg></i>
+          <span><b>ORTA Market</b><span>покупки</span></span>
+        </div>
+        <div class="onode soon" style="left:683px;top:507px">
+          <i style="background:var(--tile-home)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-home"/></svg></i>
+          <span><b>ORTA Home</b><span>недвижимость</span></span>
+        </div>
+        <div class="onode soon" style="left:450px;top:580px">
+          <i style="background:var(--tile-services)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-person"/></svg></i>
+          <span><b>ORTA Services</b><span>специалисты</span></span>
+        </div>
+        <div class="onode soon" style="left:217px;top:507px">
+          <i style="background:var(--tile-build)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-build"/></svg></i>
+          <span><b>ORTA Build</b><span>стройка</span></span>
+        </div>
+        <div class="onode soon" style="left:120px;top:330px">
+          <i style="background:var(--tile-delivery)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-mail"/></svg></i>
+          <span><b>ORTA Delivery</b><span>доставка</span></span>
+        </div>
+        <div class="onode soon" style="left:217px;top:153px">
+          <i style="background:var(--tile-business)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-business"/></svg></i>
+          <span><b>ORTA Business</b><span>для бизнеса</span></span>
+        </div>
+      </div>
+      <p class="orbit-note">
+        Схема — обзор, а не описание: пунктиром обведены направления, которых в коде ещё нет.
+        Официальные формулировки каждого направления — ниже, дословно.
+      </p>
+    </div>
+  </div>
+
+  <div class="dir-grid mt-16">
+    <div class="dir-card" style="border-top-color:var(--tile-taxi)">
+      <div class="dh">
+        <span class="di" style="background:var(--tile-taxi)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-pin"/></svg></span>
+        <span class="dt">ORTA Taxi</span>
+      </div>
+      <p>Поездки по городу, заказ такси и транспортные услуги.</p>
+      <div class="df"><span class="st st-dev">Каркас работает, заказ поездки — Ф2</span></div>
+    </div>
+    <div class="dir-card" style="border-top-color:var(--tile-cargo)">
+      <div class="dh">
+        <span class="di" style="background:var(--tile-cargo)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-send"/></svg></span>
+        <span class="dt">ORTA Cargo</span>
+      </div>
+      <p>Грузоперевозки, поиск транспорта и исполнителей для доставки грузов.</p>
+      <div class="df"><span class="st st-plan">План</span></div>
+    </div>
+    <div class="dir-card" style="border-top-color:var(--tile-market)">
+      <div class="dh">
+        <span class="di" style="background:var(--tile-market)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg></span>
+        <span class="dt">ORTA Market</span>
+      </div>
+      <p>Маркетплейс товаров, объявления, покупка и продажа между пользователями и компаниями.</p>
+      <div class="df"><span class="st st-dev">B2C работает; объявления C2C — план</span></div>
+    </div>
+    <div class="dir-card" style="border-top-color:var(--tile-home)">
+      <div class="dh">
+        <span class="di" style="background:var(--tile-home)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-home"/></svg></span>
+        <span class="dt">ORTA Home</span>
+      </div>
+      <p>Аренда и продажа недвижимости, поиск квартир, домов, коммерческих помещений.</p>
+      <div class="df"><span class="st st-plan">План</span></div>
+    </div>
+    <div class="dir-card" style="border-top-color:var(--tile-services)">
+      <div class="dh">
+        <span class="di" style="background:var(--tile-services)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-person"/></svg></span>
+        <span class="dt">ORTA Services</span>
+      </div>
+      <p>Поиск специалистов и компаний: ремонт, клининг, красота, строительство, бытовые и профессиональные услуги.</p>
+      <div class="df"><span class="st st-plan">План</span></div>
+    </div>
+    <div class="dir-card" style="border-top-color:var(--tile-build)">
+      <div class="dh">
+        <span class="di" style="background:var(--tile-build)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-build"/></svg></span>
+        <span class="dt">ORTA Build</span>
+      </div>
+      <p>Строительные материалы, оборудование, спецтехника и услуги для строительства.</p>
+      <div class="df"><span class="st st-plan">План</span></div>
+    </div>
+    <div class="dir-card" style="border-top-color:var(--tile-delivery)">
+      <div class="dh">
+        <span class="di" style="background:var(--tile-delivery)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-mail"/></svg></span>
+        <span class="dt">ORTA Delivery</span>
+      </div>
+      <p>Доставка товаров, документов, посылок и заказов.</p>
+      <div class="df"><span class="st st-dev">Доставка как строка заказа — есть; вертикали нет</span></div>
+    </div>
+    <div class="dir-card" style="border-top-color:var(--tile-business)">
+      <div class="dh">
+        <span class="di" style="background:var(--tile-business)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-business"/></svg></span>
+        <span class="dt">ORTA Business</span>
+      </div>
+      <p>Цифровые инструменты для предпринимателей: заказы, клиенты, сотрудники, услуги, продажи.</p>
+      <div class="df"><span class="st st-dev">Мерчант, продажи и выплаты работают; остальное — план</span></div>
+    </div>
+  </div>
+  <p class="small mt-10">
+    Короткие подписи на плитках главного экрана («Поездки», «Товары и объявления», «Грузоперевозки»…)
+    — это подписи интерфейса из <code>strings.xml</code>, а не позиционирование продукта: выше — официальные
+    формулировки направлений.
+  </p>
+</section>
+
+<section class="sec">
+  <div class="sec-head">
+    <div>
+      <h2><span class="sec-num">1.1</span>Что объединяет сервисы</h2>
+      <p class="sec-note">
+        Направления разные, платформа одна. Ниже — то, что делает восемь сервисов одним приложением,
+        и честная отметка: что уже есть в коде, а что только в плане.
+      </p>
+    </div>
+  </div>
+
+  <div class="plat-grid">
+    <div class="plat">
+      <b>Единый аккаунт и роли</b>
+      <p>Один вход по телефону, одна сессия на все сервисы. Роли <code>CUSTOMER</code>, <code>MERCHANT</code>,
+        <code>SUPPORT</code>, <code>ADMIN</code>, <code>DRIVER</code>, <code>DISPATCHER</code>.</p>
+      <div class="pf"><span class="st st-work">Есть</span></div>
+    </div>
+    <div class="plat">
+      <b>Платежи и деньги</b>
+      <p>Леджер с двойной записью, холды <code>reserve / capture / release</code>, лимиты и антифрод,
+        идемпотентность по <code>Idempotency-Key</code>.</p>
+      <div class="pf"><span class="st st-work">Есть</span></div>
+    </div>
+    <div class="plat">
+      <b>Карты и гео</b>
+      <p>Redis GEO для горячего поиска «кто рядом», PostGIS для треков и геозон, живая карта парка
+        в диспетчерской.</p>
+      <div class="pf"><span class="st st-dev">Диспетчерская — да, карта у пассажира — Ф2/Ф4</span></div>
+    </div>
+    <div class="plat">
+      <b>Уведомления</b>
+      <p>События через транзакционный outbox и Kafka: <code>trip.events</code>, <code>driver.events</code>,
+        <code>payment.events</code>, <code>settlement.events</code>.</p>
+      <div class="pf"><span class="st st-dev">События есть, пуши и центр — план</span></div>
+    </div>
+    <div class="plat">
+      <b>Рейтинг и доверие</b>
+      <p>Оценка поездки и рейтинг водителя заложены в модель (<code>driver.rating</code>, acceptance rate),
+        рейтинг продавца виден в карточке товара.</p>
+      <div class="pf"><span class="st st-dev">Модель есть, экрана оценки — Ф2</span></div>
+    </div>
+    <div class="plat">
+      <b>История заказов и платежей</b>
+      <p>Append-only история статусов заказа, выписка по леджжеру, платежи с историей переходов.</p>
+      <div class="pf"><span class="st st-dev">Заказы и деньги — да, история поездок — Ф2</span></div>
+    </div>
+    <div class="plat">
+      <b>Лояльность</b>
+      <p>Промокоды, бонусы и кешбэк внутри счёта — база для удержания в супераппе.</p>
+      <div class="pf"><span class="st st-plan">План (Ф5)</span></div>
+    </div>
+    <div class="plat">
+      <b>Единый поиск и поддержка</b>
+      <p>Поиск по каталогу уже сквозной; поддержка читает чужие данные по роли <code>SUPPORT</code>
+        и оставляет аудит каждого чтения.</p>
+      <div class="pf"><span class="st st-dev">Каталог — да, поиск по всем сервисам — план</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sec-head">
+    <div>
+      <h2><span class="sec-num">1.2</span>Первый этап: один город → страна → регион</h2>
+      <p class="sec-note">
+        Запуск начинается с одного города — <b>Шымкент</b>, затем другие города Казахстана, затем
+        региональное масштабирование. Мультигород — это данные, а не архитектура: справочник тарифов
+        и геозоны привязаны к городу, код не переписывается.
+      </p>
+    </div>
+  </div>
+
+  <div class="growth">
+    <div class="gstep">
+      <span class="gnum">1</span>
+      <div class="gbar"></div>
+      <b>Шымкент — пилот</b>
+      <p>Один город, один справочник тарифов, одна геозона, один парк. Цель этапа — довести поездку
+        целиком: котировка → назначение → холд → поездка → чек → выплата водителю.</p>
+      <div class="cityrow"><span class="citychip">Шымкент · пилот</span></div>
+    </div>
+    <div class="farr" style="min-width:56px;color:var(--brand-400)">
+      <svg width="34" height="16" viewBox="0 0 34 16"><path d="M0 8h26M26 8l-8-7M26 8l-8 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="gstep">
+      <span class="gnum">2</span>
+      <div class="gbar"></div>
+      <b>Города Казахстана</b>
+      <p>Подключение городов без изменений в коде: <code>pricing.tariff.city_id</code>, полигоны
+        <code>location.geofence</code>, локальные тарифы и surge по ячейкам. Город — параметр данных,
+        а не ветка в логике.</p>
+      <div class="cityrow">
+        <span class="citychip">Алматы</span><span class="citychip">Астана</span>
+        <span class="citychip">Караганда</span><span class="citychip mut">далее по списку</span>
+      </div>
+    </div>
+    <div class="farr" style="min-width:56px;color:var(--brand-400)">
+      <svg width="34" height="16" viewBox="0 0 34 16"><path d="M0 8h26M26 8l-8-7M26 8l-8 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="gstep">
+      <span class="gnum">3</span>
+      <div class="gbar"></div>
+      <b>Регион</b>
+      <p>Центральная Азия: валюты, языки и провайдеры карт как данные, локальная регуляторика
+        (в Казахстане фискальный чек уже заложен отдельной сущностью <code>trip_receipt</code>),
+        нагрузка и стоимость хранения треков — отдельные решения этапа Ф6.</p>
+      <div class="cityrow"><span class="citychip mut">Центральная Азия</span><span class="citychip mut">мультивалютность</span></div>
+    </div>
+  </div>
+
+  <div class="notice ok mt-16">
+    <b>Пилот — один город: Шымкент</b>
+    Интерфейс (чип города в приложении), демо-парк <code>scripts/simulate-fleet.ps1</code>
+    (7 машин в радиусе ≈2,6 км вокруг центра <span class="mono">42.3155, 69.5867</span>) и карта
+    диспетчерской настроены на один и тот же город. Проверочный сценарий использует точку
+    <span class="mono">42.3600, 69.6500</span>.
+  </div>
+</section>
+
+<!-- ======================= 2. ДИЗАЙН-СИСТЕМА ======================= -->
+<section class="sec">
+  <div class="sec-head">
+    <div>
+      <h2><span class="sec-num">2</span>Дизайн-система</h2>
       <p class="sec-note">
         Токены взяты из работающего кода, а не придуманы: палитра — <code>mobile/android/.../core/ui/theme/Theme.kt</code>
         и <code>web/src/index.css</code>, акценты плиток — <code>HomeServices.kt</code>, правила сумм — <code>web/src/api/money.ts</code>.
@@ -718,7 +1054,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <div class="sw"><div class="sw-chip" style="background:#B3CCEA"></div><div class="sw-body"><div class="sw-name">brand-200</div><div class="sw-hex">#B3CCEA</div><div class="sw-note">границы акцента</div></div></div>
           <div class="sw"><div class="sw-chip" style="background:#7FA8DA"></div><div class="sw-body"><div class="sw-name">brand-300</div><div class="sw-hex">#7FA8DA</div><div class="sw-note">графики</div></div></div>
           <div class="sw"><div class="sw-chip" style="background:#4A83C4"></div><div class="sw-body"><div class="sw-name">brand-400</div><div class="sw-hex">#4A83C4</div><div class="sw-note">hover на тёмном</div></div></div>
-          <div class="sw"><div class="sw-chip" style="background:#1F5FA9"></div><div class="sw-body"><div class="sw-name">brand-500</div><div class="sw-hex">#1F5FA9</div><div class="sw-note">TaxiBlue: кнопки, ссылки</div></div></div>
+          <div class="sw"><div class="sw-chip" style="background:#1F5FA9"></div><div class="sw-body"><div class="sw-name">brand-500</div><div class="sw-hex">#1F5FA9</div><div class="sw-note">TaxiBlue: кнопки, ссылки, свежие маркеры диспетчера</div></div></div>
           <div class="sw"><div class="sw-chip" style="background:#1A5192"></div><div class="sw-body"><div class="sw-name">brand-600</div><div class="sw-hex">#1A5192</div><div class="sw-note">hover</div></div></div>
           <div class="sw"><div class="sw-chip" style="background:#164A85"></div><div class="sw-body"><div class="sw-name">brand-700</div><div class="sw-hex">#164A85</div><div class="sw-note">TaxiBlueDark: pressed</div></div></div>
           <div class="sw"><div class="sw-chip" style="background:#103A69"></div><div class="sw-body"><div class="sw-name">brand-800</div><div class="sw-hex">#103A69</div><div class="sw-note">градиент баннера</div></div></div>
@@ -758,12 +1094,13 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <div class="sw"><div class="sw-chip" style="background:#FFFFFF;box-shadow:inset 0 0 0 1px #E2E8F0"></div><div class="sw-body"><div class="sw-name">surface</div><div class="sw-hex">#FFFFFF</div><div class="sw-note">карточки, листы</div></div></div>
           <div class="sw"><div class="sw-chip" style="background:#F5F6F8;box-shadow:inset 0 0 0 1px #E2E8F0"></div><div class="sw-body"><div class="sw-name">background</div><div class="sw-hex">#F5F6F8</div><div class="sw-note">фон экрана (Android 0xFFF5F6F8)</div></div></div>
         </div>
-        <div class="notice info mt-12">
-          <b>Важное расхождение, которое стоит решить</b>
-          Клиент (Android + иконка на скриншоте) — синий <code>#1F5FA9</code>, а веб-консоль сейчас
-          носит красный акцент <code>#E11D2E</code> (<code>web/src/index.css</code>, им же нарисованы маркеры
-          и активный пункт «Диспетчерская»). Этот борд рисует всё клиентское в синем, а консоль — в её
-          нынешнем красном, чтобы борд не врал про текущее состояние. Долгосрочно нужен один акцент.
+        <div class="notice ok mt-12">
+          <b>Один акцент: ORTA Blue #1F5FA9</b>
+          И клиент, и веб-консоль носят один и тот же синий — палитра <code>web/src/index.css</code>
+          сведена к ORTA Blue, тем же цветом нарисованы свежие маркеры карты диспетчера.
+          Раньше консоль была красной (<code>#E11D2E</code>, включая маркеры и активный пункт меню),
+          и в борде она нарисована уже синей. Красный остался только семантическим: ошибки, отмена,
+          <code>FAILED</code> и <code>BLOCKED</code>.
         </div>
       </div>
     </div>
@@ -923,7 +1260,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
 <section class="sec">
   <div class="sec-head">
     <div>
-      <h2><span class="sec-num">2</span>Экраны клиента</h2>
+      <h2><span class="sec-num">3</span>Экраны клиента</h2>
       <p class="sec-note">
         Рамка 390×844 (iPhone 14 / Pixel 7 в dp), статус-бар 9:41, home-индикатор. Данные — настоящие:
         город, товары и цены из сида <code>DemoCatalogSeeder</code>, парк из <code>simulate-fleet.ps1</code>,
@@ -1113,39 +1450,39 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
               <span style="width:10px;height:10px;border-radius:3px;background:var(--teal)"></span>
             </div>
             <div class="grow">
-              <div class="f-title">просп. Абая, 150</div>
-              <div class="f-sub">Точка А · Желтоксан, Алматы</div>
-              <div class="f-title" style="margin-top:12px">ул. Толе би, 59</div>
-              <div class="f-sub">Точка Б · Золотой квадрат</div>
+              <div class="f-title">пр. Тауке хана, 60</div>
+              <div class="f-sub">Точка А · площадь Ордабасы</div>
+              <div class="f-title" style="margin-top:12px">пр. Республики, 12</div>
+              <div class="f-sub">Точка Б · центр Шымкента</div>
             </div>
             <span class="link">Изменить</span>
           </div>
 
           <div class="divider"></div>
           <p class="sec-title">Тариф</p>
-          <div class="tariff on" style="padding:9px 11px">
-            <span class="tic"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-taxi"/></svg></span>
-            <span class="grow"><span class="tn">Эконом</span><span class="td">Подача 4 мин · Hyundai Accent</span></span>
-            <span class="tp"><b>890 ₸</b><span>4 мин</span></span>
-          </div>
           <div class="tariff" style="padding:9px 11px">
             <span class="tic"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-taxi"/></svg></span>
+            <span class="grow"><span class="tn">Эконом</span><span class="td">Подача 4 мин · Hyundai Accent</span></span>
+            <span class="tp"><b>1 326 ₸</b><span>4 мин</span></span>
+          </div>
+          <div class="tariff on" style="padding:9px 11px">
+            <span class="tic"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-taxi"/></svg></span>
             <span class="grow"><span class="tn">Комфорт</span><span class="td">Подача 3 мин · Toyota Camry</span></span>
-            <span class="tp"><b>1 290 ₸</b><span>3 мин</span></span>
+            <span class="tp"><b>1 848 ₸</b><span>3 мин</span></span>
           </div>
           <div class="tariff" style="padding:9px 11px">
             <span class="tic"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-taxi"/></svg></span>
             <span class="grow"><span class="tn">Бизнес</span><span class="td">Подача 6 мин · Mercedes E-class</span></span>
-            <span class="tp"><b>2 190 ₸</b><span>6 мин</span></span>
+            <span class="tp"><b>2 752 ₸</b><span>6 мин</span></span>
           </div>
 
           <div class="frow mt-12" style="padding:10px 12px;border-radius:var(--r-md);background:var(--ink-50)">
             <svg class="ic" viewBox="0 0 24 24" style="color:var(--brand-600)"><use href="#i-card"/></svg>
-            <span class="grow"><span class="f-title">Счёт ORTA · KZT</span><span class="f-sub">Доступно 3 813 516,50 ₸</span></span>
+            <span class="grow"><span class="f-title">Счёт ORTA · KZT</span><span class="f-sub">Доступно 4 094 652,10 ₸</span></span>
             <span class="link">Сменить</span>
           </div>
 
-          <div class="btn btn-primary mt-12" style="width:100%">Заказать · 890 ₸</div>
+          <div class="btn btn-primary mt-12" style="width:100%">Заказать · 1 848 ₸</div>
         </div>
       </div>
       <div class="home-ind"><span></span></div>
@@ -1179,7 +1516,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
             <circle cx="176" cy="150" r="58" fill="none" stroke="#1F5FA9" stroke-width="2" stroke-dasharray="6 6" opacity=".3"/>
           </svg>
           <div class="map-legend">
-            <span><i style="background:var(--console)"></i>готова принять</span>
+            <span><i style="background:var(--brand-500)"></i>готова принять</span>
             <span><i style="background:var(--info-500)"></i>кандидаты в радиусе</span>
             <span><i style="background:var(--ink-400)"></i>позиция устарела</span>
           </div>
@@ -1188,7 +1525,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="sheet" style="flex:1;display:flex;flex-direction:column;align-items:center;padding-top:18px">
           <div style="width:56px;height:56px;border-radius:50%;border:3px solid var(--brand-100);border-top-color:var(--brand-500)"></div>
           <div class="t-h2 mt-14">Ищем водителя…</div>
-          <div class="small mt-6">Эконом · 890 ₸ · подача ≈ 4 мин</div>
+          <div class="small mt-6">Комфорт · 1 848 ₸ · подача ≈ 3 мин</div>
           <div class="tnum" style="font-size:30px;line-height:36px;font-weight:700;margin-top:10px">0:24</div>
 
           <div class="fcard mt-16" style="width:100%">
@@ -1260,7 +1597,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
             <span class="tl-dot g"></span>
             <span class="tl-body">
               <span class="tl-t">Заявка принята</span>
-              <span class="tl-s">9:38 · котировка 890 ₸ зафиксирована на 90 с</span>
+              <span class="tl-s">9:38 · котировка 1 848 ₸ зафиксирована на 90 с</span>
             </span>
           </div>
           <div class="tl" style="margin-top:-14px">
@@ -1274,14 +1611,14 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
             <span class="tl-dot mut"></span>
             <span class="tl-body last">
               <span class="tl-t mut">Поездка начнётся после подачи</span>
-              <span class="tl-s">Холд 890 ₸ на счёте, списание — по завершении</span>
+              <span class="tl-s">Холд 1 848 ₸ на счёте, списание — по завершении</span>
             </span>
           </div>
 
           <span class="appbar-spacer"></span>
           <div class="frow" style="padding:10px 12px;border-radius:var(--r-md);background:var(--ink-50)">
             <svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-500)"><use href="#i-shield"/></svg>
-            <span class="grow f-sub" style="color:var(--ink-600)">Зарезервировано <b class="tnum" style="color:var(--ink-900)">890,00 ₸</b> по этой поездке, доступно на счёте <b class="tnum" style="color:var(--ink-900)">3 812 626,50 ₸</b></span>
+            <span class="grow f-sub" style="color:var(--ink-600)">Зарезервировано <b class="tnum" style="color:var(--ink-900)">1 848,00 ₸</b> по этой поездке, свободно на счёте <b class="tnum" style="color:var(--ink-900)">4 092 804,10 ₸</b></span>
           </div>
           <div class="btn btn-ghost btn-md mt-10" style="width:100%;color:var(--danger-700)">Отменить поездку</div>
         </div>
@@ -1313,38 +1650,37 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
             <use href="#m-pinB" transform="translate(268 214)"/>
           </svg>
           <span class="pill brand" style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,.95);box-shadow:var(--sh-sm)">
-            В пути · осталось 8,2 км
+            В пути · осталось 2,2 км
           </span>
-          <span class="pill" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.95);box-shadow:var(--sh-sm)">≈ 12 мин</span>
+          <span class="pill" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.95);box-shadow:var(--sh-sm)">≈ 8 мин</span>
         </div>
 
         <div class="sheet" style="flex:1;display:flex;flex-direction:column;padding-top:16px">
           <div class="between">
             <div>
               <div class="t-h2">Едем к точке Б</div>
-              <div class="small">ул. Толе би, 59 · Алматы</div>
+              <div class="small">пр. Республики, 12 · Шымкент</div>
             </div>
             <div class="center">
               <div class="tnum" style="font-size:26px;line-height:30px;font-weight:700">1 848,00 ₸</div>
-              <div class="t-cap">счётчик растёт по факту</div>
+              <div class="t-cap">цена зафиксирована котировкой</div>
             </div>
           </div>
-          <div class="progress mt-12"><i style="width:56%"></i></div>
+          <div class="progress mt-12"><i style="width:66%"></i></div>
           <div class="between mt-6">
-            <span class="t-cap">проехали 6,4 км</span>
-            <span class="t-cap">всего 14,6 км</span>
+            <span class="t-cap">проехали 4,2 км</span>
+            <span class="t-cap">всего 6,4 км</span>
           </div>
 
           <div class="fcard mt-12">
             <div class="kv"><span class="k">Посадка</span><span class="v">450,00 ₸</span></div>
-            <div class="kv"><span class="k">Пробег 10,2 км × 120,00 ₸</span><span class="v">1 224,00 ₸</span></div>
-            <div class="kv"><span class="k">Время 22 мин × 35,00 ₸</span><span class="v">770,00 ₸</span></div>
+            <div class="kv"><span class="k">Пробег 6,4 км × 120,00 ₸</span><span class="v">768,00 ₸</span></div>
+            <div class="kv"><span class="k">Время 18 мин × 35,00 ₸</span><span class="v">630,00 ₸</span></div>
             <div class="kv"><span class="k">Ожидание подачи 2 мин</span><span class="v">0,00 ₸</span></div>
-            <div class="kv"><span class="k">Итого по котировке</span><span class="v">2 444,00 ₸</span></div>
+            <div class="kv" style="border-top:1px solid var(--ink-200);margin-top:4px;padding-top:9px"><span class="k" style="color:var(--ink-800);font-weight:600">Итого</span><span class="v" style="font-size:16px">1 848,00 ₸</span></div>
           </div>
           <div class="notice info mt-10">
-            Котировка фиксировала 890 ₸ за 6,4 км. Факт считается по расстоянию и времени и
-            пересчитывается на сервере — сумма в чеке может отличаться от котировки, и это нормально.
+            Цена зафиксирована котировкой на 90 секунд. Если маршрут изменится, сумма пересчитывается на сервере по расстоянию и времени — в чеке может оказаться другое число, и это нормально.
           </div>
 
           <span class="appbar-spacer"></span>
@@ -1373,16 +1709,15 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="center mt-12">
           <svg class="ic" viewBox="0 0 24 24" style="width:46px;height:46px;margin:0 auto;color:var(--success-500)"><use href="#i-check-circle"/></svg>
           <div class="t-h2 mt-10">Поездка завершена</div>
-          <div class="small">2 октября 2026, 10:07 · 14,6 км · 22 мин</div>
+          <div class="small">2 октября 2026, 10:07 · 6,4 км · 18 мин</div>
           <div class="t-money mt-10">1 848,00 ₸</div>
           <div class="t-cap">списано со счёта ORTA KZT</div>
         </div>
 
         <div class="fcard mt-16">
           <div class="kv"><span class="k">Посадка</span><span class="v">450,00 ₸</span></div>
-          <div class="kv"><span class="k">Пробег 10,2 км × 120,00 ₸</span><span class="v">1 224,00 ₸</span></div>
-          <div class="kv"><span class="k">Время 22 мин × 35,00 ₸</span><span class="v">770,00 ₸</span></div>
-          <div class="kv"><span class="k">Скидка промокода</span><span class="v">−596,00 ₸</span></div>
+          <div class="kv"><span class="k">Пробег 6,4 км × 120,00 ₸</span><span class="v">768,00 ₸</span></div>
+          <div class="kv"><span class="k">Время 18 мин × 35,00 ₸</span><span class="v">630,00 ₸</span></div>
           <div class="kv" style="border-top:1px solid var(--ink-200);margin-top:4px;padding-top:9px"><span class="k" style="color:var(--ink-800);font-weight:600">Итого</span><span class="v" style="font-size:16px">1 848,00 ₸</span></div>
         </div>
 
@@ -1561,7 +1896,8 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <div class="divider"></div>
           <div class="kv"><span class="k">Доставка по Алматы</span><span class="v">1 500,00 ₸ · завтра</span></div>
           <div class="kv"><span class="k">Списание со счёта</span><span class="v">ORTA · KZT</span></div>
-          <div class="kv"><span class="k">Доступно</span><span class="v">3 813 516,50 ₸</span></div>
+          <div class="kv"><span class="k">Комиссия платформы 1,5%</span><span class="v">добавится на шаге оплаты</span></div>
+          <div class="kv"><span class="k">Доступно</span><span class="v">4 094 652,10 ₸</span></div>
 
           <span class="appbar-spacer"></span>
           <div class="btn btn-primary" style="width:100%">В корзину · 189 990 ₸</div>
@@ -1619,26 +1955,28 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <div class="f-sub">Алматы, Абая 150 · завтра, 10:00–14:00</div>
           <div class="field mt-10" style="padding:8px 12px">
             <div class="fl">Счёт списания</div>
-            <div class="fv">ORTA · KZT · доступно 3 813 516,50 ₸</div>
+            <div class="fv">ORTA · KZT · доступно 4 094 652,10 ₸</div>
           </div>
         </div>
 
         <div class="fcard">
           <div class="kv"><span class="k">Товары (2)</span><span class="v">304 970,00 ₸</span></div>
           <div class="kv"><span class="k">Доставка</span><span class="v">1 500,00 ₸</span></div>
-          <div class="kv" style="border-top:1px solid var(--ink-200);margin-top:4px;padding-top:9px"><span class="k" style="color:var(--ink-800);font-weight:600">Итого</span><span class="v" style="font-size:17px">306 470,00 ₸</span></div>
+          <div class="kv"><span class="k">Комиссия платформы 1,5%</span><span class="v">4 574,55 ₸</span></div>
+          <div class="kv" style="border-top:1px solid var(--ink-200);margin-top:4px;padding-top:9px"><span class="k" style="color:var(--ink-800);font-weight:600">Итого к оплате</span><span class="v" style="font-size:17px">311 044,55 ₸</span></div>
         </div>
 
         <span class="appbar-spacer"></span>
+        <p class="hint center" style="margin-bottom:4px">Комиссия платформы 1,5% добавляется на шаге оплаты — продавцу уходит полная стоимость товаров</p>
         <p class="hint center" style="margin-bottom:6px">Заказ создаётся один раз: повтор кнопки использует тот же <span class="mono">Idempotency-Key</span></p>
-        <div class="btn btn-primary" style="width:100%;margin-bottom:8px">Оплатить · 306 470,00 ₸</div>
+        <div class="btn btn-primary" style="width:100%;margin-bottom:8px">Оплатить · 311 044,55 ₸</div>
       </div>
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
       <div class="cap-line"><span class="cap-num">10</span><span class="cap-title">Корзина и оформление</span><span class="st st-work">Работает</span></div>
       <p class="cap-note">
-        Позиции двух разных мерчантов, доставка, счёт списания, итог, «Оплатить». Дальше — сага:
+        Позиции двух разных мерчантов, доставка, счёт списания, итог, «Оплатить». Комиссия платформы 1,5% добавляется к сумме покупателя на шаге оплаты — у продавца остаётся полная стоимость товаров (304 970,00 ₸), платформе уходит 4 574,55 ₸. Дальше — сага:
         <code>POST /api/v1/orders</code> с <code>Idempotency-Key</code> → резерв стока
         (<code>POST /api/v1/catalog/internal/stock/reservations</code>) → платёж
         (<code>POST /api/v1/payments/merchant</code>) → <code>PAID</code>. Каждая позиция знает своего
@@ -1656,7 +1994,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <svg class="ic" viewBox="0 0 24 24" style="width:56px;height:56px;margin:0 auto;color:var(--success-500)"><use href="#i-check-circle"/></svg>
           <div class="t-h2 mt-10">Заказ оплачен</div>
           <div class="small">ORD-261002-7F3K · 2 октября 2026, 9:43</div>
-          <div class="t-money mt-10">306 470,00 ₸</div>
+          <div class="t-money mt-10">311 044,55 ₸</div>
           <div class="t-cap">списано со счёта ORTA · KZT</div>
         </div>
 
@@ -1688,7 +2026,8 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="fcard">
           <div class="kv"><span class="k">Товары</span><span class="v">304 970,00 ₸</span></div>
           <div class="kv"><span class="k">Доставка</span><span class="v">1 500,00 ₸</span></div>
-          <div class="kv"><span class="k">Зарезервировано на счёте</span><span class="v">306 470,00 ₸</span></div>
+          <div class="kv"><span class="k">Комиссия платформы 1,5%</span><span class="v">4 574,55 ₸</span></div>
+            <div class="kv"><span class="k">Списано со счёта</span><span class="v">311 044,55 ₸</span></div>
           <div class="kv"><span class="k">Платёж</span><span class="v mono" style="font-size:11px">01M4TS2B8D1Q</span></div>
         </div>
 
@@ -1701,7 +2040,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="cap">
       <div class="cap-line"><span class="cap-num">11</span><span class="cap-title">Заказ оформлен</span><span class="st st-work">Работает</span></div>
       <p class="cap-note">
-        Успех — это не только галочка: видно номер заказа, сумму, что деньги списаны и что будет дальше.
+        Успех — это не только галочка: видно номер заказа, сумму (товары 304 970,00 ₸ + комиссия 4 574,55 ₸ + доставка 1 500,00 ₸), что деньги списаны и что будет дальше.
         Состояния заказа по контракту: <code>DRAFT → PENDING_PAYMENT → PAID → CONFIRMED</code>.
         Резерв стока к этому моменту <code>COMMITTED</code>, долг продавцу — <code>PENDING</code> в расчётах.
       </p>
@@ -1733,7 +2072,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
               <span class="grow"><span class="f-title">ORD-261002-7F3K</span><span class="f-sub">2 октября · 2 позиции · TechnoMart, FreshMarket</span></span>
               <span class="pill ok">Оплачен</span>
             </div>
-            <div class="between mt-8"><span class="f-sub">Доставка завтра 10:00–14:00</span><span class="f-money">306 470,00 ₸</span></div>
+            <div class="between mt-8"><span class="f-sub">Доставка завтра 10:00–14:00</span><span class="f-money">311 044,55 ₸</span></div>
           </div>
 
           <div class="fcard">
@@ -1741,7 +2080,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
               <span class="grow"><span class="f-title">ORD-260928-3K9P</span><span class="f-sub">28 сентября · 1 позиция · TechnoMart</span></span>
               <span class="pill info">Подтверждён</span>
             </div>
-            <div class="between mt-8"><span class="f-sub">Курьер в пути · 2 остановки</span><span class="f-money">189 990,00 ₸</span></div>
+            <div class="between mt-8"><span class="f-sub">Курьер в пути · 2 остановки</span><span class="f-money">192 839,85 ₸</span></div>
           </div>
 
           <div class="fcard">
@@ -1749,7 +2088,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
               <span class="grow"><span class="f-title">ORD-260921-8QW2</span><span class="f-sub">21 сентября · 3 позиции · FreshMarket</span></span>
               <span class="pill warn">Ожидает оплаты</span>
             </div>
-            <div class="between mt-8"><span class="f-sub">Резерв стока истекает через 12 мин</span><span class="f-money">16 070,00 ₸</span></div>
+            <div class="between mt-8"><span class="f-sub">Резерв стока и холд · истекает через 12 мин</span><span class="f-money">25 334,40 ₸</span></div>
           </div>
 
           <div class="fcard">
@@ -1757,7 +2096,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
               <span class="grow"><span class="f-title">ORD-260912-1AB7</span><span class="f-sub">12 сентября · 1 позиция · HomeComfort</span></span>
               <span class="pill">Отменён</span>
             </div>
-            <div class="between mt-8"><span class="f-sub">Отменён до оплаты · резерв снят</span><span class="f-money" style="color:var(--ink-500)">54 990,00 ₸</span></div>
+            <div class="between mt-8"><span class="f-sub">Отменён до оплаты · списания не было</span><span class="f-money" style="color:var(--ink-500)">54 990,00 ₸</span></div>
           </div>
 
           <div class="fcard">
@@ -1767,6 +2106,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
               <span class="link">Открыть</span>
             </div>
           </div>
+          <p class="small mt-10">Суммы — то, что списано с покупателя: стоимость товаров + комиссия платформы 1,5%. У отменённого заказа показана стоимость товаров: списания не было.</p>
         </div>
       </div>
       <div class="tabbar">
@@ -1833,8 +2173,9 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="fcard">
           <div class="kv"><span class="k">Товары</span><span class="v">304 970,00 ₸</span></div>
           <div class="kv"><span class="k">Доставка</span><span class="v">1 500,00 ₸</span></div>
-          <div class="kv"><span class="k">Итого</span><span class="v" style="font-size:16px">306 470,00 ₸</span></div>
-          <div class="kv"><span class="k">Расчёт с продавцами</span><span class="v">долг 300 470,00 ₸ · PENDING</span></div>
+          <div class="kv"><span class="k">Комиссия платформы 1,5%</span><span class="v">4 574,55 ₸</span></div>
+          <div class="kv"><span class="k">Итого списано</span><span class="v" style="font-size:16px">311 044,55 ₸</span></div>
+          <div class="kv"><span class="k">Расчёт с продавцами</span><span class="v">долг продавцу 304 970,00 ₸ · PENDING</span></div>
         </div>
 
         <span class="appbar-spacer"></span>
@@ -1880,8 +2221,8 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
               <span class="pill" style="background:rgba(255,255,255,.2);color:#fff">KZT</span>
             </div>
             <div class="divider" style="background:rgba(255,255,255,.22)"></div>
-            <div class="between"><span style="font-size:11.5px;opacity:.85">Доступно</span><span class="tnum" style="font-size:20px;font-weight:700">3 813 516,50 ₸</span></div>
-            <div class="between mt-6"><span style="font-size:11.5px;opacity:.85">На счёте / зарезервировано</span><span class="tnum" style="font-size:11.5px">4 119 986,50 ₸ / 306 470,00 ₸</span></div>
+            <div class="between"><span style="font-size:11.5px;opacity:.85">Доступно</span><span class="tnum" style="font-size:20px;font-weight:700">4 094 652,10 ₸</span></div>
+            <div class="between mt-6"><span style="font-size:11.5px;opacity:.85">На счёте / зарезервировано</span><span class="tnum" style="font-size:11.5px">4 119 986,50 ₸ / 25 334,40 ₸</span></div>
           </div>
 
           <div class="frow mt-10" style="gap:8px">
@@ -2018,10 +2359,10 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
 <section class="sec">
   <div class="sec-head">
     <div>
-      <h2><span class="sec-num">3</span>Диспетчерская — планшет 1024×768</h2>
+      <h2><span class="sec-num">4</span>Диспетчерская — планшет 1024×768</h2>
       <p class="sec-note">
         Единственный экран борда, который существует в вебе и уже работает: живая карта парка на
-        <code>/dispatch</code>. Показан как есть — с красным акцентом веб-приложения, списком ближайших
+        <code>/dispatch</code>. Показан как есть — с тем же синим акцентом, что и клиент, со списком ближайших
         водителей и честной оговоркой про устаревшие позиции.
       </p>
     </div>
@@ -2031,7 +2372,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div style="width:1024px">
       <div class="phone tablet">
         <div style="height:54px;flex:none;border-bottom:1px solid var(--ink-100);display:flex;align-items:center;gap:14px;padding:0 18px;background:#fff">
-          <span style="width:26px;height:26px;border-radius:8px;background:var(--console);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px">k</span>
+          <span style="width:26px;height:26px;border-radius:8px;background:var(--brand-500);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px">k</span>
           <span style="font-size:15px;font-weight:700;letter-spacing:-.02em">taxi</span>
           <span class="appbar-spacer"></span>
           <span class="pill">Диспетчер · роль DISPATCHER</span>
@@ -2073,7 +2414,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
               <div class="mapcard">
                 <div class="mh">
                   <b>Карта водителей</b>
-                  <span>Данные на 02.10.2026, 9:44 · устаревшими считаются позиции старше 20 с</span>
+                  <span>Данные на 02.10.2026, 9:44 · Шымкент · устаревшими считаются позиции старше 20 с</span>
                 </div>
                 <div class="mm" style="position:relative">
                   <svg viewBox="0 0 640 420" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%">
@@ -2092,7 +2433,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
                     <circle cx="212" cy="128" r="22" fill="none" stroke="#0F172A" stroke-width="2.5" opacity=".55"/>
                   </svg>
                   <div class="map-legend">
-                    <span><i style="background:var(--console)"></i>Свежая позиция</span>
+                    <span><i style="background:var(--brand-500)"></i>Свежая позиция</span>
                     <span><i style="background:var(--ink-400)"></i>Устаревшая позиция</span>
                     <span><i style="background:var(--info-500)"></i>Ближайшие к выбранному</span>
                     <span style="color:var(--ink-400)">Радиус 3,0 км · до 8 записей</span>
@@ -2112,7 +2453,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
                   <span class="dk">Скорость</span><span class="dv">22 км/ч</span>
                   <span class="dk">Курс</span><span class="dv">153°</span>
                   <span class="dk">Возраст позиции</span><span class="dv">3 с назад</span>
-                  <span class="dk">Координаты</span><span class="dv">43.24543, 76.90724</span>
+                  <span class="dk">Координаты</span><span class="dv">42.31784, 69.59215</span>
                 </div>
                 <div class="nlist">
                   <div class="f-title" style="font-size:13px;margin-top:6px">Ближайшие водители</div>
@@ -2139,7 +2480,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           панель выбранного водителя с телефоном, скоростью, курсом и координатами, список ближайших
           кандидатов. Эндпоинты: <code>GET /api/v1/dispatch/drivers?includeStale=true</code> (опрос раз
           в 2 с), <code>GET /api/v1/dispatch/nearest?lat&lon&radiusM&limit</code>; роль — <code>DISPATCHER</code>,
-          иначе <code>403 FORBIDDEN_FLEET_ACCESS</code>. Проверено e2e: 40 проверок, событие до карты за 277 мс.
+          иначе <code>403 FORBIDDEN_FLEET_ACCESS</code>. Проверено e2e: 40 проверок, событие до карты за 277 мс. Пилотный город — Шымкент: центр карты <span class="mono">42.3155, 69.5867</span>, демо-парк возит 7 машин в радиусе ≈2,6 км вокруг него, проверочная точка — <span class="mono">42.3600, 69.6500</span>.
         </p>
       </div>
     </div>
@@ -2150,7 +2491,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
 <section class="sec">
   <div class="sec-head">
     <div>
-      <h2><span class="sec-num">4</span>Состояния: загрузка, пусто, ошибка</h2>
+      <h2><span class="sec-num">5</span>Состояния: загрузка, пусто, ошибка</h2>
       <p class="sec-note">
         Экран без этих трёх состояний не готов. Загрузка — скелетон той же формы, что и контент
         (ничего не «прыгает»), пусто — объяснение и один следующий шаг, ошибка — код из контракта
@@ -2447,7 +2788,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
 <section class="sec">
   <div class="sec-head">
     <div>
-      <h2><span class="sec-num">5</span>Потоки: где именно двигаются деньги</h2>
+      <h2><span class="sec-num">6</span>Потоки: где именно двигаются деньги</h2>
       <p class="sec-note">
         Зелёные узлы — деньги, синие — события Kafka, серые — обычные вызовы. Схемы показывают, в какой
         момент ставится холд, где происходит списание и какое событие уходит наружу.
@@ -2480,20 +2821,21 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="card-h"><h3>Покупка в маркетплейсе</h3><span class="hint">работает · заморожено, но e2e проходят</span></div>
     <div class="card-b">
       <div class="flowwrap">
-        <div class="fnode start"><div class="fn-t">Корзина и оформление</div><div class="fn-s">Товары 304 970,00 ₸ + доставка 1 500,00 ₸ = 306 470,00 ₸</div><div class="fn-e">POST /api/v1/orders · Idempotency-Key</div></div>
+        <div class="fnode start"><div class="fn-t">Корзина и оформление</div><div class="fn-s">Товары 304 970,00 ₸; к сумме покупателя добавятся комиссия 1,5% и доставка 1 500,00 ₸</div><div class="fn-e">POST /api/v1/orders · Idempotency-Key</div></div>
         <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
         <div class="fnode money"><div class="fn-t">Резерв стока</div><div class="fn-s">ACTIVE → COMMITTED (не декремент: видно, кто именно держит товар)</div><div class="fn-e">POST /api/v1/catalog/internal/stock/reservations</div></div>
         <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
-        <div class="fnode money"><div class="fn-t">Оплата мерчантам</div><div class="fn-s">Платёж разделяется по продавцам: TechnoMart и FreshMarket — два получателя в одном заказе</div><div class="fn-e">POST /api/v1/payments/merchant</div></div>
+        <div class="fnode money"><div class="fn-t">Оплата мерчантам</div><div class="fn-s">Два получателя в одном заказе; комиссия 1,5% по каждому платежу: 4 199,85 ₸ + 374,70 ₸</div><div class="fn-e">POST /api/v1/payments/merchant</div></div>
         <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
         <div class="fnode event"><div class="fn-t">Статус заказа</div><div class="fn-s">DRAFT → PENDING_PAYMENT → PAID → CONFIRMED, история переходов append-only</div><div class="fn-e">order.paid</div></div>
         <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
-        <div class="fnode money"><div class="fn-t">Долг и выплата продавцу</div><div class="fn-s">Покупатель заплатил 304 970,00 ₸ = продавцу 300 470,00 ₸ (net) + комиссия платформы 4 500,00 ₸</div><div class="fn-e">settlement.created → settlement.paid (PENDING → PAID)</div></div>
+        <div class="fnode money"><div class="fn-t">Долг и выплата продавцу</div><div class="fn-s">Покупатель заплатил 311 044,55 ₸ = продавцу 304 970,00 ₸ (net = gross) + комиссия платформы 4 574,55 ₸</div><div class="fn-e">settlement.created → settlement.paid (PENDING → PAID)</div></div>
       </div>
       <div class="legend-inline">
-        <span><i style="background:var(--success-500)"></i><span class="holdbadge">reserve → capture</span> Комиссия удерживается на checkout, поэтому долг продавцу не зависит от того, когда пройдёт выплата</span>
+        <span><i style="background:var(--success-500)"></i><span class="holdbadge">reserve → capture</span> Комиссия 1,5% (commission_bp 150) добавляется к сумме покупателя на checkout, поэтому продавцу уходит полная стоимость товаров, а долг не зависит от того, когда пройдёт выплата</span>
         <span><i style="background:var(--info-500)"></i><span class="kafka">kafka</span> Возврат успевает поглотиться до выплаты: <code>taxi.settlement.hold-period</code></span>
       </div>
+      <p class="small mt-10">Проверено на живом стеке: списание = стоимость товаров + комиссия (<span class="mono">2 943 500 = 2 900 000 + 43 500</span>, 1,5% в базисных пунктах). Правило зафиксировано в <code>docs/api.md</code> §8.</p>
     </div>
   </div>
 
@@ -2501,17 +2843,17 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="card-h"><h3>Заказ такси: котировка → холд → поездка → чек</h3><span class="hint">дизайн для Ф2–Ф3</span></div>
     <div class="card-b">
       <div class="flowwrap">
-        <div class="fnode start"><div class="fn-t">Котировка</div><div class="fn-s">Тариф + маршрут + цена 890,00 ₸, TTL 90 с, HMAC-подпись (подделать сумму нельзя)</div><div class="fn-e">POST /api/v1/trips/quote</div></div>
+        <div class="fnode start"><div class="fn-t">Котировка</div><div class="fn-s">Тариф + маршрут + цена 1 848,00 ₸, TTL 90 с, HMAC-подпись (подделать сумму нельзя)</div><div class="fn-e">POST /api/v1/trips/quote</div></div>
         <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
         <div class="fnode"><div class="fn-t">Заявка</div><div class="fn-s">Деньги пока не трогаем: создаётся поездка со статусом SEARCHING</div><div class="fn-e">POST /api/v1/trips</div></div>
         <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
         <div class="fnode event"><div class="fn-t">Веер офферов</div><div class="fn-s">3 водителя, оффер 15 с, радиус 1 → 3 → 5 км, ранжирование по ETA, а не по прямой</div><div class="fn-e">offer.created / offer.expired · trip.requested</div></div>
         <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
-        <div class="fnode money"><div class="fn-t">Назначение → холд</div><div class="fn-s">Резерв 890,00 ₸ на счёте пассажира; нет денег — 422 INSUFFICIENT_FUNDS, поездка не стартует</div><div class="fn-e">POST /api/v1/accounts/internal/holds</div></div>
+        <div class="fnode money"><div class="fn-t">Назначение → холд</div><div class="fn-s">Резерв 1 848,00 ₸ на счёте пассажира; нет денег — 422 INSUFFICIENT_FUNDS, поездка не стартует</div><div class="fn-e">POST /api/v1/accounts/internal/holds</div></div>
         <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
         <div class="fnode money"><div class="fn-t">Завершение → capture</div><div class="fn-s">Пересчёт по факту: 1 848,00 ₸ = водителю 1 626,24 ₸ + комиссия 221,76 ₸</div><div class="fn-e">RIDE_PAYMENT · DRIVER_ACCRUAL</div></div>
         <div class="farr"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7h18M18 7l-6-6M18 7l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
-        <div class="fnode event"><div class="fn-t">Чек, оценка, выплата водителю</div><div class="fn-s">Чек — отдельная сущность (фискализация в РК обязательна), выплата — та же механика, что расчёт с мерчантом</div><div class="fn-e">trip.completed · settlement.paid</div></div>
+        <div class="fnode event"><div class="fn-t">Чек, оценка, выплата водителю</div><div class="fn-s">Чек — отдельная сущность (фискализация в РК обязательна), выплата — та же механика, что расчёт с мерчантом</div><div class="fn-e">trip.completed<br>settlement.paid</div></div>
       </div>
       <div class="legend-inline">
         <span><i style="background:var(--warning-500)"></i>Отмена до подачи — <code>release</code> холда; после подачи — <code>cancellation_fee</code> и компенсация водителю со счёта suspense</span>
@@ -2525,7 +2867,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
 <section class="sec">
   <div class="sec-head">
     <div>
-      <h2><span class="sec-num">6</span>Карта покрытия: экран → статус → код</h2>
+      <h2><span class="sec-num">7</span>Карта покрытия: экран → статус → код</h2>
       <p class="sec-note">
         Честная таблица без «зелёных галочек»: у каждого экрана указано, работает ли он, где живёт в коде
         и какие эндпоинты его кормят. Экран без статуса «работает» — это дизайн-предложение, а не обещание.
@@ -2548,7 +2890,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <tr><td>7. Чек поездки и оценка</td><td><span class="st st-f2">Дизайн, Ф2</span></td><td>Леджер и комиссии готовы: <code>account-service</code>, <code>payment-service</code></td><td><code>POST /api/v1/trips/{id}/rate</code>; <code>RIDE_PAYMENT</code>, <code>DRIVER_ACCRUAL</code></td></tr>
         <tr><td>8. Market — витрина</td><td><span class="st st-work">Работает</span></td><td><code>web/src/pages/MarketPage.tsx</code>, Android <code>feature/catalog</code></td><td><code>GET /api/v1/catalog/products</code>, <code>GET /api/v1/catalog/categories</code></td></tr>
         <tr><td>9. Карточка товара</td><td><span class="st st-work">Работает</span></td><td><code>web/src/pages/ProductPage.tsx</code></td><td><code>GET /api/v1/catalog/products/{id}</code>, <code>GET /api/v1/merchants/{id}</code>, <code>POST /api/v1/cart/items</code></td></tr>
-        <tr><td>10. Корзина и оформление</td><td><span class="st st-work">Работает</span></td><td><code>web/src/pages/CartPage.tsx</code>, <code>order-service</code></td><td><code>GET /api/v1/cart</code>, <code>POST /api/v1/orders</code>, <code>POST /api/v1/payments/merchant</code></td></tr>
+        <tr><td>10. Корзина и оформление</td><td><span class="st st-work">Работает</span></td><td><code>web/src/pages/CartPage.tsx</code>, <code>order-service</code></td><td><code>GET /api/v1/cart</code>, <code>POST /api/v1/orders</code>, <code>POST /api/v1/payments/merchant</code>; комиссия 1,5% добавляется к сумме покупателя на checkout</td></tr>
         <tr><td>11. Заказ оформлен</td><td><span class="st st-work">Работает</span></td><td><code>order-service</code> (статус <code>PAID</code>), e2e <code>scripts/e2e-marketplace.ps1</code></td><td><code>GET /api/v1/orders/{id}</code>; <code>order.paid</code></td></tr>
         <tr><td>12. Заказы — список</td><td><span class="st st-work">Работает</span></td><td><code>web/src/pages/OrdersPage.tsx</code>, Android <code>feature/orders</code></td><td><code>GET /api/v1/orders?page&size&status</code></td></tr>
         <tr><td>13. Детали заказа</td><td><span class="st st-work">Работает</span></td><td><code>web/src/pages/OrderDetailPage.tsx</code></td><td><code>GET /api/v1/orders/{id}</code>, <code>POST /api/v1/orders/{id}/cancel</code>, <code>POST /api/v1/payments/{id}/refund</code></td></tr>
@@ -2556,7 +2898,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <tr><td>15. Кабинет водителя</td><td><span class="st st-dev">API работает, экрана нет</span></td><td>Сервер: <code>services/driver-service</code>. Приложение водителя — <code>mobile/driver</code> — план на Ф4</td><td><code>GET /api/v1/drivers/me</code>, <code>POST /api/v1/drivers/me/documents</code>, <code>POST /api/v1/drivers/me/status</code>; <code>driver.online</code>, <code>driver.offline</code></td></tr>
         <tr><td>16. Диспетчерская (планшет)</td><td><span class="st st-work">Работает, Ф1</span></td><td><code>web/src/pages/DispatchPage.tsx</code> + <code>services/dispatch-service</code>; e2e <code>scripts/e2e-dispatch.ps1</code> (40 проверок)</td><td><code>GET /api/v1/dispatch/drivers?includeStale=true</code>, <code>GET /api/v1/dispatch/nearest</code>, <code>POST /api/v1/locations/batch</code></td></tr>
         <tr><td>Состояния: загрузка / пусто / ошибка</td><td><span class="st st-work">Работает</span> <span class="st st-dev">не везде</span></td><td><code>web/src/components/ui/Spinner.tsx</code>, <code>EmptyState.tsx</code>, <code>Alerts.tsx</code>; в Android — свои</td><td>RFC 7807: <code>code</code>, <code>detail</code>, <code>correlationId</code></td></tr>
-        <tr><td>Сверх борда: грузоперевозки, недвижимость, услуги, стройматериалы, доставка, кабинет бизнеса</td><td><span class="st st-plan">План</span></td><td>Плитки уже стоят на главной с бейджем «Скоро» и объяснением, что появится позже</td><td>—</td></tr>
+        <tr><td>Сверх борда: ORTA Cargo, ORTA Home, ORTA Services, ORTA Build, ORTA Delivery, ORTA Business</td><td><span class="st st-plan">План</span> <span class="st st-dev">Delivery и Business — частично</span></td><td>Разбор направлений — раздел 1 борда. Плитки уже стоят на главной с бейджем «Скоро» и объяснением, что появится позже</td><td>Доставка есть строкой в заказе маркета; у Business работают мерчант, товары, продажи и выплаты</td></tr>
       </tbody>
     </table>
   </div>
@@ -2567,7 +2909,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="card-b">
         <div class="kv"><span class="k">Карта</span><span class="v">иллюстрация, не тайлы OSM</span></div>
         <div class="kv"><span class="k">Маршрут А→Б</span><span class="v">прямая линия вместо OSRM</span></div>
-        <div class="kv"><span class="k">Комиссия в маркетплейсе</span><span class="v">фиксированные 4 500,00 ₸</span></div>
+        <div class="kv"><span class="k">Комиссия платформы</span><span class="v">1,5% от стоимости товаров, как в коде</span></div>
         <div class="kv"><span class="k">Рейтинг продавца</span><span class="v">4,8 · 1 240 продаж — правдоподобный пример</span></div>
         <div class="kv"><span class="k">Тени и «дорогой» вид</span><span class="v">чуть мягче, чем в коде сейчас</span></div>
         <p class="small mt-10">Всё остальное — из репозитория: названия, цены, остатки, статусы, коды ошибок, id.</p>
@@ -2576,12 +2918,14 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="card">
       <div class="card-h"><h3>Спорные места, которые нужно решить</h3></div>
       <div class="card-b">
-        <div class="kv"><span class="k">Акцент</span><span class="v">синий клиент vs красный веб</span></div>
         <div class="kv"><span class="k">Имя веб-консоли</span><span class="v">логотип «taxi» остался от прошлой жизни</span></div>
-        <div class="kv"><span class="k">Комиссия в цене товара</span><span class="v">покупатель платит больше прайса?</span></div>
+        <div class="kv"><span class="k">Комиссия платформы</span><span class="v">+1,5% к сумме покупателя</span></div>
         <div class="kv"><span class="k">«Завершить поездку» у пассажира</span><span class="v">в макете — демо; в жизни закрывает водитель</span></div>
         <div class="kv"><span class="k">Хранение треков</span><span class="v">срок и партиционирование не решены</span></div>
-        <p class="small mt-10">Это не «мелочи на потом», а вопросы, от которых зависит контракт. Лучше решить до кода Ф2.</p>
+        <div class="kv"><span class="k">Пилотный город</span><span class="v">Шымкент — и интерфейс, и демо-парк</span></div>
+        <p class="small mt-10"><b>Комиссия — не спорное место, а правило:</b> покупатель платит стоимость товаров плюс комиссию платформы 1,5% (проверено живым e2e: 2 943 500 = 2 900 000 + 43 500). Поэтому на витрине показывается цена товара, а комиссия появляется на шаге оплаты.</p>
+        <p class="small mt-10"><b>Пилотный город — Шымкент</b>, и интерфейс, и демо-парк настроены на него: чип города в приложении, <code>scripts/simulate-fleet.ps1</code> (7 машин в радиусе ≈2,6 км вокруг центра <span class="mono">42.3155, 69.5867</span>), карта диспетчерской и проверочная точка <span class="mono">42.3600, 69.6500</span>.</p>
+        <p class="small mt-10">Остальное в списке — вопросы, от которых зависит контракт. Лучше решить до кода Ф2.</p>
       </div>
     </div>
     <div class="card">
