@@ -249,8 +249,13 @@ docker compose --profile app up -d --build
 * **чужой профиль недоступен**: в API водителя нет `/drivers/{id}` вообще, а без токена → 401;
 * **инварианты БД**: один профиль на пользователя, три документа, outbox без `PENDING`.
 
-> Интеграционные тесты (`*IT`, Testcontainers) написаны и компилируются и прогоняются в CI
-> на GitHub-hosted runner.
+> Интеграционные тесты (`*IT`, Testcontainers) в CI запускаются, но **пока падают** —
+> это известный незакрытый пункт, а не «зелёная галочка». Локально их прогнать нельзя:
+> `docker-java` (в отличие от CLI) получает от Docker Desktop пустой `DockerInfo` со всех
+> именованных каналов (`docker_engine`, `dockerDesktopLinuxEngine`, `docker_cli` —
+> `ServerVersion` пустой, `NCPU: 0`), и Testcontainers отказывается работать, оставляя
+> тесты в статусе `Skipped`. Именно поэтому 16 сценариев `*IT` пока не проверены
+> вообще нигде. Прогресс этой задачи виден по джобе `Integration tests` в Actions.
 
 ---
 
