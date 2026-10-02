@@ -141,7 +141,11 @@ public class TripController {
         AuthenticatedUser caller = currentUser.require();
         TripDtos.CancelTripRequest body = request == null ? new TripDtos.CancelTripRequest(null, null) : request;
         Trip trip = saga.cancel(caller, tripId, body.reason(), body.cancelledBy());
-        return mapper.toResponse(queries.details(caller, trip.getId()));
+        // Internal read on purpose: the caller has already passed the operational check
+        // (owner, dispatcher, support or operator), and asking again for the *read* right
+        // would refuse a dispatcher the answer to an action he was just allowed to take —
+        // the worst kind of refusal, because the money and the car have already moved.
+        return mapper.toResponse(queries.internalDetails(trip.getId()));
     }
 
     @PostMapping("/{tripId}/rate")
@@ -170,6 +174,9 @@ public class TripController {
         kz.taxi.trip.application.TripAccess.requireAssigner(caller);
         Trip trip = saga.assign(tripId, request.driverId(), request.driverName(), request.vehiclePlate(),
                 kz.taxi.trip.domain.TripTransition.ACTOR_DISPATCHER);
-        return mapper.toResponse(queries.details(caller, trip.getId()));
+        // The same rule as in cancel: requireAssigner is the door, and the answer to the
+        // action must not be withheld by a second, narrower check (a dispatcher may assign a
+        // car and may not read a stranger's ride — but he must still learn that it worked).
+        return mapper.toResponse(queries.internalDetails(trip.getId()));
     }
 }

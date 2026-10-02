@@ -418,13 +418,13 @@ class TripControllerTest {
     }
 
     @Test
-    @DisplayName("a dispatcher assigns a car and gets the ride back")
+    @DisplayName("a dispatcher assigns a car and gets the ride back, without a second read check")
     void a_dispatcher_assigns_a_car() throws Exception {
         Trip assigned = TestTrips.assigned();
         when(currentUser.require()).thenReturn(dispatcher());
         when(saga.assign(eq(TRIP_ID), eq("D-1"), any(), any(), eq(TripTransition.ACTOR_DISPATCHER)))
                 .thenReturn(assigned);
-        when(queries.details(any(), eq(assigned.getId()))).thenReturn(details(assigned));
+        when(queries.internalDetails(assigned.getId())).thenReturn(details(assigned));
 
         mockMvc.perform(post("/api/v1/trips/{id}/assign", TRIP_ID)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -434,6 +434,32 @@ class TripControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("ASSIGNED"))
                 .andExpect(jsonPath("$.driverId").value(TestTrips.DRIVER));
+
+        // The dispatcher is not the rider and may not read a stranger's ride; the answer to an
+        // action he was allowed to take must not be withheld because of it, so the response is
+        // built from the internal read and never asks for the read right a second time.
+        verify(queries).internalDetails(assigned.getId());
+        verify(queries, never()).details(any(), anyString());
+    }
+
+    @Test
+    @DisplayName("a dispatcher cancelling somebody else's ride gets the ride, not a 403")
+    void a_dispatcher_cancelling_gets_the_ride() throws Exception {
+        Trip cancelled = TestTrips.cancelledByRider();
+        when(currentUser.require()).thenReturn(dispatcher());
+        when(saga.cancel(any(), eq(TRIP_ID), eq("водитель не приехал"), eq(null))).thenReturn(cancelled);
+        when(queries.internalDetails(cancelled.getId())).thenReturn(details(cancelled));
+
+        mockMvc.perform(post("/api/v1/trips/{id}/cancel", TRIP_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"reason":"водитель не приехал"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED_BY_RIDER"))
+                .andExpect(jsonPath("$.holdStatus").value("RELEASED"));
+
+        verify(queries, never()).details(any(), anyString());
     }
 
     @Test
@@ -474,7 +500,7 @@ class TripControllerTest {
         Trip cancelled = TestTrips.cancelledByRider();
         when(currentUser.require()).thenReturn(customer());
         when(saga.cancel(any(), eq(TRIP_ID), eq(null), eq(null))).thenReturn(cancelled);
-        when(queries.details(any(), eq(cancelled.getId()))).thenReturn(details(cancelled));
+        when(queries.internalDetails(cancelled.getId())).thenReturn(details(cancelled));
 
         mockMvc.perform(post("/api/v1/trips/{id}/cancel", TRIP_ID))
                 .andExpect(status().isOk())
