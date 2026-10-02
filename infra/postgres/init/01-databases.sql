@@ -19,6 +19,9 @@ CREATE DATABASE taxi_trip;
 CREATE DATABASE taxi_driver;
 CREATE DATABASE taxi_dispatch;
 
+-- service verticals (QTime: schedules and bookings for Services, Beauty, Health, Auto)
+CREATE DATABASE taxi_qtime;
+
 GRANT ALL PRIVILEGES ON DATABASE taxi_account TO CURRENT_USER;
 GRANT ALL PRIVILEGES ON DATABASE taxi_payment TO CURRENT_USER;
 GRANT ALL PRIVILEGES ON DATABASE taxi_catalog TO CURRENT_USER;
@@ -26,6 +29,7 @@ GRANT ALL PRIVILEGES ON DATABASE taxi_order TO CURRENT_USER;
 GRANT ALL PRIVILEGES ON DATABASE taxi_trip TO CURRENT_USER;
 GRANT ALL PRIVILEGES ON DATABASE taxi_driver TO CURRENT_USER;
 GRANT ALL PRIVILEGES ON DATABASE taxi_dispatch TO CURRENT_USER;
+GRANT ALL PRIVILEGES ON DATABASE taxi_qtime TO CURRENT_USER;
 
 \connect taxi_account
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
@@ -61,3 +65,8 @@ CREATE SCHEMA IF NOT EXISTS driver;
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 CREATE SCHEMA IF NOT EXISTS dispatch;
+
+-- qtime: companies, specialists, services, working schedules and bookings
+\connect taxi_qtime
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE SCHEMA IF NOT EXISTS qtime;

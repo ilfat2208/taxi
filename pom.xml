@@ -31,6 +31,8 @@
         <module>services/order-service</module>
         <module>services/driver-service</module>
         <module>services/dispatch-service</module>
+        <module>services/trip-service</module>
+        <module>services/qtime-service</module>
     </modules>
 
     <properties>

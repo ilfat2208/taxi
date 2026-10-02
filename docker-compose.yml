@@ -145,6 +145,8 @@ services:
       ORDER_SERVICE_URL: http://order-service:8084
       DRIVER_SERVICE_URL: http://driver-service:8085
       DISPATCH_SERVICE_URL: http://dispatch-service:8087
+      TRIP_SERVICE_URL: http://trip-service:8086
+      QTIME_SERVICE_URL: http://qtime-service:8088
     ports:
       - "${GATEWAY_PORT:-8080}:8080"
     healthcheck:
@@ -259,6 +261,43 @@ services:
       # driver.events. PostGIS joins this service in Ф2, with the trip tracks.
     ports:
       - "${DISPATCH_SERVICE_PORT:-8087}:8087"
+
+  trip-service:
+    <<: *service-defaults
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: services/trip-service/Dockerfile
+    container_name: taxi-trip-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8086
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_trip
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-taxi}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-taxi}
+      ACCOUNT_SERVICE_URL: http://account-service:8081
+      DISPATCH_SERVICE_URL: http://dispatch-service:8087
+      DRIVER_SERVICE_URL: http://driver-service:8085
+    ports:
+      - "${TRIP_SERVICE_PORT:-8086}:8086"
+
+  qtime-service:
+    <<: *service-defaults
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: services/qtime-service/Dockerfile
+    container_name: taxi-qtime-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8088
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_qtime
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-taxi}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-taxi}
+      # Демо-данные салонов и специалистов, чтобы раздел «Услуги» не был пустым.
+      QTIME_DEMO_SEED: ${QTIME_DEMO_SEED:-true}
+    ports:
+      - "${QTIME_SERVICE_PORT:-8088}:8088"
 
 volumes:
   pgdata:

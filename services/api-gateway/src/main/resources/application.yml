@@ -122,6 +122,21 @@ spring:
                 redis-rate-limiter.replenishRate: 200
                 redis-rate-limiter.burstCapacity: 400
                 redis-rate-limiter.requestedTokens: 1
+        # ------------------------------------------------------------------
+        # Service verticals (QTime): schedules and bookings.
+        # ------------------------------------------------------------------
+        - id: qtime-service
+          uri: ${QTIME_SERVICE_URL:http://127.0.0.1:8088}
+          predicates:
+            - Path=/api/v1/qtime/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@principalOrIpKeyResolver}"
+                # browsing salons is read-heavy; creating a booking writes a slot
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                redis-rate-limiter.requestedTokens: 1
       globalcors:
         cors-configurations:
           '[/**]':
