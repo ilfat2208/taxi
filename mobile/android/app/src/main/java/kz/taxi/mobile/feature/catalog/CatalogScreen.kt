@@ -17,9 +17,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,17 +41,30 @@ import kz.taxi.mobile.data.dto.ProductDto
 import kz.taxi.mobile.data.dto.ProductSort
 import kz.taxi.mobile.ui.AppViewModels
 
+/**
+ * The catalog.
+ *
+ * `onBack == null` means "this instance is a bottom-navigation tab": the header then shows no
+ * back arrow and the system back gesture returns to the home screen. [focusSearchOnStart] is
+ * used by the instance the home search stub opens.
+ */
 @Composable
 fun CatalogScreen(
-    onBack: () -> Unit,
     onOpenProduct: (String) -> Unit,
     onOpenCart: () -> Unit,
+    onBack: (() -> Unit)? = null,
+    focusSearchOnStart: Boolean = false,
 ) {
     val container = LocalAppContainer.current
     val viewModel: CatalogViewModel = viewModel(
         factory = AppViewModels.catalog(container.catalogRepository),
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    val searchFocus = remember { FocusRequester() }
+    LaunchedEffect(focusSearchOnStart) {
+        if (focusSearchOnStart) searchFocus.requestFocus()
+    }
 
     ScreenScaffold(
         title = "Магазин",
@@ -64,6 +81,7 @@ fun CatalogScreen(
                 onValueChange = viewModel::onQueryChange,
                 label = "Поиск товаров",
                 keyboardType = KeyboardType.Text,
+                modifier = if (focusSearchOnStart) Modifier.focusRequester(searchFocus) else Modifier,
             )
 
             Spacer(modifier = Modifier.height(6.dp))

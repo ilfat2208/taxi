@@ -5,7 +5,7 @@
       be a valid NoActionBar window theme so the app does not need the
       com.google.android.material XML dependency.
     -->
-    <style name="Theme.TaxiMobile" parent="@android:style/Theme.Material.Light.NoActionBar">
+    <style name="Theme.Orta" parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/taxi_background</item>
         <item name="android:statusBarColor">@color/taxi_primary</item>
         <item name="android:navigationBarColor">@color/taxi_background</item>

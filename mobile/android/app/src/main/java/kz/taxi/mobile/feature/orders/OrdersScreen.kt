@@ -36,10 +36,14 @@ import kz.taxi.mobile.core.ui.statusLabel
 import kz.taxi.mobile.data.dto.OrderDto
 import kz.taxi.mobile.ui.AppViewModels
 
+/**
+ * Orders list. `onBack == null` means "this instance is a bottom-navigation tab": no back
+ * arrow in the header, the system back gesture returns to the home screen.
+ */
 @Composable
 fun OrdersScreen(
-    onBack: () -> Unit,
     onOpenOrder: (String) -> Unit,
+    onBack: (() -> Unit)? = null,
 ) {
     val container = LocalAppContainer.current
     val viewModel: OrdersViewModel = viewModel(

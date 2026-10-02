@@ -86,9 +86,9 @@ export function AppLayout() {
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
           <Link to="/" className="flex items-center gap-2">
             <span className="grid h-8 w-8 place-items-center rounded-xl bg-brand-500 text-sm font-bold text-white">
-              K
+              O
             </span>
-            <span className="text-base font-semibold text-ink-900">taxi</span>
+            <span className="text-base font-semibold text-ink-900">ORTA</span>
           </Link>
 
           <nav aria-label="Быстрые действия" className="ml-auto flex items-center gap-2">

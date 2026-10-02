@@ -85,9 +85,9 @@ export function LoginPage() {
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <span className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-brand-500 text-lg font-bold text-white">
-            K
+            O
           </span>
-          <h1 className="text-2xl font-semibold text-ink-900">taxi</h1>
+          <h1 className="text-2xl font-semibold text-ink-900">ORTA</h1>
           <p className="mt-1 text-sm text-ink-500">
             Войдите по номеру телефона — счёт, переводы, платежи и маркетплейс в одном приложении.
           </p>

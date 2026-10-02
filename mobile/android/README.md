@@ -1,6 +1,6 @@
-# Taxi Mobile — native Android client
+# ORTA — native Android client
 
-A Kotlin + Jetpack Compose (Material 3) client for the Taxi fintech backend that is
+A Kotlin + Jetpack Compose (Material 3) client for the ORTA super-app backend that is
 already running on this machine. Everything lives under `mobile/android/`; nothing else in
 the repository is touched.
 
@@ -112,8 +112,12 @@ app/src/main/java/kz/taxi/mobile/
     remote/                Retrofit interfaces (Auth, Accounts, Payments, Catalog, Cart, Orders)
     repo/                  one repository per feature, every call wrapped in apiCall { }
   feature/
+    home/                   the ORTA home screen: brand header, service grid, banner, tabs
     login/ accounts/ transfer/ payments/ catalog/ cart/ checkout/ orders/
+    taxi/                   ORTA Taxi entry point (honest "next phase" state)
+    comingsoon/             the placeholder behind every "Скоро" tile
   nav/AppNav.kt            Navigation Compose graph
+  nav/MainTabs.kt          bottom navigation, the raised "+" button and its quick actions
   ui/AppViewModels.kt      one ViewModel factory per screen
 ```
 
@@ -140,7 +144,9 @@ app/src/main/java/kz/taxi/mobile/
 | Screen | What it does |
 |---|---|
 | Login | phone + demo code `0000`, with an in-app explanation of the development IdP and an optional "operator mode" that also requests `ADMIN` (needed for demo top-up) |
-| Dashboard | total available, per-account cards (balance/held/available), quick actions, recent transactions, open an account, operator-only demo top-up |
+| **Home (ORTA)** | the start screen after login: brand header, city picker, notification bell, search stub, eight service tiles (`ORTA Taxi` and `ORTA Market` are real, the rest wear a "Скоро" badge and open an honest placeholder), banner pager with three dots |
+| Taxi | `ORTA Taxi` states plainly that ordering a ride is not implemented yet, and lists what does work today |
+| Dashboard (Профиль tab) | total available, per-account cards (balance/held/available), quick actions, recent transactions, open an account, operator-only demo top-up |
 | Transfer | source account, recipient phone, amount, comment → **review step** (shows the `Idempotency-Key`) → submit (disabled while in flight) → success with the payment number, fee and "repeat" that uses a NEW key |
 | Payments history | paged, status filter (Все / Выполнен / В обработке / Отклонён / Отменён) |
 | Payment detail | full payment, ids, and the status-transition timeline |

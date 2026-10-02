@@ -18,11 +18,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kz.taxi.mobile.R
 import kz.taxi.mobile.core.ApiConfig
 import kz.taxi.mobile.core.ui.ErrorCard
 import kz.taxi.mobile.core.ui.TaxiOutlinedField
@@ -50,10 +53,15 @@ fun LoginScreen(
             .padding(20.dp),
     ) {
         Spacer(modifier = Modifier.height(28.dp))
-        Text(text = "Taxi Mobile", style = MaterialTheme.typography.headlineSmall)
+        Text(
+            text = stringResource(R.string.app_name),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+        )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "Вход по номеру телефона",
+            text = stringResource(R.string.brand_tagline),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

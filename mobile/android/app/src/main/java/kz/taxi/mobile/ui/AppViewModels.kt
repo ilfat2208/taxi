@@ -15,6 +15,7 @@ import kz.taxi.mobile.feature.cart.CartViewModel
 import kz.taxi.mobile.feature.catalog.CatalogViewModel
 import kz.taxi.mobile.feature.catalog.ProductDetailViewModel
 import kz.taxi.mobile.feature.checkout.CheckoutViewModel
+import kz.taxi.mobile.feature.home.HomeViewModel
 import kz.taxi.mobile.feature.login.LoginViewModel
 import kz.taxi.mobile.feature.orders.OrderDetailViewModel
 import kz.taxi.mobile.feature.orders.OrdersViewModel
@@ -30,6 +31,10 @@ object AppViewModels {
 
     fun login(container: AppContainer): ViewModelProvider.Factory = viewModelFactory {
         initializer { LoginViewModel(container.authRepository) }
+    }
+
+    fun home(sessionManager: SessionManager): ViewModelProvider.Factory = viewModelFactory {
+        initializer { HomeViewModel(sessionManager) }
     }
 
     fun accounts(

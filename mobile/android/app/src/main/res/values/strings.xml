@@ -1,3 +1,92 @@
 <resources>
-    <string name="app_name">Taxi Mobile</string>
+    <string name="app_name">ORTA</string>
+    <string name="brand_tagline">Всё рядом</string>
+
+    <!-- Lower navigation -->
+    <string name="nav_home">Главная</string>
+    <string name="nav_catalog">Каталог</string>
+    <string name="nav_orders">Заказы</string>
+    <string name="nav_profile">Профиль</string>
+    <string name="nav_quick_actions">Быстрые действия</string>
+
+    <!-- City picker -->
+    <string name="city_pick">Выбрать город</string>
+    <string name="city_shymkent">Шымкент</string>
+    <string name="city_almaty">Алматы</string>
+    <string name="city_astana">Астана</string>
+    <string name="city_karaganda">Караганда</string>
+
+    <!-- Home header -->
+    <string name="home_search_hint">Найти товар, услугу или поездку</string>
+    <string name="home_search_description">Поиск по каталогу</string>
+    <string name="home_notifications">Уведомления</string>
+    <string name="home_profile">Открыть профиль и счета</string>
+    <string name="home_notifications_empty">Уведомлений пока нет.</string>
+    <string name="home_notice_welcome_title">ORTA установлена</string>
+    <string name="home_notice_welcome_body">Это локальное уведомление приложения: серверных уведомлений пока нет. Уведомления о поездках и заказах появятся вместе с заказом поездки.</string>
+
+    <!-- Home banners (three dots = three slides) -->
+    <string name="home_banner_first_title">Всё нужное — в одном приложении</string>
+    <string name="home_banner_first_body">Такси, доставка, покупки и услуги — в одном приложении ORTA.</string>
+    <string name="home_banner_second_title">Оплата и переводы внутри ORTA</string>
+    <string name="home_banner_second_body">Счёт в тенге, переводы и история платежей уже работают.</string>
+    <string name="home_banner_third_title">Заказы в магазине</string>
+    <string name="home_banner_third_body">Корзина, оформление и статусы заказов уже доступны.</string>
+
+    <!-- Service tiles -->
+    <string name="service_taxi_title">ORTA Taxi</string>
+    <string name="service_taxi_subtitle">Поездки</string>
+    <string name="service_cargo_title">ORTA Cargo</string>
+    <string name="service_cargo_subtitle">Грузоперевозки</string>
+    <string name="service_market_title">ORTA Market</string>
+    <string name="service_market_subtitle">Товары и объявления</string>
+    <string name="service_home_title">ORTA Home</string>
+    <string name="service_home_subtitle">Недвижимость</string>
+    <string name="service_services_title">ORTA Services</string>
+    <string name="service_services_subtitle">Услуги специалистов</string>
+    <string name="service_build_title">ORTA Build</string>
+    <string name="service_build_subtitle">Стройматериалы</string>
+    <string name="service_delivery_title">ORTA Delivery</string>
+    <string name="service_delivery_subtitle">Доставка</string>
+    <string name="service_business_title">ORTA Business</string>
+    <string name="service_business_subtitle">Для бизнеса</string>
+
+    <!-- One-line explanations on the placeholder screens -->
+    <string name="service_cargo_message">Грузоперевозки появятся после того, как заработает заказ поездки: сначала такси, потом грузы.</string>
+    <string name="service_home_message">Раздел недвижимости ещё не начат — сначала первая вертикаль ORTA, такси.</string>
+    <string name="service_services_message">Услуги специалистов запланированы после такси и доставки.</string>
+    <string name="service_build_message">Стройматериалы запланированы после такси и доставки.</string>
+    <string name="service_delivery_message">Доставка появится после запуска заказа поездки.</string>
+    <string name="service_business_message">Кабинет для бизнеса в планах; сегодня доступны счета, переводы и заказы.</string>
+    <string name="quick_action_qr_message">Показывать QR-код пока нечего: оплата по QR появится вместе с поездками.</string>
+
+    <string name="status_soon">Скоро</string>
+    <string name="status_done">Готово</string>
+
+    <!-- Quick actions behind the "+" button -->
+    <string name="quick_actions_title">Быстрые действия</string>
+    <string name="quick_action_transfer">Перевести</string>
+    <string name="quick_action_new_order">Оформить заказ</string>
+    <string name="quick_action_accounts">Мои счета</string>
+    <string name="quick_action_qr">Показать QR</string>
+
+    <!-- Placeholder screen -->
+    <string name="coming_soon_note">Раздел ещё не реализован: мы не показываем функции, которых нет.</string>
+
+    <!-- ORTA Taxi -->
+    <string name="taxi_title">ORTA Taxi</string>
+    <string name="taxi_state_title">Заказ поездки появится в следующей фазе</string>
+    <string name="taxi_state_body">В этом приложении пока нельзя вызвать машину: заявка, тарифы и оплата поездки — следующая фаза работ. Ниже — честный список того, что уже готово, и того, что ещё нет.</string>
+    <string name="taxi_ready_section">Что уже работает</string>
+    <string name="taxi_ready_driver">Профиль водителя, автомобиль и документы со сроком действия</string>
+    <string name="taxi_ready_online">Выход водителя на линию и приём геопозиций</string>
+    <string name="taxi_ready_map">Живая карта диспетчера в веб-приложении</string>
+    <string name="taxi_ready_money">Денежный контур: счета, переводы, платежи и история</string>
+    <string name="taxi_planned_section">Что появится позже</string>
+    <string name="taxi_planned_request">Заявка на поездку, точки А и Б, выбор тарифа</string>
+    <string name="taxi_planned_quote">Котировка с фиксированной ценой и холд на счёте</string>
+    <string name="taxi_planned_payment">Оплата поездки, чек пассажиру и выплата водителю</string>
+    <string name="taxi_planned_history">История поездок и оценка водителя</string>
+    <string name="taxi_open_accounts">Мои счета</string>
+    <string name="taxi_open_catalog">В магазин</string>
 </resources>

@@ -55,7 +55,7 @@ export function MarketPage() {
     <>
       <PageHeader
         title="Маркет"
-        subtitle="Товары продавцов taxi: поиск, категории, сортировка"
+        subtitle="Товары продавцов ORTA: поиск, категории, сортировка"
       />
 
       <Card className="mb-4">

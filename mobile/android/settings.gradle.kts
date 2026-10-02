@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "TaxiMobile"
+rootProject.name = "OrtaMobile"
 include(":app")

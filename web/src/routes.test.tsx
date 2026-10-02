@@ -67,7 +67,7 @@ describe('application routes', () => {
     clearSession();
     demoApi();
     renderApp('/payments');
-    expect(await screen.findByRole('heading', { name: 'taxi' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'ORTA' })).toBeInTheDocument();
     expect(screen.getByLabelText(/Номер телефона/)).toBeInTheDocument();
     cleanup();
 

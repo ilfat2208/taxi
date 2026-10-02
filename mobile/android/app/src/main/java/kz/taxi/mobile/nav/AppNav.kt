@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -16,28 +17,46 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
+import kz.taxi.mobile.R
 import kz.taxi.mobile.core.ui.LocalAppContainer
 import kz.taxi.mobile.feature.accounts.AccountsScreen
 import kz.taxi.mobile.feature.cart.CartScreen
 import kz.taxi.mobile.feature.catalog.CatalogScreen
 import kz.taxi.mobile.feature.catalog.ProductDetailScreen
 import kz.taxi.mobile.feature.checkout.CheckoutScreen
+import kz.taxi.mobile.feature.comingsoon.ComingSoonScreen
+import kz.taxi.mobile.feature.home.HomeScreen
+import kz.taxi.mobile.feature.home.HomeServices
+import kz.taxi.mobile.feature.home.ServiceKey
 import kz.taxi.mobile.feature.login.LoginScreen
 import kz.taxi.mobile.feature.orders.OrderDetailScreen
 import kz.taxi.mobile.feature.orders.OrdersScreen
 import kz.taxi.mobile.feature.payments.PaymentDetailScreen
 import kz.taxi.mobile.feature.payments.PaymentsScreen
+import kz.taxi.mobile.feature.taxi.TaxiScreen
 import kz.taxi.mobile.feature.transfer.TransferScreen
 
 object Routes {
     const val LOGIN = "login"
+
+    /** The ORTA home screen: the start destination of every signed-in session. */
+    const val HOME = "home"
+
     const val ACCOUNTS = "accounts"
     const val TRANSFER = "transfer"
     const val PAYMENTS = "payments"
     const val CATALOG = "catalog"
+
+    /** The same catalog, opened from the home search stub with the search field focused. */
+    const val CATALOG_SEARCH = "catalog-search"
+
     const val CART = "cart"
     const val CHECKOUT = "checkout"
     const val ORDERS = "orders"
+    const val TAXI = "taxi"
+
+    const val SERVICE_KEY = "serviceKey"
+    const val COMING_SOON = "coming-soon/{$SERVICE_KEY}"
 
     const val PAYMENT_ID = "paymentId"
     const val PRODUCT_ID = "productId"
@@ -50,6 +69,7 @@ object Routes {
     fun paymentDetail(paymentId: String) = "payment/$paymentId"
     fun productDetail(productId: String) = "product/$productId"
     fun orderDetail(orderId: String) = "order/$orderId"
+    fun comingSoon(key: ServiceKey) = "coming-soon/${key.name}"
 }
 
 @Composable
@@ -80,15 +100,45 @@ fun AppNav() {
         }
     }
 
+    // Tab switching keeps exactly one copy of HOME under the stack and restores the state of
+    // the tab the user returns to. `popUpTo` a route that is not on the stack (a session that
+    // started on LOGIN) is simply a no-op.
+    val selectTab: (MainTab) -> Unit = { tab ->
+        navController.navigate(tab.route) {
+            popUpTo(Routes.HOME) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
+    // Honest tiles: the two verticals that exist open their real screens, everything else is
+    // an explicit placeholder.
+    val openService: (ServiceKey) -> Unit = { key ->
+        when (key) {
+            ServiceKey.TAXI -> navController.navigate(Routes.TAXI)
+            ServiceKey.MARKET -> selectTab(MainTab.CATALOG)
+            else -> navController.navigate(Routes.comingSoon(key))
+        }
+    }
+
+    val runQuickAction: (QuickAction) -> Unit = { action ->
+        when (action) {
+            QuickAction.TRANSFER -> navController.navigate(Routes.TRANSFER)
+            QuickAction.NEW_ORDER -> selectTab(MainTab.CATALOG)
+            QuickAction.ACCOUNTS -> selectTab(MainTab.PROFILE)
+            QuickAction.QR -> navController.navigate(Routes.comingSoon(ServiceKey.QR))
+        }
+    }
+
     NavHost(
         navController = navController,
-        startDestination = if (session != null) Routes.ACCOUNTS else Routes.LOGIN,
+        startDestination = if (session != null) Routes.HOME else Routes.LOGIN,
     ) {
         composable(Routes.LOGIN) {
             LoginScreen(
                 baseUrl = container.baseUrl,
                 onLoggedIn = {
-                    navController.navigate(Routes.ACCOUNTS) {
+                    navController.navigate(Routes.HOME) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                         launchSingleTop = true
                     }
@@ -96,14 +146,93 @@ fun AppNav() {
             )
         }
 
-        composable(Routes.ACCOUNTS) {
-            AccountsScreen(
-                onOpenTransfer = { navController.navigate(Routes.TRANSFER) },
-                onOpenPayments = { navController.navigate(Routes.PAYMENTS) },
-                onOpenCatalog = { navController.navigate(Routes.CATALOG) },
-                onOpenOrders = { navController.navigate(Routes.ORDERS) },
+        composable(Routes.HOME) {
+            OrtaTabScaffold(
+                selected = MainTab.HOME,
+                onSelectTab = selectTab,
+                onQuickAction = runQuickAction,
+            ) {
+                HomeScreen(
+                    onOpenSearch = { navController.navigate(Routes.CATALOG_SEARCH) },
+                    onOpenService = openService,
+                    onOpenProfile = { selectTab(MainTab.PROFILE) },
+                )
+            }
+        }
+
+        composable(Routes.CATALOG) {
+            OrtaTabScaffold(
+                selected = MainTab.CATALOG,
+                onSelectTab = selectTab,
+                onQuickAction = runQuickAction,
+            ) {
+                CatalogScreen(
+                    onOpenProduct = { productId -> navController.navigate(Routes.productDetail(productId)) },
+                    onOpenCart = { navController.navigate(Routes.CART) },
+                )
+            }
+        }
+
+        // Reached from the home search stub: same screen, but the search field takes focus
+        // and the header keeps a back arrow, because this instance is not a tab.
+        composable(Routes.CATALOG_SEARCH) {
+            CatalogScreen(
+                onBack = { navController.popBackStack() },
+                onOpenProduct = { productId -> navController.navigate(Routes.productDetail(productId)) },
                 onOpenCart = { navController.navigate(Routes.CART) },
-                onLogout = { scope.launch { container.sessionManager.logout() } },
+                focusSearchOnStart = true,
+            )
+        }
+
+        composable(Routes.ORDERS) {
+            OrtaTabScaffold(
+                selected = MainTab.ORDERS,
+                onSelectTab = selectTab,
+                onQuickAction = runQuickAction,
+            ) {
+                OrdersScreen(
+                    onOpenOrder = { orderId -> navController.navigate(Routes.orderDetail(orderId)) },
+                )
+            }
+        }
+
+        composable(Routes.ACCOUNTS) {
+            OrtaTabScaffold(
+                selected = MainTab.PROFILE,
+                onSelectTab = selectTab,
+                onQuickAction = runQuickAction,
+            ) {
+                AccountsScreen(
+                    onOpenTransfer = { navController.navigate(Routes.TRANSFER) },
+                    onOpenPayments = { navController.navigate(Routes.PAYMENTS) },
+                    onOpenCatalog = { selectTab(MainTab.CATALOG) },
+                    onOpenOrders = { selectTab(MainTab.ORDERS) },
+                    onOpenCart = { navController.navigate(Routes.CART) },
+                    onLogout = { scope.launch { container.sessionManager.logout() } },
+                )
+            }
+        }
+
+        composable(Routes.TAXI) {
+            TaxiScreen(
+                onBack = { navController.popBackStack() },
+                onOpenAccounts = { selectTab(MainTab.PROFILE) },
+                onOpenCatalog = { selectTab(MainTab.CATALOG) },
+            )
+        }
+
+        composable(
+            route = Routes.COMING_SOON,
+            arguments = listOf(navArgument(Routes.SERVICE_KEY) { type = NavType.StringType }),
+        ) { entry ->
+            val key = entry.arguments?.getString(Routes.SERVICE_KEY)
+                ?.let { raw -> ServiceKey.entries.firstOrNull { it.name == raw } }
+                ?: ServiceKey.BUSINESS
+            val service = HomeServices.byKey(key)
+            ComingSoonScreen(
+                title = stringResource(service.titleRes),
+                message = stringResource(service.messageRes),
+                onBack = { navController.popBackStack() },
             )
         }
 
@@ -128,14 +257,6 @@ fun AppNav() {
             )
         }
 
-        composable(Routes.CATALOG) {
-            CatalogScreen(
-                onBack = { navController.popBackStack() },
-                onOpenProduct = { productId -> navController.navigate(Routes.productDetail(productId)) },
-                onOpenCart = { navController.navigate(Routes.CART) },
-            )
-        }
-
         composable(
             route = Routes.PRODUCT_DETAIL,
             arguments = listOf(navArgument(Routes.PRODUCT_ID) { type = NavType.StringType }),
@@ -151,7 +272,7 @@ fun AppNav() {
             CartScreen(
                 onBack = { navController.popBackStack() },
                 onCheckout = { navController.navigate(Routes.CHECKOUT) },
-                onOpenCatalog = { navController.navigate(Routes.CATALOG) },
+                onOpenCatalog = { selectTab(MainTab.CATALOG) },
             )
         }
 
@@ -163,13 +284,6 @@ fun AppNav() {
                         popUpTo(Routes.CHECKOUT) { inclusive = true }
                     }
                 },
-            )
-        }
-
-        composable(Routes.ORDERS) {
-            OrdersScreen(
-                onBack = { navController.popBackStack() },
-                onOpenOrder = { orderId -> navController.navigate(Routes.orderDetail(orderId)) },
             )
         }
 
