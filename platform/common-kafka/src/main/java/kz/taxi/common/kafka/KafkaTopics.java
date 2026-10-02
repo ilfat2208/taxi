@@ -47,12 +47,23 @@ public final class KafkaTopics {
      * (see {@code docs/adr/0009-taxi-vertical.md}).
      */
     public static final String DISPATCH_EVENTS = "dispatch.events";
+    /**
+     * Events published by the qtime service: appointments taken, cancelled and
+     * completed for every service vertical (Services, Beauty, Health, Auto).
+     *
+     * <p>One topic for all verticals, not one each: QTime is a single calendar
+     * behind eight verticals, and the events of a booking are only meaningful
+     * together — a consumer that reacts to {@code booking.cancelled} must be able
+     * to see the {@code booking.created} it follows. Verticals filter by
+     * {@code eventType} and by company, exactly as they filter {@code order.events}.
+     */
+    public static final String QTIME_EVENTS = "qtime.events";
 
     public static final String DEAD_LETTER_SUFFIX = ".DLT";
 
     private static final List<String> ALL = List.of(
             ACCOUNT_EVENTS, PAYMENT_EVENTS, CATALOG_EVENTS, ORDER_EVENTS, SETTLEMENT_EVENTS,
-            TRIP_EVENTS, DRIVER_EVENTS, DISPATCH_EVENTS);
+            TRIP_EVENTS, DRIVER_EVENTS, DISPATCH_EVENTS, QTIME_EVENTS);
 
     private KafkaTopics() {
     }
@@ -123,6 +134,19 @@ public final class KafkaTopics {
         public static final String OFFER_ACCEPTED = "offer.accepted";
         /** Nobody accepted in time; the trip goes back to searching. */
         public static final String OFFER_EXPIRED = "offer.expired";
+
+        /**
+         * A customer took a window in QTime: the slot is now occupied.
+         *
+         * <p>Carries the whole booking (company, specialist, service, time, price),
+         * so notifications, the ORTA Business calendar and, later, the payment hold
+         * do not have to call back for what they need.
+         */
+        public static final String BOOKING_CREATED = "booking.created";
+        /** The booking was released — by the customer or by the company. */
+        public static final String BOOKING_CANCELLED = "booking.cancelled";
+        /** The visit happened: the moment a review and a settlement may follow. */
+        public static final String BOOKING_COMPLETED = "booking.completed";
 
         private Events() {
         }

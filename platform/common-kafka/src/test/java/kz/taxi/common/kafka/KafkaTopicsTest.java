@@ -17,7 +17,7 @@ class KafkaTopicsTest {
 
         assertThat(topics).containsExactly(
                 "account.events", "payment.events", "catalog.events", "order.events", "settlement.events",
-                "trip.events", "driver.events", "dispatch.events");
+                "trip.events", "driver.events", "dispatch.events", "qtime.events");
         assertThat(new HashSet<>(topics)).hasSameSizeAs(topics);
         assertThat(KafkaTopics.deadLetterTopics())
                 .hasSameSizeAs(topics)
@@ -61,5 +61,19 @@ class KafkaTopicsTest {
                         KafkaTopics.Events.PAYMENT_REVERSED))
                 .containsExactlyInAnyOrder(
                         "payment.initiated", "payment.completed", "payment.failed", "payment.reversed");
+    }
+
+    @Test
+    @DisplayName("QTime publishes one calendar, so every service vertical reads one topic")
+    void covers_booking_lifecycle() {
+        // QTime is the single calendar behind Beauty, Health, Auto and Services: the
+        // verticals filter by eventType and company, they do not get a topic each.
+        assertThat(List.of(
+                        KafkaTopics.Events.BOOKING_CREATED,
+                        KafkaTopics.Events.BOOKING_CANCELLED,
+                        KafkaTopics.Events.BOOKING_COMPLETED))
+                .containsExactly("booking.created", "booking.cancelled", "booking.completed");
+        assertThat(KafkaTopics.QTIME_EVENTS).isEqualTo("qtime.events");
+        assertThat(KafkaTopics.all()).contains(KafkaTopics.QTIME_EVENTS);
     }
 }

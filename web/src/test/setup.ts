@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/vitest';
+import { configure } from '@testing-library/dom';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 
@@ -9,6 +10,16 @@ import { afterEach, vi } from 'vitest';
  * components (or the router) touch all three; the stubs keep the suite from
  * failing for reasons unrelated to the behaviour under test.
  */
+
+/**
+ * Vitest runs one worker per test file, and the page tests mount real routers with
+ * lazily imported Leaflet maps. Under that load a page can take longer than the
+ * one-second default of `findBy*`/`waitFor` to appear, which used to fail a random
+ * handful of tests per run. Waiting longer only makes the *success* path patient:
+ * a missing element still fails the test, just after five seconds instead of one.
+ */
+configure({ asyncUtilTimeout: 5_000 });
+
 if (typeof window !== 'undefined') {
   if (typeof window.matchMedia !== 'function') {
     Object.defineProperty(window, 'matchMedia', {

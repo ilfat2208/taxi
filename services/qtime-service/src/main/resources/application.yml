@@ -1,0 +1,160 @@
+server:
+  port: ${SERVER_PORT:8088}
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+
+spring:
+  application:
+    name: qtime-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://127.0.0.1:5432/taxi_qtime}
+    username: ${POSTGRES_USER:taxi}
+    password: ${POSTGRES_PASSWORD:taxi}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      pool-name: qtime-pool
+      connection-timeout: 3000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: qtime
+        jdbc:
+          time_zone: UTC
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        query:
+          in_clause_parameter_padding: true
+  flyway:
+    enabled: true
+    schemas: qtime
+    default-schema: qtime
+    create-schemas: true
+    locations: classpath:db/migration
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:127.0.0.1}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      timeout: 2s
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:127.0.0.1:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        compression.type: lz4
+        linger.ms: 5
+        delivery.timeout.ms: 120000
+    consumer:
+      group-id: qtime-service
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        isolation.level: read_committed
+    listener:
+      ack-mode: record
+
+taxi:
+  security:
+    # HMAC (shared secret, HS256) is the default. JWT_MODE=JWKS makes this service verify
+    # the issuer's RS256 tokens against its public key set and hold no signing material.
+    mode: ${JWT_MODE:HMAC}
+    jwt-secret: ${JWT_SECRET:local-dev-only-secret-change-me-0123456789abcdef}
+    jwk-set-uri: ${JWK_SET_URI:}
+    jwks-cache-ttl: ${JWKS_CACHE_TTL:5m}
+    jwt-ttl: ${JWT_TTL_SECONDS:3600}s
+    issuer: ${JWT_ISSUER:https://identity.taxi.local}
+    issuer-uri: ${JWT_ISSUER_URI:}
+    roles-claim: roles
+    # Browsing salons is anonymous — that is the whole point of "маникюр → сегодня →
+    # рядом со мной": a person decides to register *after* seeing the free windows.
+    # Listing the platform defaults again is not noise — supplying this property
+    # replaces them, so dropping actuator/swagger would lock out the probes and the docs.
+    #
+    # Writing is not public: POST /bookings needs a JWT (the path is not listed below)
+    # and is then checked again in QtimeAccess.requireBookingClient, which is where the
+    # role rules of this service live — in code, next to the rules they belong to, rather
+    # than in an annotation or in a URL pattern that a refactor can silently drop.
+    # /internal/** is authenticated as a workload by InternalApiTokenFilter on
+    # X-Internal-Token, which runs before the security filter chain.
+    public-paths:
+      - /actuator/health/**
+      - /actuator/info
+      - /actuator/prometheus
+      - /v3/api-docs/**
+      - /swagger-ui/**
+      - /swagger-ui.html
+      - /error
+      - /api/v1/qtime/companies
+      - /api/v1/qtime/companies/*
+      # `**`, not `*`: the grid is /specialists/{id}/slots — two segments after the
+      # prefix — and with a single star Spring Security's PathPattern matches only
+      # /specialists/{id}, so the one endpoint a client needs before registering
+      # answered 401. Caught by scripts/e2e-qtime.ps1 step 3.
+      - /api/v1/qtime/specialists/**
+      - /api/v1/qtime/internal/**
+  idempotency:
+    store: redis
+    ttl: 24h
+  outbox:
+    enabled: true
+    poll-interval-ms: 500
+    batch-size: 100
+    max-attempts: 10
+  kafka:
+    partitions: 3
+    replicas: 1
+    dedup:
+      store: redis
+      ttl: 7d
+  # Shared secret authenticating service-to-service calls on /internal/ endpoints.
+  internal:
+    token: ${INTERNAL_API_TOKEN:local-internal-token-change-me}
+  qtime:
+    # The grid a client sees. 30 minutes is what salons and СТО actually sell
+    # ("замена масла 45 мин" still starts on the half hour), and it keeps a working
+    # day at ~22 cells — a grid a person can read on a phone.
+    slot-step-minutes: ${QTIME_SLOT_STEP_MINUTES:30}
+    # How far ahead a window may be taken: a month is the horizon most salons
+    # publish, and it bounds the work of one slot query.
+    booking-horizon-days: ${QTIME_BOOKING_HORIZON_DAYS:30}
+    # Nobody can book a slot starting in the next half hour: the master has to see
+    # it before the client walks in.
+    min-lead-time-minutes: ${QTIME_MIN_LEAD_TIME_MINUTES:30}
+    # Zone used when a company has none of its own; every seeded company is here.
+    default-timezone: ${QTIME_DEFAULT_TIMEZONE:Asia/Almaty}
+    demo:
+      # Demo companies, specialists, services and a few occupied windows, so the
+      # "Услуги" screens are not empty on a fresh database.
+      seed: ${QTIME_DEMO_SEED:true}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE:health,info,metrics,prometheus}
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    kz.taxi: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{correlationId:-}] %logger{36} - %msg%n"

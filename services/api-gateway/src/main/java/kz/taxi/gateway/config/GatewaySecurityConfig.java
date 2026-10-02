@@ -160,6 +160,16 @@ public class GatewaySecurityConfig {
                                 "/api/v1/catalog/products/**",
                                 "/api/v1/catalog/categories",
                                 "/api/v1/merchants/*").permitAll()
+                        // Browsing services is anonymous for the same reason, and it is the
+                        // whole product argument of QTime: a person sees the free windows of
+                        // a salon and only then decides to register. The service already
+                        // treats these two paths as public; without the same decision here
+                        // the contract would say "anonymous" while the edge answered 401.
+                        // GET-only again: taking a window is a POST that needs a token at
+                        // the edge and the CUSTOMER role inside qtime-service.
+                        .pathMatchers(HttpMethod.GET,
+                                "/api/v1/qtime/companies/**",
+                                "/api/v1/qtime/specialists/**").permitAll()
                         .pathMatchers(publicPaths).permitAll()
                         .anyExchange().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2

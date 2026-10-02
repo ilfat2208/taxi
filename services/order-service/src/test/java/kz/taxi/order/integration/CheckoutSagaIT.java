@@ -28,20 +28,23 @@ import kz.taxi.order.infrastructure.OrderStatusHistoryRepository;
 import kz.taxi.order.infrastructure.client.CatalogClient;
 import kz.taxi.order.infrastructure.client.CatalogDtos;
 import kz.taxi.order.infrastructure.client.PaymentClient;
+import kz.taxi.order.support.ItInfrastructure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -78,9 +81,19 @@ import static org.mockito.Mockito.when;
  * would publish are asserted directly) and the listener container does not start. The
  * recovery job is invoked explicitly instead of on its timer.
  *
- * <p>Runs only with {@code mvn verify -Pintegration}.
+ * <p>The database is a {@code postgres:16-alpine} container started by Testcontainers —
+ * unless {@code IT_DATABASE_URL} is set, in which case the test runs against that
+ * database (a test one, never the demo one: Flyway migrates it) and starts no container
+ * at all. {@link ItInfrastructure} explains the choice; {@code scripts/it-local.ps1}
+ * makes it locally. {@link #cleanDatabase()} empties the tables before every scenario,
+ * so a long-lived external database behaves exactly like the fresh container the suite
+ * was written for — the recovery test, for instance, insists on finding exactly one
+ * stuck order.
+ *
+ * <p>Runs only with {@code mvn verify -Pintegration} (failsafe, {@code *IT}); without a
+ * usable Docker and without {@code IT_DATABASE_URL} the class is reported as skipped.
  */
-@Testcontainers(disabledWithoutDocker = true)
+@EnabledIf(ItInfrastructure.AVAILABLE_METHOD)
 @SpringBootTest(properties = {
         "taxi.idempotency.store=memory",
         "taxi.kafka.dedup.store=memory",
@@ -96,9 +109,20 @@ import static org.mockito.Mockito.when;
 })
 class CheckoutSagaIT {
 
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine");
+    /**
+     * Started by {@link ItInfrastructure#start} <em>unless</em> {@code IT_DATABASE_URL}
+     * points the test at an already-running database; never referenced before the
+     * {@code @EnabledIf} condition above has passed.
+     */
+    static final PostgreSQLContainer<?> POSTGRES =
+            new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"));
+
+    private static final ItInfrastructure INFRASTRUCTURE = ItInfrastructure.start(POSTGRES);
+
+    @DynamicPropertySource
+    static void infrastructure(DynamicPropertyRegistry registry) {
+        INFRASTRUCTURE.register(registry);
+    }
 
     /**
      * Stand-ins for the two downstream services.
@@ -145,18 +169,42 @@ class CheckoutSagaIT {
     private OrderPaymentRepository orderPaymentRepository;
     @Autowired
     private OutboxRepository outboxRepository;
+    @Autowired
+    private JdbcTemplate jdbc;
 
     private String userId;
 
     @BeforeEach
     void setUp() {
         userId = "user-" + UUID.randomUUID();
-        outboxRepository.deleteAll();
+        cleanDatabase();
+        // The two doubles are beans, so they live exactly as long as the context — that is,
+        // across scenarios. Without this reset both their stubs and their recorded calls
+        // survive into the next test: the thenThrow of the timeout scenario makes the next
+        // checkout fail with "payment did not answer", and a never() verification sees the
+        // calls of a different test. The class is order-dependent without this line, and
+        // order was the only thing that ever made it look green.
+        Mockito.reset(stubbedCatalogClient, stubbedPaymentClient);
         when(stubbedCatalogClient.getProduct(anyString()))
                 .thenAnswer(invocation -> product(invocation.getArgument(0)));
         when(stubbedCatalogClient.imageUrlOf(anyString())).thenReturn("https://cdn.test/image.png");
         when(stubbedCatalogClient.reserve(anyString(), any()))
                 .thenAnswer(invocation -> reservation(invocation.getArgument(0), 25_000L));
+    }
+
+    /**
+     * Empties the service's tables before every scenario.
+     *
+     * <p>A container is new for every run, an external database is not, and this class
+     * does not only read: {@code recoverStuckCheckouts()} is asserted to return exactly
+     * one order, so an order left behind by an earlier run would break a test that has
+     * nothing to do with it. {@code CASCADE} is what makes the list short — the items,
+     * the history and the payment lines of an order are reachable only through it, and
+     * naming them here would be a second, silently rotting copy of the schema.
+     */
+    private void cleanDatabase() {
+        jdbc.execute("truncate table orders.support_audit_record, orders.outbox_message,"
+                + " orders.customer_order, orders.cart restart identity cascade");
     }
 
     // ------------------------------------------------------------------ happy path
@@ -277,7 +325,10 @@ class CheckoutSagaIT {
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         assertThat(order.getFailureReason()).startsWith("PAYMENT_DECLINED: ");
         assertThat(order.getPaymentStatus()).isEqualTo(PaymentStatus.FAILED.name());
-        verify(stubbedCatalogClient).release(order.getId(), anyString());
+        // eq(...) around the id, not the raw value: as soon as one argument of a
+        // verification is a matcher, every argument has to be one (Mockito refuses the
+        // mix with InvalidUseOfMatchersException, which is what this line used to do).
+        verify(stubbedCatalogClient).release(eq(order.getId()), anyString());
         assertThat(eventsOf(order.getId()))
                 .containsExactlyInAnyOrder(KafkaTopics.Events.ORDER_CREATED, KafkaTopics.Events.ORDER_CANCELLED);
     }

@@ -5,13 +5,16 @@ import type {
   AccountHold,
   AccountTransaction,
   AddCartItemRequest,
+  BookingQuery,
   Cart,
   CartItem,
   Category,
   CreateAccountRequest,
+  CreateBookingRequest,
   CreateMerchantRequest,
   CreateOrderRequest,
   CreateProductRequest,
+  CreateTripRequest,
   DispatchCandidate,
   DispatchDriver,
   DispatchDriversResponse,
@@ -31,12 +34,28 @@ import type {
   ProductPage,
   ProductQuery,
   Profile,
+  QtimeBooking,
+  QtimeCompany,
+  QtimeCompanyDetail,
+  QtimeCompanyQuery,
+  QtimeService,
+  QtimeSlots,
+  QtimeSpecialist,
   Refund,
   RefundRequest,
   TokenResponse,
   TopUpRequest,
   TransactionPage,
   TransferRequest,
+  Trip,
+  TripAccepted,
+  TripPage,
+  TripPoint,
+  TripQuery,
+  TripQuote,
+  TripQuoteRequest,
+  TripReceipt,
+  TripTimelineEntry,
   UpdateCartItemRequest,
   UpdateProductRequest,
 } from './types';
@@ -86,6 +105,46 @@ function num(value: unknown, fallback = 0): number {
     }
   }
   return fallback;
+}
+
+/**
+ * Like {@link num}, but `null` when the field is missing.
+ *
+ * The trip and QTime screens must not turn an absent field into a zero: a company
+ * without a price list has no "от 0 ₸", and a driverless trip has no rating to
+ * show. `null` keeps "не пришло" distinguishable from "ноль".
+ */
+function optionalNum(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+  return null;
+}
+
+function optionalBool(value: unknown): boolean | null {
+  return typeof value === 'boolean' ? value : null;
+}
+
+/** `driverName` is the contract; `driver: {name}` is tolerated behind the gateway. */
+function driverNameOf(trip: Record<string, unknown>): string | null {
+  const direct = optionalStr(trip.driverName);
+  if (direct !== null) {
+    return direct;
+  }
+  if (typeof trip.driver === 'string') {
+    return trip.driver;
+  }
+  if (typeof trip.driver === 'object' && trip.driver !== null) {
+    const driver = asRecord(trip.driver);
+    return optionalStr(driver.name ?? driver.displayName);
+  }
+  return null;
 }
 
 function arr(value: unknown): unknown[] {
@@ -773,4 +832,386 @@ export function fetchNearestDrivers(query: NearestDriversQuery): Promise<Dispatc
       limit: query.limit ?? 10,
     },
   }).then(normalizeDispatchNearest);
+}
+
+/* ------------------------------------------------------------------- trips */
+
+/** Coordinates are kept as `NaN` when absent, so the map can skip the pin. */
+export function normalizeTripPoint(raw: unknown): TripPoint {
+  const point = asRecord(raw);
+  return {
+    lat: num(point.lat ?? point.latitude, Number.NaN),
+    lon: num(point.lon ?? point.lng ?? point.longitude, Number.NaN),
+    address: str(point.address),
+  };
+}
+
+function normalizeTripBreakdown(raw: unknown): TripQuote['breakdown'] {
+  const breakdown = asRecord(raw);
+  return {
+    baseMinor: num(breakdown.baseMinor, 0),
+    distanceMinor: num(breakdown.distanceMinor, 0),
+    timeMinor: num(breakdown.timeMinor, 0),
+  };
+}
+
+/**
+ * Breakdown of a receipt is `null` when the service sent nothing usable.
+ *
+ * A quote always carries one, so `normalizeTripBreakdown` can assume it; a receipt
+ * may not, and "0,00 ₸" for a fare component nobody sent would be a lie.
+ */
+function normalizeReceiptBreakdown(raw: unknown): TripReceipt['breakdown'] {
+  if (raw === undefined || raw === null) {
+    return null;
+  }
+  const breakdown = asRecord(raw);
+  const parts = [breakdown.baseMinor, breakdown.distanceMinor, breakdown.timeMinor];
+  if (parts.every((part) => optionalNum(part) === null)) {
+    return null;
+  }
+  return {
+    baseMinor: num(breakdown.baseMinor, 0),
+    distanceMinor: num(breakdown.distanceMinor, 0),
+    timeMinor: num(breakdown.timeMinor, 0),
+  };
+}
+
+export function normalizeTripQuote(raw: unknown): TripQuote {
+  const container = asRecord(raw);
+  const quote = container.quote !== undefined ? asRecord(container.quote) : container;
+  return {
+    quoteId: str(quote.quoteId ?? quote.id),
+    tariff: str(quote.tariff, 'ECONOMY'),
+    distanceM: num(quote.distanceM ?? quote.distance, 0),
+    durationS: num(quote.durationS ?? quote.duration, 0),
+    priceMinor: num(quote.priceMinor ?? quote.price, 0),
+    currency: str(quote.currency, 'KZT'),
+    commissionBp: optionalNum(quote.commissionBp),
+    commissionMinor: num(quote.commissionMinor, 0),
+    driverNetMinor: num(quote.driverNetMinor, 0),
+    surgeBp: num(quote.surgeBp, 0),
+    breakdown: normalizeTripBreakdown(quote.breakdown),
+    expiresAt: str(quote.expiresAt),
+  };
+}
+
+export function normalizeTripAccepted(raw: unknown): TripAccepted {
+  const container = asRecord(raw);
+  const accepted = container.trip !== undefined ? asRecord(container.trip) : container;
+  return {
+    tripId: str(accepted.tripId ?? accepted.id),
+    tripNumber: str(accepted.tripNumber ?? accepted.number, str(accepted.tripId ?? accepted.id)),
+    status: str(accepted.status, 'SEARCHING'),
+    priceMinor: num(accepted.priceMinor ?? accepted.price, 0),
+    currency: str(accepted.currency, 'KZT'),
+    requestedAt: str(accepted.requestedAt ?? accepted.createdAt),
+  };
+}
+
+function normalizeTripTimeline(raw: unknown): TripTimelineEntry {
+  const entry = asRecord(raw);
+  return {
+    status: str(entry.status ?? entry.toStatus, 'UNKNOWN'),
+    at: str(entry.at ?? entry.createdAt ?? entry.changedAt ?? entry.occurredAt),
+    actor: optionalStr(entry.actor ?? entry.changedBy),
+  };
+}
+
+/**
+ * Receipt of a finished ride.
+ *
+ * The service answers with a flat record (see `ReceiptResponse` in trip-service);
+ * a receipt without a total is not a receipt, so `null` is returned and the screen
+ * reports "чек недоступен" instead of printing a zero.
+ */
+export function normalizeTripReceipt(raw: unknown): TripReceipt | null {
+  const container = asRecord(raw);
+  const receipt = container.receipt !== undefined ? asRecord(container.receipt) : container;
+  const priceMinor = optionalNum(receipt.priceMinor ?? receipt.totalMinor ?? receipt.amountMinor);
+  if (priceMinor === null) {
+    return null;
+  }
+  return {
+    tripId: optionalStr(receipt.tripId),
+    tripNumber: optionalStr(receipt.tripNumber ?? receipt.number),
+    status: optionalStr(receipt.status),
+    completedAt: optionalStr(
+      receipt.completedAt ?? receipt.issuedAt ?? receipt.paidAt ?? receipt.createdAt,
+    ),
+    tariff: optionalStr(receipt.tariff),
+    distanceM: optionalNum(receipt.distanceM ?? receipt.distance),
+    durationS: optionalNum(receipt.durationS ?? receipt.duration),
+    breakdown: normalizeReceiptBreakdown(receipt.breakdown ?? receipt.fare),
+    surgeBp: optionalNum(receipt.surgeBp),
+    priceMinor,
+    currency: str(receipt.currency, 'KZT'),
+    commissionBp: optionalNum(receipt.commissionBp),
+    commissionMinor: optionalNum(receipt.commissionMinor ?? receipt.platformCommissionMinor),
+    driverNetMinor: optionalNum(receipt.driverNetMinor ?? receipt.driverAccrualMinor),
+    driverId: optionalStr(receipt.driverId),
+    driverDisplayName: optionalStr(receipt.driverDisplayName ?? receipt.driverName),
+    holdId: optionalStr(receipt.holdId),
+    paymentId: optionalStr(receipt.paymentId),
+    transactionId: optionalStr(receipt.transactionId),
+  };
+}
+
+export function normalizeTrip(raw: unknown): Trip {
+  const container = asRecord(raw);
+  const trip = container.trip !== undefined ? asRecord(container.trip) : container;
+  const timelineRaw = trip.timeline ?? trip.statusHistory ?? trip.history;
+  const pickupRaw = trip.pickup ?? trip.pickupPoint;
+  const dropoffRaw = trip.dropoff ?? trip.dropoffPoint;
+  return {
+    tripId: str(trip.tripId ?? trip.id ?? container.tripId),
+    tripNumber: str(trip.tripNumber ?? trip.number, str(trip.tripId ?? trip.id)),
+    status: str(trip.status, 'UNKNOWN'),
+    riderUserId: optionalStr(trip.riderUserId ?? trip.userId),
+    driverId: optionalStr(trip.driverId),
+    driverName: driverNameOf(trip),
+    vehiclePlate: optionalStr(trip.vehiclePlate ?? trip.plate),
+    tariff: str(trip.tariff, 'ECONOMY'),
+    pickup: pickupRaw === undefined || pickupRaw === null ? null : normalizeTripPoint(pickupRaw),
+    dropoff: dropoffRaw === undefined || dropoffRaw === null ? null : normalizeTripPoint(dropoffRaw),
+    distanceM: optionalNum(trip.distanceM ?? trip.distance),
+    durationS: optionalNum(trip.durationS ?? trip.duration),
+    priceMinor: optionalNum(trip.priceMinor ?? trip.price),
+    commissionBp: optionalNum(trip.commissionBp),
+    commissionMinor: optionalNum(trip.commissionMinor),
+    driverNetMinor: optionalNum(trip.driverNetMinor),
+    currency: str(trip.currency, 'KZT'),
+    holdId: optionalStr(trip.holdId),
+    holdStatus: optionalStr(trip.holdStatus),
+    cancelReason: optionalStr(trip.cancelReason),
+    ratingStars: optionalNum(trip.ratingStars ?? trip.rating),
+    ratingComment: optionalStr(trip.ratingComment),
+    requestedAt: optionalStr(trip.requestedAt ?? trip.createdAt),
+    assignedAt: optionalStr(trip.assignedAt),
+    arrivedAt: optionalStr(trip.arrivedAt),
+    startedAt: optionalStr(trip.startedAt),
+    completedAt: optionalStr(trip.completedAt),
+    cancelledAt: optionalStr(trip.cancelledAt),
+    timeline: arr(timelineRaw).map(normalizeTripTimeline),
+    receipt:
+      trip.receipt === undefined || trip.receipt === null
+        ? normalizeTripReceipt(container.receipt ?? null)
+        : normalizeTripReceipt(trip.receipt),
+  };
+}
+
+/** Price for one tariff and one point pair (`POST /api/v1/trips/quote`). */
+export function requestTripQuote(body: TripQuoteRequest): Promise<TripQuote> {
+  return apiRequest<unknown>('/v1/trips/quote', { method: 'POST', body }).then(normalizeTripQuote);
+}
+
+/** The booking itself: one `Idempotency-Key` per user submit. */
+export function createTrip(body: CreateTripRequest, idempotencyKey: string): Promise<TripAccepted> {
+  return apiRequest<unknown>('/v1/trips', { method: 'POST', body, idempotencyKey }).then(
+    normalizeTripAccepted,
+  );
+}
+
+export function fetchTrip(tripId: string): Promise<Trip> {
+  return apiRequest<unknown>(`/v1/trips/${encodeURIComponent(tripId)}`).then(normalizeTrip);
+}
+
+/**
+ * Receipt of a finished ride (`GET /api/v1/trips/{tripId}/receipt`).
+ *
+ * A completed trip embeds the receipt, so this call is the fallback for the case
+ * where only the trip was returned. `null` means "the service gave us nothing we
+ * can print" — the screen must not render zeros in that case.
+ */
+export function fetchTripReceipt(tripId: string): Promise<TripReceipt | null> {
+  return apiRequest<unknown>(`/v1/trips/${encodeURIComponent(tripId)}/receipt`).then(
+    normalizeTripReceipt,
+  );
+}
+
+export function fetchTrips(query: TripQuery = {}): Promise<TripPage> {
+  return apiRequest<unknown>('/v1/trips', {
+    query: {
+      status: query.status,
+      page: query.page ?? 0,
+      size: query.size ?? 10,
+    },
+  }).then((raw) => normalizePage(raw, normalizeTrip));
+}
+
+export function cancelTrip(tripId: string, body: { reason: string }): Promise<Trip> {
+  return apiRequest<unknown>(`/v1/trips/${encodeURIComponent(tripId)}/cancel`, {
+    method: 'POST',
+    body,
+  }).then(normalizeTrip);
+}
+
+/** Rating a trip twice answers `409` — the page explains that instead of retrying. */
+export function rateTrip(
+  tripId: string,
+  body: { stars: number; comment?: string },
+): Promise<Trip> {
+  return apiRequest<unknown>(`/v1/trips/${encodeURIComponent(tripId)}/rate`, {
+    method: 'POST',
+    body,
+  }).then(normalizeTrip);
+}
+
+/* ------------------------------------------------------------------- qtime */
+
+export function normalizeQtimeCompany(raw: unknown): QtimeCompany {
+  const company = asRecord(raw);
+  return {
+    companyId: str(company.companyId ?? company.id),
+    name: str(company.name ?? company.displayName, 'Компания'),
+    category: optionalStr(company.category),
+    city: optionalStr(company.city),
+    address: optionalStr(company.address),
+    lat: optionalNum(company.lat ?? company.latitude),
+    lon: optionalNum(company.lon ?? company.lng ?? company.longitude),
+    ratingBp: optionalNum(company.ratingBp ?? company.rating),
+    reviewsCount: optionalNum(company.reviewsCount ?? company.reviews),
+    specialistsCount: optionalNum(company.specialistsCount),
+    servicesCount: optionalNum(company.servicesCount),
+    minPriceMinor: optionalNum(company.minPriceMinor),
+  };
+}
+
+function normalizeQtimeSpecialist(raw: unknown): QtimeSpecialist {
+  const specialist = asRecord(raw);
+  return {
+    specialistId: str(specialist.specialistId ?? specialist.id),
+    name: str(specialist.name ?? specialist.displayName, 'Специалист'),
+    specialization: optionalStr(specialist.specialization),
+    ratingBp: optionalNum(specialist.ratingBp ?? specialist.rating),
+    experienceYears: optionalNum(specialist.experienceYears ?? specialist.experience),
+  };
+}
+
+function normalizeQtimeService(raw: unknown): QtimeService {
+  const service = asRecord(raw);
+  return {
+    serviceId: str(service.serviceId ?? service.id),
+    name: str(service.name ?? service.title, 'Услуга'),
+    durationMinutes: optionalNum(service.durationMinutes ?? service.duration),
+    priceMinor: optionalNum(service.priceMinor ?? service.price),
+    currency: str(service.currency, 'KZT'),
+  };
+}
+
+export function normalizeQtimeCompanyDetail(raw: unknown): QtimeCompanyDetail {
+  const container = asRecord(raw);
+  const source = container.company !== undefined ? asRecord(container.company) : container;
+  const summary = normalizeQtimeCompany(source);
+  return {
+    ...summary,
+    timezone: optionalStr(source.timezone ?? container.timezone),
+    specialists: arr(source.specialists ?? container.specialists).map(normalizeQtimeSpecialist),
+    services: arr(source.services ?? container.services).map(normalizeQtimeService),
+  };
+}
+
+export function normalizeQtimeSlots(raw: unknown): QtimeSlots {
+  const container = asRecord(raw);
+  return {
+    date: str(container.date),
+    specialistId: str(container.specialistId),
+    serviceId: str(container.serviceId),
+    durationMinutes: optionalNum(container.durationMinutes),
+    timezone: str(container.timezone, 'Asia/Almaty'),
+    slots: arr(container.slots ?? container.items).map((entry) => {
+      const slot = asRecord(entry);
+      return {
+        startsAt: str(slot.startsAt ?? slot.start),
+        endsAt: optionalStr(slot.endsAt ?? slot.end),
+        // A slot without an explicit flag is treated as taken: offering a window
+        // the service did not confirm is worse than hiding it.
+        available: optionalBool(slot.available) ?? false,
+        reason: optionalStr(slot.reason),
+      };
+    }),
+  };
+}
+
+export function normalizeQtimeBooking(raw: unknown): QtimeBooking {
+  const container = asRecord(raw);
+  const booking = container.booking !== undefined ? asRecord(container.booking) : container;
+  return {
+    bookingId: str(booking.bookingId ?? booking.id),
+    code: str(booking.code ?? booking.bookingCode, str(booking.bookingId ?? booking.id)),
+    status: str(booking.status, 'CONFIRMED'),
+    startsAt: str(booking.startsAt ?? booking.start),
+    endsAt: optionalStr(booking.endsAt ?? booking.end),
+    companyId: optionalStr(booking.companyId),
+    companyName: optionalStr(booking.companyName),
+    companyAddress: optionalStr(booking.companyAddress),
+    specialistName: optionalStr(booking.specialistName),
+    serviceName: optionalStr(booking.serviceName),
+    durationMinutes: optionalNum(booking.durationMinutes),
+    priceMinor: optionalNum(booking.priceMinor ?? booking.price),
+    currency: str(booking.currency, 'KZT'),
+  };
+}
+
+/** Public catalogue: readable without a session, so nobody has to log in to browse. */
+export function fetchQtimeCompanies(query: QtimeCompanyQuery = {}): Promise<Page<QtimeCompany>> {
+  return apiRequest<unknown>('/v1/qtime/companies', {
+    query: {
+      query: query.query,
+      category: query.category,
+      city: query.city,
+      page: query.page ?? 0,
+      size: query.size ?? 12,
+    },
+  }).then((raw) => normalizePage(raw, normalizeQtimeCompany));
+}
+
+export function fetchQtimeCompany(companyId: string): Promise<QtimeCompanyDetail> {
+  return apiRequest<unknown>(`/v1/qtime/companies/${encodeURIComponent(companyId)}`).then(
+    normalizeQtimeCompanyDetail,
+  );
+}
+
+export interface QtimeSlotsQuery {
+  specialistId: string;
+  serviceId: string;
+  /** Calendar day in the company's timezone: `YYYY-MM-DD`. */
+  date: string;
+}
+
+export function fetchQtimeSlots(query: QtimeSlotsQuery): Promise<QtimeSlots> {
+  return apiRequest<unknown>(
+    `/v1/qtime/specialists/${encodeURIComponent(query.specialistId)}/slots`,
+    { query: { serviceId: query.serviceId, date: query.date } },
+  ).then(normalizeQtimeSlots);
+}
+
+/** Booking is a money path: the caller supplies one `Idempotency-Key` per intent. */
+export function createBooking(
+  body: CreateBookingRequest,
+  idempotencyKey: string,
+): Promise<QtimeBooking> {
+  return apiRequest<unknown>('/v1/qtime/bookings', { method: 'POST', body, idempotencyKey }).then(
+    normalizeQtimeBooking,
+  );
+}
+
+export function fetchBookings(query: BookingQuery = {}): Promise<Page<QtimeBooking>> {
+  return apiRequest<unknown>('/v1/qtime/bookings', {
+    query: {
+      status: query.status,
+      page: query.page ?? 0,
+      size: query.size ?? 10,
+    },
+  }).then((raw) => normalizePage(raw, normalizeQtimeBooking));
+}
+
+export function cancelBooking(
+  bookingId: string,
+  body: { reason: string },
+): Promise<QtimeBooking> {
+  return apiRequest<unknown>(`/v1/qtime/bookings/${encodeURIComponent(bookingId)}/cancel`, {
+    method: 'POST',
+    body,
+  }).then(normalizeQtimeBooking);
 }

@@ -18,10 +18,12 @@ import kz.taxi.payment.infrastructure.PaymentRepository;
 import kz.taxi.payment.infrastructure.PaymentTransitionRepository;
 import kz.taxi.payment.infrastructure.RefundRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLException;
 import java.util.Optional;
 
 /**
@@ -44,6 +46,12 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class PaymentStateService {
+
+    /**
+     * The unique index that makes "one payment per idempotency key" a fact of the
+     * database rather than a promise of the service.
+     */
+    private static final String IDEMPOTENCY_KEY_CONSTRAINT = "uq_payment_idempotency_key";
 
     private final PaymentRepository payments;
     private final PaymentTransitionRepository transitions;
@@ -79,22 +87,37 @@ public class PaymentStateService {
      * <p>The client's idempotency key is stored here and protected by a unique
      * index: the Redis guard already replays retries, but two replicas can still
      * race, and the database is the only component that cannot be raced.
+     *
+     * <p>Only a violation of that index is reported as an idempotency conflict. Every
+     * other integrity failure — a value that does not fit its column, a CHECK, a NOT
+     * NULL, a foreign key — is a defect, and saying "this key already exists" about it
+     * sends the caller and the operator looking in the wrong place: the caller reads
+     * back the outcome of a payment that was never created (or retries forever), and
+     * the real reason stays invisible. See {@link #isDuplicateIdempotencyKey}.
      */
     @Transactional
     public Payment initiate(PaymentIntent intent, PaymentFees.FeeBreakdown money) {
         Payment payment = Payment.initiate(intent, money);
         try {
             payments.saveAndFlush(payment);
-        } catch (DataIntegrityViolationException duplicate) {
-            // Someone already used this key. The code matters to the caller: it means
-            // "do not retry blindly, look the outcome up by order/payment id" — which
-            // is exactly what order-service does with IDEMPOTENCY_CONFLICT, and why
-            // the internal read endpoints exist. A generic CONFLICT would look like a
-            // different, unexplainable failure.
-            throw DomainException.of(CommonErrorCode.IDEMPOTENCY_CONFLICT,
-                            "a payment with idempotency key '{}' already exists; read its outcome instead of retrying",
-                            intent.idempotencyKey())
-                    .withDetail("idempotencyKey", intent.idempotencyKey());
+        } catch (DataIntegrityViolationException violation) {
+            if (isDuplicateIdempotencyKey(violation)) {
+                // Someone already used this key. The code matters to the caller: it means
+                // "do not retry blindly, look the outcome up by order/payment id" — which
+                // is exactly what order-service does with IDEMPOTENCY_CONFLICT, and why
+                // the internal read endpoints exist. A generic CONFLICT would look like a
+                // different, unexplainable failure.
+                throw DomainException.of(CommonErrorCode.IDEMPOTENCY_CONFLICT,
+                                "a payment with idempotency key '{}' already exists; read its outcome instead of retrying",
+                                intent.idempotencyKey())
+                        .withDetail("idempotencyKey", intent.idempotencyKey());
+            }
+            String violated = describeViolation(violation);
+            log.error("payment for idempotency key {} could not be stored: the insert violated {}",
+                    intent.idempotencyKey(), violated, violation);
+            throw DomainException.of(CommonErrorCode.INTERNAL_ERROR,
+                            "the payment could not be stored: the insert violated {}", violated)
+                    .withDetail("constraint", violated);
         }
         transitions.save(PaymentTransition.of(payment.getId(), null, PaymentStatus.INITIATED,
                 "payment created", PaymentTransition.ACTOR_API));
@@ -229,13 +252,19 @@ public class PaymentStateService {
                     .withDetail("status", payment.getStatus().name());
         }
 
-        long amountMinor = requestedAmountMinor == null ? payment.getAmountMinor() : requestedAmountMinor;
+        long alreadyRefunded = refunds.sumRefunded(paymentId);
+        long refundable = payment.getAmountMinor() - alreadyRefunded;
+        // A null amount means "whatever is still refundable", which is not the same as
+        // "the whole payment": order-service cancels an order by sending exactly that null
+        // (PaymentClient#refund), and on a payment that was already refunded in part the
+        // difference is the difference between "refund the rest" and REFUND_EXCEEDS_PAYMENT
+        // — a cancellation that can never succeed, however often it is retried.
+        long amountMinor = requestedAmountMinor == null ? refundable : requestedAmountMinor;
         if (amountMinor <= 0) {
             throw DomainException.of(PaymentErrorCode.INVALID_AMOUNT,
                     "refund amount must be positive but was {}", amountMinor);
         }
-        long alreadyRefunded = refunds.sumRefunded(paymentId);
-        if (amountMinor > payment.getAmountMinor() - alreadyRefunded) {
+        if (amountMinor > refundable) {
             throw DomainException.of(PaymentErrorCode.REFUND_EXCEEDS_PAYMENT,
                             "cannot refund {} of a payment of {} with {} already refunded",
                             amountMinor, payment.getAmountMinor(), alreadyRefunded)
@@ -314,6 +343,55 @@ public class PaymentStateService {
     }
 
     // ------------------------------------------------------------------ internals
+
+    /**
+     * True when the database refused the insert because this idempotency key is already
+     * taken — and only then.
+     *
+     * <p>The decision is made on the constraint that was violated, never on the exception
+     * type: Spring reports <em>every</em> integrity failure as a
+     * {@code DataIntegrityViolationException}, so the type alone says nothing about which
+     * rule was broken. Hibernate fills the constraint name in from the server error, and
+     * when it does not (an older driver, a driver that does not report the field), the
+     * name is still in the message the same failure carries.
+     */
+    private static boolean isDuplicateIdempotencyKey(DataIntegrityViolationException violation) {
+        for (Throwable cause = violation; cause != null && cause != cause.getCause(); cause = cause.getCause()) {
+            if (cause instanceof ConstraintViolationException constraint
+                    && IDEMPOTENCY_KEY_CONSTRAINT.equals(constraint.getConstraintName())) {
+                return true;
+            }
+            if (cause.getMessage() != null && cause.getMessage().contains(IDEMPOTENCY_KEY_CONSTRAINT)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * What the database actually complained about, in the form that is safe to hand back:
+     * the constraint and the SQL state.
+     *
+     * <p>Deliberately not the driver's message: a CHECK or NOT NULL violation on PostgreSQL
+     * reads {@code Failing row contains (...)} and lists the column values, which is payment
+     * data. The full exception — that row included — goes to the log, where the on-call
+     * engineer needs it and no client can see it.
+     */
+    private static String describeViolation(DataIntegrityViolationException violation) {
+        String constraint = null;
+        String sqlState = "unknown";
+        for (Throwable cause = violation; cause != null && cause != cause.getCause(); cause = cause.getCause()) {
+            if (constraint == null && cause instanceof ConstraintViolationException named) {
+                constraint = named.getConstraintName();
+            }
+            if ("unknown".equals(sqlState) && cause instanceof SQLException sql && sql.getSQLState() != null) {
+                sqlState = sql.getSQLState();
+            }
+        }
+        return constraint == null
+                ? "a database constraint (SQLState " + sqlState + ")"
+                : "constraint " + constraint + " (SQLState " + sqlState + ")";
+    }
 
     private Payment require(String paymentId) {
         return payments.findById(paymentId)

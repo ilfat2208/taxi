@@ -16,7 +16,9 @@ import {
   MarketIcon,
   OrdersIcon,
   PaymentsIcon,
+  ServicesIcon,
   StoreIcon,
+  TaxiIcon,
   TransferIcon,
   LogoutIcon,
 } from './icons';
@@ -34,6 +36,10 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Главная', icon: HomeIcon, mobile: true, end: true },
+  // The two new verticals sit next to the home screen: on a phone they are the
+  // reason the app is opened, and the tab bar is where they have to be reachable.
+  { to: '/taxi', label: 'Такси', icon: TaxiIcon, mobile: true },
+  { to: '/services', label: 'Услуги', icon: ServicesIcon, mobile: true },
   { to: '/transfer', label: 'Перевод', icon: TransferIcon, mobile: true },
   { to: '/payments', label: 'Платежи', icon: PaymentsIcon },
   { to: '/market', label: 'Маркет', icon: MarketIcon, mobile: true },

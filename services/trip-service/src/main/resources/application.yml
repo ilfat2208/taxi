@@ -1,0 +1,188 @@
+server:
+  port: ${SERVER_PORT:8086}
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+
+spring:
+  application:
+    name: trip-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://127.0.0.1:5432/taxi_trip}
+    username: ${POSTGRES_USER:taxi}
+    password: ${POSTGRES_PASSWORD:taxi}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      pool-name: trip-pool
+      connection-timeout: 3000
+  jpa:
+    open-in-view: false
+    hibernate:
+      # validate: the schema is Flyway's, and a mismatch between the entities and the
+      # migration must stop the service at startup rather than at the first ride.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: trip
+        jdbc:
+          time_zone: UTC
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        query:
+          in_clause_parameter_padding: true
+  flyway:
+    enabled: true
+    schemas: trip
+    default-schema: trip
+    create-schemas: true
+    locations: classpath:db/migration
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:127.0.0.1:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        compression.type: lz4
+        linger.ms: 5
+        delivery.timeout.ms: 120000
+    consumer:
+      group-id: trip-service
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        isolation.level: read_committed
+    listener:
+      ack-mode: record
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:127.0.0.1}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      timeout: 2s
+
+taxi:
+  security:
+    # HMAC (shared secret, HS256) is the default. JWT_MODE=JWKS makes this service verify
+    # the issuer's RS256 tokens against its public key set and hold no signing material at
+    # all — that is the point: with a shared secret any service could mint an ADMIN token.
+    mode: ${JWT_MODE:HMAC}
+    jwt-secret: ${JWT_SECRET:local-dev-only-secret-change-me-0123456789abcdef}
+    # Required in JWKS mode (ignored in HMAC mode); empty means "not configured".
+    jwk-set-uri: ${JWK_SET_URI:}
+    jwks-cache-ttl: ${JWKS_CACHE_TTL:5m}
+    jwt-ttl: ${JWT_TTL_SECONDS:3600}s
+    issuer: ${JWT_ISSUER:https://identity.taxi.local}
+    issuer-uri: ${JWT_ISSUER_URI:}
+    roles-claim: roles
+    # The platform default for internal endpoints is "/api/v1/**/internal/**", and with
+    # Spring Security 6.3 that pattern is evaluated by MvcRequestMatcher, whose PathPattern
+    # parser rejects a "**" that is not the last element. Listing the namespace explicitly
+    # keeps the service's own callers working; the paths are still guarded by
+    # InternalApiTokenFilter, which runs before this chain and rejects every /internal/
+    # request without a valid X-Internal-Token.
+    public-paths:
+      - /actuator/health/**
+      - /actuator/info
+      - /actuator/prometheus
+      - /api/v1/trips/internal/**
+      - /v3/api-docs/**
+      - /swagger-ui/**
+      - /swagger-ui.html
+      - /error
+  idempotency:
+    store: redis
+    ttl: 24h
+  outbox:
+    # The ride talks to the rest of the platform: dispatch follows trips, and the
+    # projection that will match the next car to the next rider is rebuilt from these
+    # events. They are written in the same transaction as the status change.
+    enabled: true
+    poll-interval-ms: 500
+    batch-size: 100
+    max-attempts: 10
+  kafka:
+    partitions: 3
+    replicas: 1
+    dedup:
+      store: redis
+      ttl: 7d
+  # Shared secret authenticating service-to-service calls on /internal/ endpoints.
+  internal:
+    token: ${INTERNAL_API_TOKEN:local-internal-token-change-me}
+  # Downstream services. Timeouts are explicit: a call that hangs keeps a rider's fare
+  # reserved with nothing to show for it, so it must fail fast and let the saga compensate.
+  clients:
+    account-service:
+      url: ${ACCOUNT_SERVICE_URL:http://127.0.0.1:8081}
+      connect-timeout: 2s
+      read-timeout: 5s
+    dispatch-service:
+      url: ${DISPATCH_SERVICE_URL:http://127.0.0.1:8087}
+      connect-timeout: 2s
+      read-timeout: 5s
+    driver-service:
+      url: ${DRIVER_SERVICE_URL:http://127.0.0.1:8085}
+      connect-timeout: 2s
+      read-timeout: 5s
+  trip:
+    # Rides are priced and charged in one currency per deployment: a tariff belongs to a
+    # city, and a city has one currency. It must match the wallets riders pay from.
+    currency: ${TRIP_CURRENCY:KZT}
+    # The platform's cut in basis points (1200 = 12%). Basis points and not percent:
+    # 12.5% has no exact float representation and this number is multiplied by real money.
+    commission-bp: ${TRIP_COMMISSION_BP:1200}
+    # How long a quoted price stays valid. Short on purpose: a quote is a promise the
+    # platform has to honour whatever happens to the tariff meanwhile.
+    quote-ttl: ${TRIP_QUOTE_TTL:5m}
+    # Where the nearest available car is looked for, and how many candidates may come back.
+    search-radius-m: ${TRIP_SEARCH_RADIUS_M:5000}
+    search-limit: ${TRIP_SEARCH_LIMIT:10}
+    # Route approximation until a real router (OSRM) is wired in: the great-circle distance
+    # times the average detour of a real route, divided by an average city speed, plus the
+    # time allowed for the car to reach the rider. Deliberately configuration and not
+    # constants — these are product numbers, and they differ per city.
+    road-factor: ${TRIP_ROAD_FACTOR:1.35}
+    average-speed-kph: ${TRIP_AVERAGE_SPEED_KPH:28}
+    pickup-time: ${TRIP_PICKUP_TIME:3m}
+    page-size-default: 20
+    page-size-max: 100
+    # The price list, in tiyn. A missing or incomplete tariff stops the service at startup:
+    # discovering it when a rider asks for a comfort car would be a 500 in front of him.
+    tariffs:
+      ECONOMY:
+        base-minor: ${TRIP_ECONOMY_BASE_MINOR:35000}
+        per-km-minor: ${TRIP_ECONOMY_PER_KM_MINOR:12000}
+        per-minute-minor: ${TRIP_ECONOMY_PER_MINUTE_MINOR:2500}
+        min-fare-minor: ${TRIP_ECONOMY_MIN_FARE_MINOR:50000}
+      COMFORT:
+        base-minor: ${TRIP_COMFORT_BASE_MINOR:60000}
+        per-km-minor: ${TRIP_COMFORT_PER_KM_MINOR:18000}
+        per-minute-minor: ${TRIP_COMFORT_PER_MINUTE_MINOR:3500}
+        min-fare-minor: ${TRIP_COMFORT_MIN_FARE_MINOR:80000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE:health,info,metrics,prometheus}
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    kz.taxi: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{correlationId:-}] %logger{36} - %msg%n"

@@ -20,20 +20,23 @@ import kz.taxi.payment.infrastructure.AccountServiceClient;
 import kz.taxi.payment.infrastructure.PaymentRepository;
 import kz.taxi.payment.infrastructure.PaymentTransitionRepository;
 import kz.taxi.payment.infrastructure.RefundRepository;
+import kz.taxi.payment.support.ItInfrastructure;
 import kz.taxi.payment.support.TestPayments;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,22 +61,47 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * themselves instead of racing a publisher — deliberately: the row is the
  * guarantee, Kafka is only the delivery.
  *
- * <p>Runs only with {@code -Pintegration} (Testcontainers, {@code *IT}).
+ * <p><strong>Where the database comes from:</strong> Testcontainers starts a
+ * {@code postgres:16} container — unless {@code IT_DATABASE_URL} is set, in which case
+ * the test runs against that already-migrated-to-be database and starts nothing. See
+ * {@link ItInfrastructure} for why the choice exists and how to make it, and
+ * {@code scripts/it-local.ps1} for the local invocation. Flyway migrates whichever
+ * database it is, so the external one must be dedicated to tests (a database that holds
+ * demo data would be rewritten by the migrations), and {@link #cleanDatabase()} empties
+ * it before every scenario, which is what makes a second run of the class on a
+ * container-less, long-lived database produce the same result as the first.
+ *
+ * <p>Runs only with {@code -Pintegration} (failsafe, {@code *IT}); without a usable
+ * Docker and without {@code IT_DATABASE_URL} the class is reported as skipped.
  */
+@EnabledIf(ItInfrastructure.AVAILABLE_METHOD)
 @SpringBootTest(properties = {
         "taxi.outbox.enabled=false",
         "taxi.idempotency.store=memory",
         "taxi.kafka.dedup.store=memory",
         "spring.kafka.admin.fail-fast=false",
         "taxi.payments.saga.fixed-delay-ms=3600000",
-        "taxi.payments.saga.initial-delay-ms=3600000"
+        "taxi.payments.saga.initial-delay-ms=3600000",
+        // The settlement job writes rows and calls the catalog service, and the suite
+        // asserts on an empty-ish database: a background writer would be the only source
+        // of flakiness this class has.
+        "taxi.settlement.enabled=false"
 })
-@Testcontainers(disabledWithoutDocker = true)
 class PaymentSagaIT {
 
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16");
+    /**
+     * Started by {@link ItInfrastructure#start} <em>unless</em> {@code IT_DATABASE_URL}
+     * points the test at an already-running database; never referenced before the
+     * {@code @EnabledIf} condition above has passed.
+     */
+    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16"));
+
+    private static final ItInfrastructure INFRASTRUCTURE = ItInfrastructure.start(POSTGRES);
+
+    @DynamicPropertySource
+    static void infrastructure(DynamicPropertyRegistry registry) {
+        INFRASTRUCTURE.register(registry);
+    }
 
     private static final String SOURCE_ACCOUNT = "A-1";
     private static final String TARGET_ACCOUNT = "A-2";
@@ -110,11 +138,48 @@ class PaymentSagaIT {
     @Autowired
     private Flyway flyway;
 
+    @Autowired
+    private JdbcTemplate jdbc;
+
     private final AuthenticatedUser caller = TestPayments.customer(OWNER);
 
     @BeforeEach
     void resetStub() {
+        cleanDatabase();
         accountService.reset();
+    }
+
+    /**
+     * Empties the service's tables before every scenario.
+     *
+     * <p>A Testcontainers database is new for every run; the external one is not, and a
+     * suite that only works on a virgin database is a suite that fails on the second run
+     * for reasons that have nothing to do with the code. Deletion follows the foreign
+     * keys (a payment is referenced by its transitions, its refunds and by
+     * {@code settlement_payment}), so the order below is the constraint graph, not a
+     * preference.
+     */
+    private void cleanDatabase() {
+        jdbc.execute("delete from payment.settlement_payment");
+        jdbc.execute("delete from payment.merchant_settlement");
+        jdbc.execute("delete from payment.payment_transition");
+        jdbc.execute("delete from payment.refund");
+        jdbc.execute("delete from payment.outbox_message");
+        jdbc.execute("delete from payment.payment");
+    }
+
+    /**
+     * An order id of the shape order-service really sends: the primary key of
+     * {@code customer_order}, a 26-character ULID — order-service passes
+     * {@code order.getId()} to this service. {@code payment.order_id} is {@code VARCHAR(26)}
+     * like every other id on the platform, so an id that carries a prefix (an order
+     * <em>number</em> looks like {@code ORD-250101-00042}, and a number is not an id)
+     * would be refused by the database with SQLState 22001. That refusal is exactly what
+     * this class used to hide behind "idempotency key already exists": see
+     * {@code PaymentStateService#initiate}.
+     */
+    private static String newOrderId() {
+        return Ulid.nextId();
     }
 
     @Test
@@ -128,16 +193,17 @@ class PaymentSagaIT {
     @Test
     @DisplayName("a merchant payment is persisted as COMPLETED, keeps its history and writes both events")
     void merchant_payment_persists_the_state_machine_and_writes_the_outbox() {
+        String orderId = newOrderId();
         PaymentDtos.PaymentResponse response = saga.merchantPayment(caller,
                 new PaymentDtos.MerchantPaymentRequest(SOURCE_ACCOUNT, "M-1", 100_000, Currency.KZT,
-                        "order 42", "O-" + Ulid.nextId()),
+                        "order 42", orderId),
                 "it-merchant-" + Ulid.nextId());
 
         assertThat(response.status()).isEqualTo(PaymentStatus.COMPLETED.name());
         assertThat(response.amountMinor()).isEqualTo(100_000);
         assertThat(response.feeMinor()).isEqualTo(1_500);
         assertThat(response.totalMinor()).isEqualTo(101_500);
-        assertThat(response.orderId()).startsWith("O-");
+        assertThat(response.orderId()).isEqualTo(orderId);
 
         Payment stored = payments.findById(response.paymentId()).orElseThrow();
         assertThat(stored.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
@@ -165,7 +231,7 @@ class PaymentSagaIT {
                     .isEqualTo(OutboxStatus.PENDING);
         });
         assertThat(events.get(1).getPayload())
-                .contains("\"orderId\":\"O-")
+                .contains("\"orderId\":\"" + orderId)
                 .contains("\"feeMinor\":1500")
                 .contains("\"totalMinor\":101500")
                 .contains("\"status\":\"COMPLETED\"")
@@ -205,7 +271,7 @@ class PaymentSagaIT {
     @Test
     @DisplayName("a refused capture releases the hold and leaves a FAILED payment with its reason")
     void a_refused_capture_compensates_and_fails_the_payment() {
-        String orderId = "O-fail-" + Ulid.nextId();
+        String orderId = newOrderId();
         accountService.failCaptureWith(DomainException.of(PaymentErrorCode.HOLD_FAILED,
                 "account service refused the capture"));
 
@@ -232,7 +298,7 @@ class PaymentSagaIT {
     void refund_credits_the_payer_and_reverses_the_payment() {
         PaymentDtos.PaymentResponse payment = saga.merchantPayment(caller,
                 new PaymentDtos.MerchantPaymentRequest(SOURCE_ACCOUNT, "M-1", 100_000, Currency.KZT, "order",
-                        "O-refund-" + Ulid.nextId()),
+                        newOrderId()),
                 "it-refund-base-" + Ulid.nextId());
 
         PaymentDtos.RefundResponse partial = saga.refund(caller, payment.paymentId(),

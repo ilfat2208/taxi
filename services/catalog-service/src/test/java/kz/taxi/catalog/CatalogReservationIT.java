@@ -19,18 +19,19 @@ import kz.taxi.common.core.error.DomainException;
 import kz.taxi.common.core.money.Currency;
 import kz.taxi.common.core.web.PageResponse;
 import kz.taxi.catalog.api.dto.ProductSummaryResponse;
+import kz.taxi.catalog.support.ItInfrastructure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
@@ -58,9 +59,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  * </ol>
  *
  * <p>Runs only under {@code mvn verify -Pintegration} (surefire does not pick up
- * {@code *IT}); it needs Docker.
+ * {@code *IT}) and needs either Docker or, when {@code IT_DATABASE_URL} is set, the
+ * database it points at. {@link ItInfrastructure} explains that choice: CI starts the
+ * {@code postgres:16-alpine} container exactly as before, a developer machine that runs
+ * the compose stack uses {@code scripts/it-local.ps1} and starts none. Either way
+ * Flyway migrates the database, so it has to be a test one — and
+ * {@link #cleanCatalog()} empties it before every scenario, which is what keeps a
+ * long-lived external database equivalent to the fresh container.
  */
-@Testcontainers(disabledWithoutDocker = true)
+@EnabledIf(ItInfrastructure.AVAILABLE_METHOD)
 @SpringBootTest(properties = {
         // Deterministic data: the demo seeder must not race the fixtures, and the
         // outbox relay must not publish while the test asserts on outbox rows.
@@ -79,11 +86,22 @@ class CatalogReservationIT {
     private static final String ORDER_A = "01J8ZCQ7Y4R3F0N5G8K2M9QWA1";
     private static final String ORDER_B = "01J8ZCQ7Y4R3F0N5G8K2M9QWB2";
 
-    @Container
-    @ServiceConnection
+    /**
+     * Started by {@link ItInfrastructure#start} <em>unless</em> {@code IT_DATABASE_URL}
+     * points the test at an already-running database; never referenced before the
+     * {@code @EnabledIf} condition above has passed. The database name is kept as it was
+     * so that the container path stays byte-for-byte what CI has always started.
+     */
     static final PostgreSQLContainer<?> POSTGRES =
             new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
                     .withDatabaseName("taxi_catalog");
+
+    private static final ItInfrastructure INFRASTRUCTURE = ItInfrastructure.start(POSTGRES);
+
+    @DynamicPropertySource
+    static void infrastructure(DynamicPropertyRegistry registry) {
+        INFRASTRUCTURE.register(registry);
+    }
 
     @Autowired
     private StockReservationService reservations;

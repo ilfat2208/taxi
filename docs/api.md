@@ -219,10 +219,12 @@ Postgres по `search_vector`).
 |---|---|---|---|
 | `POST` | `/api/v1/trips/quote` | `CUSTOMER` | считает маршрут и цену, возвращает `quoteId` — снимок цены с ограниченным сроком |
 | `POST` | `/api/v1/trips` | `CUSTOMER` | создаёт поездку (`Idempotency-Key` обязателен) и сразу ищет водителя |
-| `GET` | `/api/v1/trips/{tripId}` | владелец, `SUPPORT`, `ADMIN` | статус, водитель, машина, цена, таймлайн переходов |
-| `GET` | `/api/v1/trips?status=&page=&size=` | владелец | история поездок |
-| `POST` | `/api/v1/trips/{tripId}/cancel` | владелец | отмена с причиной; резерв денег освобождается |
+| `GET` | `/api/v1/trips/{tripId}` | владелец, `SUPPORT`, `ADMIN` | статус, водитель, машина, цена, таймлайн переходов; у завершённой поездки — ещё и `receipt` |
+| `GET` | `/api/v1/trips/{tripId}/receipt` | владелец, `SUPPORT`, `ADMIN` | чек завершённой поездки: разбивка цены, комиссия платформы, доход водителя |
+| `GET` | `/api/v1/trips?status=&page=&size=` | `CUSTOMER` — свои, `DISPATCHER` — активные, `SUPPORT`/`ADMIN` — все | история и живые заявки |
+| `POST` | `/api/v1/trips/{tripId}/cancel` | владелец, `DISPATCHER`, `SUPPORT`, `ADMIN` | отмена с причиной; резерв денег освобождается. Диспетчер и оператор отменяют только живую поездку (до `IN_PROGRESS`) и обязаны указать причину — в истории должно остаться, почему |
 | `POST` | `/api/v1/trips/{tripId}/rate` | владелец | оценка водителя 1–5, только по завершённой поездке |
+| `POST` | `/api/v1/trips/{tripId}/assign` | `DISPATCHER`, `ADMIN` | ручное назначение водителя: `{"driverId": "..."}`. Та же логика, что у внутреннего `assign`, просто вторая дверь |
 | `POST` | `/api/v1/trips/internal/{tripId}/assign` | внутренний | назначает водителя и резервирует деньги |
 | `POST` | `/api/v1/trips/internal/{tripId}/arrive`, `/start`, `/complete` | внутренний | подача, начало поездки и завершение (завершение списывает деньги) |
 
@@ -257,8 +259,48 @@ Postgres по `search_vector`).
 дороги, время — по средней скорости. Это осознанное упрощение до подключения OSRM
 (см. ADR 0009): маршрутизатор за интерфейсом, а не в бизнес-логике.
 
-Коды: `TRIP_NOT_FOUND` (404), `QUOTE_EXPIRED` (409), `TRIP_NOT_CANCELLABLE` (409),
-`TRIP_ALREADY_RATED` (409), `INSUFFICIENT_FUNDS` (422), `INVALID_POSITION` (400).
+Чек. Появляется только у завершённой поездки: до `COMPLETED` чека нет, и запрос
+возвращает `409 TRIP_NOT_COMPLETED` — чек это факт состоявшейся поездки, а не
+обещание. Номер поездки (`T` + ULID) — то, что человек называет поддержке.
+
+```json
+{ "tripId": "01M3Y1AYYJGHVVY7NCZQ690MJF", "tripNumber": "T01M3Y1AYYJGHVVY7NCZQ690MJF",
+  "status": "COMPLETED", "completedAt": "2026-10-02T10:42:11Z", "tariff": "COMFORT",
+  "pickup":  {"lat": 42.3155, "lon": 69.5867, "address": "пр. Тауке хана, 60"},
+  "dropoff": {"lat": 42.3000, "lon": 69.6000, "address": "пр. Республики, 12"},
+  "distanceM": 6400, "durationS": 1080,
+  "breakdown": {"baseMinor": 40000, "distanceMinor": 96000, "timeMinor": 48800},
+  "priceMinor": 184800, "currency": "KZT", "surgeBp": 0,
+  "commissionBp": 1200, "commissionMinor": 22176, "driverNetMinor": 162624,
+  "driverId": "01M3Y3W17Y3Y45KD9X9S8G6RSM", "driverDisplayName": "Айдар Сериков" }
+```
+
+Две суммы в чеке обязаны сходиться, и обе проверяет сквозной сценарий:
+`baseMinor + distanceMinor + timeMinor = priceMinor` и
+`driverNetMinor + commissionMinor = priceMinor`. Второе верно по построению: доход
+водителя считается вычитанием комиссии из цены, а не вторым независимым округлением.
+Обе суммы проверяются ещё и при сборке чека, поэтому сломанная арифметика — это
+громкий отказ, а не документ с дырой, которую должен заметить человек.
+
+Поле `paymentId` присутствует в форме и в этой фазе всегда `null`: поездка на кошельке
+оплачивается через `account-service` (резерв → списание), и платёжного поручения за ней
+нет. Настоящая ссылка на движение денег сегодня — `transactionId`: проводка списания в
+`account.ledger_entry`. Когда появятся карточные и корпоративные оплаты, здесь будет
+идентификатор платежа.
+
+Поле `vehiclePlate` заполняется только при ручном назначении диспетчером и остаётся
+пустым при автоматическом подборе — потому что **автомобиль пока не смоделирован**:
+`driver-service` владеет профилем водителя, документами со сроком и состоянием смены, но
+не машиной, и ни `driver.registered`, ни ответы внутреннего API номера не несут. Это
+честно указано и в интерфейсе («данные машины и водителя появятся, когда их начнёт
+отдавать сервис»). Ближайший шаг: завести автомобиль у водителя (марка, модель, цвет,
+номер), добавить его в событие регистрации и в кандидата поиска — тогда номер поедет по
+цепочке «диспетчерская → назначение → карточка поездки → чек» без отдельного запроса.
+
+Коды: `TRIP_NOT_FOUND` (404), `QUOTE_EXPIRED` (422), `QUOTE_ALREADY_USED` (409),
+`TRIP_NOT_CANCELLABLE` (409), `TRIP_NOT_ASSIGNABLE` (409), `DRIVER_NOT_AVAILABLE` (409),
+`TRIP_NOT_COMPLETED` (409), `TRIP_ALREADY_RATED` (409), `CANCEL_REASON_REQUIRED` (400),
+`INSUFFICIENT_FUNDS` (422), `INVALID_COORDINATES` (400).
 
 ## 8. Услуги: запись и расписание — `qtime-service`
 
@@ -273,6 +315,7 @@ ORTA Services и Beauty, дальше Health и Auto. Вертикали не п
 | `GET` | `/api/v1/qtime/specialists/{specialistId}/slots?serviceId=&date=YYYY-MM-DD` | анонимно | сетка свободных и занятых окон на дату |
 | `POST` | `/api/v1/qtime/bookings` | `CUSTOMER` | запись на услугу (`Idempotency-Key` обязателен) |
 | `GET` | `/api/v1/qtime/bookings?status=&page=&size=` | владелец, `SUPPORT`, `ADMIN` | мои записи |
+| `GET` | `/api/v1/qtime/bookings/{bookingId}` | владелец, `SUPPORT`, `ADMIN` | одна запись: что и когда, где, у кого, сколько стоит |
 | `POST` | `/api/v1/qtime/bookings/{bookingId}/cancel` | владелец, `MERCHANT`, `ADMIN` | отмена, окно освобождается |
 | `POST` | `/api/v1/qtime/bookings/{bookingId}/complete` | внутренний | завершение визита (для кабинета ORTA Business) |
 
@@ -301,6 +344,11 @@ ORTA Services и Beauty, дальше Health и Auto. Вертикали не п
 * запись вне рабочих часов или в перерыв → `422 OUTSIDE_WORKING_HOURS`; услуга не
   принадлежит специалисту → `400`; отмена завершённой записи → `409`;
 * отмена освобождает окно сразу: статус записи меняется, а индекс частичный;
+* **честная дыра, а не тихая:** связь «мерчант ↔ компания» в QTime не смоделирована —
+  компании приходят из каталога вертикали, а привязка к аккаунту появится вместе с
+  кабинетом ORTA Business. Пока её нет, роль `MERCHANT` может отменить **любую**
+  запись, а не только свою. Это записано и в коде (`QtimeAccess`), чтобы дыра была
+  известна, а не обнаруживалась на проде;
 * предоплата и связь с ORTA Pay — следующий шаг: сейчас запись создаётся без движения
   денег, а цена услуги сохраняется в записи.
 
@@ -477,12 +525,22 @@ docker-compose для демо — `0s`, в реальности T+1 и боль
 | `TOO_MANY_POINTS` | 400 | Слишком большой батч позиций |
 | `INVALID_RADIUS` | 400 | Радиус поиска больше разрешённого |
 | `FORBIDDEN_FLEET_ACCESS` | 403 | Живой парк виден только диспетчеру и поддержке |
-| `TRIP_NOT_FOUND` | 404 | Поездка не найдена |
-| `QUOTE_EXPIRED`, `TRIP_NOT_CANCELLABLE`, `TRIP_ALREADY_RATED` | 409 | Котировка истекла, поездку нельзя отменить, оценка уже поставлена |
+| `TRIP_NOT_FOUND`, `QUOTE_NOT_FOUND` | 404 | Поездка или снимок цены не найдены |
+| `QUOTE_EXPIRED` | 422 | Снимок цены истёк — нужна новая котировка |
+| `QUOTE_ALREADY_USED`, `TRIP_NOT_CANCELLABLE`, `TRIP_NOT_ASSIGNABLE`, `DRIVER_NOT_AVAILABLE`, `TRIP_NOT_COMPLETED`, `TRIP_ALREADY_RATED`, `HOLD_FAILED`, `CAPTURE_FAILED` | 409 | Конфликт состояния: цена уже потрачена на другую поездку, поездку нельзя отменить или назначить, водитель занят, чека или оценки ещё нет, деньги не зарезервировались |
+| `CANCEL_REASON_REQUIRED`, `INVALID_COORDINATES`, `INVALID_TARIFF`, `INVALID_RATING`, `NO_PICKUP_POINT`, `NO_DROPOFF_POINT` | 400 | Причина отмены обязательна для диспетчера и оператора; координаты, тариф или оценка недопустимы; точка не указана |
+| `FORBIDDEN_TRIP_ACCESS`, `FORBIDDEN_TRIP_ASSIGNMENT` | 403 | Чужая поездка; назначать водителя может только `DISPATCHER` или `ADMIN` |
+| `RIDER_ACCOUNT_NOT_FOUND` | 422 | У пассажира нет активного счёта в KZT |
+| `COMPANY_NOT_FOUND`, `SPECIALIST_NOT_FOUND`, `SERVICE_NOT_FOUND` | 404 | Компания, специалист или услуга не найдены |
 | `BOOKING_NOT_FOUND` | 404 | Запись не найдена |
 | `SLOT_TAKEN` | 409 | Окно у специалиста уже занято другой записью |
 | `BOOKING_NOT_CANCELLABLE` | 409 | Запись уже завершена или отменена |
+| `BOOKING_NOT_COMPLETABLE` | 409 | Завершить можно только подтверждённую запись |
+| `SERVICE_NOT_OFFERED_BY_SPECIALIST` | 400 | Услугу оказывает другой специалист или другая компания |
+| `COMPANY_NOT_AVAILABLE` | 422 | Компания приостановлена и записи не принимает |
 | `OUTSIDE_WORKING_HOURS` | 422 | Время вне рабочего расписания специалиста или в перерыве |
+| `BOOKING_IN_PAST`, `BOOKING_TOO_SOON`, `OUTSIDE_BOOKING_HORIZON` | 422 | Время в прошлом, ближе минимального запаса или дальше горизонта записи |
+| `CUSTOMER_ROLE_REQUIRED`, `FORBIDDEN_BOOKING_ACCESS` | 403 | Записываться может только клиент; чужая запись недоступна |
 | `INSUFFICIENT_FUNDS` | 422 | Не хватает доступных денег |
 | `LIMIT_EXCEEDED` | 422 | Превышен дневной/месячный лимит счёта |
 | `VELOCITY_EXCEEDED` | 422 | Слишком много операций за короткое время |

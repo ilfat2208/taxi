@@ -1,5 +1,5 @@
 import type { OrderQuery, PaymentQuery } from '../api/endpoints';
-import type { ProductQuery } from '../api/types';
+import type { BookingQuery, ProductQuery, QtimeCompanyQuery, TripQuery } from '../api/types';
 
 /**
  * Every server-state key in one place.
@@ -42,4 +42,21 @@ export const queryKeys = {
    */
   dispatchNearest: (driverId: string, radiusM: number, limit: number) =>
     ['dispatch', 'nearest', { driverId, radiusM, limit }] as const,
+
+  /**
+   * Taxi quotes are keyed by the *route signature* (rounded coordinates) and the
+   * tariff, never by the typed address: an address is free text with no geocoder
+   * behind it, and re-pricing the same two points on every keystroke would only
+   * spend requests on an identical answer.
+   */
+  tripQuote: (route: string, tariff: string) => ['trips', 'quote', { route, tariff }] as const,
+  trip: (tripId: string) => ['trips', 'detail', tripId] as const,
+  tripReceipt: (tripId: string) => ['trips', 'receipt', tripId] as const,
+  trips: (query: TripQuery) => ['trips', 'list', query] as const,
+
+  qtimeCompanies: (query: QtimeCompanyQuery) => ['qtime', 'companies', query] as const,
+  qtimeCompany: (companyId: string) => ['qtime', 'company', companyId] as const,
+  qtimeSlots: (specialistId: string, serviceId: string, date: string) =>
+    ['qtime', 'slots', { specialistId, serviceId, date }] as const,
+  qtimeBookings: (query: BookingQuery) => ['qtime', 'bookings', query] as const,
 };

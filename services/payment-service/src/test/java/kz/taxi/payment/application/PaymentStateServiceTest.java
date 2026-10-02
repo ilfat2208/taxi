@@ -21,11 +21,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.dao.DataIntegrityViolationException;
 
+import java.sql.SQLException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -110,6 +113,79 @@ class PaymentStateServiceTest {
 
         verify(transitions, never()).save(any());
         verify(outbox, never()).append(anyString(), any(EventEnvelope.class));
+    }
+
+    @Test
+    @DisplayName("a duplicate key the database reports by constraint name is still a conflict")
+    void duplicate_key_is_recognised_from_the_constraint_name() {
+        // What a driver that does not put the constraint into the message produces: the
+        // decision has to come from the exception API, not from string matching alone.
+        when(payments.saveAndFlush(any(Payment.class)))
+                .thenThrow(constraintViolation("uq_payment_idempotency_key",
+                        "ERROR: duplicate key value violates unique constraint", "23505"));
+        PaymentIntent intent = TestPayments.intent(PaymentType.P2P_TRANSFER, "U-1", "A-1", "A-2",
+                null, null, "key-1");
+
+        assertThatThrownBy(() -> service.initiate(intent, TestPayments.breakdown(100_000, 0)))
+                .isInstanceOf(DomainException.class)
+                .extracting(thrown -> ((DomainException) thrown).errorCode())
+                .isEqualTo(CommonErrorCode.IDEMPOTENCY_CONFLICT);
+    }
+
+    @Test
+    @DisplayName("a value that does not fit its column is not dressed up as an idempotency conflict")
+    void other_integrity_failures_are_not_reported_as_an_idempotency_conflict() {
+        // The failure this guards against, verbatim from the integration test that found
+        // it: a merchant payment whose order id was 28 characters long went into a
+        // VARCHAR(26) column, PostgreSQL answered SQLState 22001, and the caller was told
+        // "a payment with idempotency key ... already exists; read its outcome instead of
+        // retrying" — about a payment that was never created, with a retry instruction
+        // that cannot help. The message has to name the real cause.
+        when(payments.saveAndFlush(any(Payment.class)))
+                .thenThrow(constraintViolation(null, "ERROR: value too long for type character varying(26)", "22001"));
+        PaymentIntent intent = TestPayments.intent(PaymentType.MERCHANT_PAYMENT, "U-1", "A-1", null,
+                "M-1", "01J8ZCQ7Y4R3F0N5G8K2M9QWA1X", "key-1");
+
+        DomainException failure = catchThrowableOfType(
+                () -> service.initiate(intent, TestPayments.breakdown(100_000, 1_500)), DomainException.class);
+
+        assertThat(failure.errorCode()).isEqualTo(CommonErrorCode.INTERNAL_ERROR);
+        assertThat(failure.getMessage())
+                .as("the reason, not a story about an idempotency key")
+                .contains("22001")
+                .doesNotContain("already exists");
+        assertThat(failure.details()).containsEntry("constraint", "a database constraint (SQLState 22001)");
+        verify(transitions, never()).save(any());
+        verify(outbox, never()).append(anyString(), any(EventEnvelope.class));
+    }
+
+    @Test
+    @DisplayName("a duplicate of another unique constraint is not an idempotency conflict either")
+    void duplicate_payment_number_is_not_reported_as_an_idempotency_conflict() {
+        // The idempotency key is not the only unique index on the table: matching on
+        // "some unique violation happened" would report a payment-number collision as
+        // "this key already exists" and hide it just as effectively.
+        when(payments.saveAndFlush(any(Payment.class)))
+                .thenThrow(constraintViolation("uq_payment_number",
+                        "ERROR: duplicate key value violates unique constraint \"uq_payment_number\"", "23505"));
+        PaymentIntent intent = TestPayments.intent(PaymentType.P2P_TRANSFER, "U-1", "A-1", "A-2",
+                null, null, "key-1");
+
+        DomainException failure = catchThrowableOfType(
+                () -> service.initiate(intent, TestPayments.breakdown(100_000, 0)), DomainException.class);
+
+        assertThat(failure.errorCode()).isEqualTo(CommonErrorCode.INTERNAL_ERROR);
+        assertThat(failure.getMessage()).contains("uq_payment_number");
+    }
+
+    /** The exception chain Spring hands to {@code initiate} for a PostgreSQL constraint error. */
+    private static DataIntegrityViolationException constraintViolation(String constraintName,
+                                                                      String driverMessage,
+                                                                      String sqlState) {
+        SQLException driver = new SQLException(driverMessage, sqlState);
+        return new DataIntegrityViolationException(driverMessage,
+                new org.hibernate.exception.ConstraintViolationException("could not execute statement",
+                        driver, constraintName));
     }
 
     // ------------------------------------------------------------------ outcomes
@@ -222,6 +298,24 @@ class PaymentStateServiceTest {
         assertThat(start.refund().getAmountMinor()).isEqualTo(100_000);
         assertThat(start.refund().getStatus()).isEqualTo(kz.taxi.payment.domain.RefundStatus.INITIATED);
         assertThat(start.completed()).isFalse();
+    }
+
+    @Test
+    @DisplayName("a null amount refunds what is left, not the whole payment a second time")
+    void a_null_amount_refunds_what_is_left_after_a_partial_refund() {
+        stubSaves();
+        Payment payment = TestPayments.completed(TestPayments.p2p("U-1", "A-1", "A-2", 100_000));
+        when(payments.findByIdForUpdate(payment.getId())).thenReturn(Optional.of(payment));
+        when(refunds.findByIdempotencyKey("refund-key")).thenReturn(Optional.empty());
+        when(refunds.sumRefunded(payment.getId())).thenReturn(40_000L);
+
+        PaymentStateService.RefundStart start = service.openRefund(TestPayments.customer("U-1"),
+                payment.getId(), null, "the rest", "refund-key");
+
+        // order-service cancels an order with exactly this null amount. Reading it as "the
+        // whole payment" made the second, legitimate refund come back as
+        // REFUND_EXCEEDS_PAYMENT, so the cancellation could never succeed.
+        assertThat(start.refund().getAmountMinor()).isEqualTo(60_000);
     }
 
     @Test

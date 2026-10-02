@@ -132,3 +132,31 @@ export function DispatchIcon(props: IconProps) {
     </Icon>
   );
 }
+
+/** Taxi: a car with a roof sign. */
+export function TaxiIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M5 17h14" />
+      <path d="M4 17v-3.2a2 2 0 0 1 .3-1L6.6 9.4A2 2 0 0 1 8.3 8.5h7.4a2 2 0 0 1 1.7.9l2.3 3.4a2 2 0 0 1 .3 1V17" />
+      <path d="M4 12.5h16" />
+      <path d="M10 6.5h4" />
+      <circle cx="7.5" cy="17.5" r="1.5" />
+      <circle cx="16.5" cy="17.5" r="1.5" />
+    </Icon>
+  );
+}
+
+/** Services (QTime): a calendar with a bookable window. */
+export function ServicesIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3.5" y="5" width="17" height="15" rx="3" />
+      <path d="M3.5 10h17" />
+      <path d="M8 3.5v3" />
+      <path d="M16 3.5v3" />
+      <path d="M9 14.5h3" />
+      <path d="M14.5 14.5h.5" />
+    </Icon>
+  );
+}

@@ -450,3 +450,278 @@ export interface NearestDriversQuery {
   radiusM?: number;
   limit?: number;
 }
+
+/* ------------------------------------------------------------------ trips */
+
+/**
+ * A point of the route (`trip-service`).
+ *
+ * The platform has no geocoder yet, so `address` is always typed by the rider:
+ * the client never invents a street name from a pair of coordinates.
+ */
+export interface TripPoint {
+  lat: number;
+  lon: number;
+  address: string;
+}
+
+/** Tariffs the backend quotes today (see `POST /api/v1/trips/quote`). */
+export type TripTariff = 'ECONOMY' | 'COMFORT';
+
+export interface TripQuoteRequest {
+  pickup: TripPoint;
+  dropoff: TripPoint;
+  tariff: TripTariff;
+}
+
+/** Fare components; every field is an integer in minor units. */
+export interface TripQuoteBreakdown {
+  baseMinor: number;
+  distanceMinor: number;
+  timeMinor: number;
+}
+
+/** One priced offer for one tariff, valid until `expiresAt`. */
+export interface TripQuote {
+  quoteId: string;
+  tariff: string;
+  distanceM: number;
+  durationS: number;
+  priceMinor: number;
+  currency: Currency | string;
+  /** Platform commission in basis points: `1200` = 12%. */
+  commissionBp: number | null;
+  commissionMinor: number;
+  driverNetMinor: number;
+  /** Surge in basis points: 1500 = ×1,15. Zero means no surge. */
+  surgeBp: number;
+  breakdown: TripQuoteBreakdown;
+  expiresAt: string;
+}
+
+export interface CreateTripRequest {
+  quoteId: string;
+  comment?: string;
+}
+
+/** `POST /api/v1/trips` answers `202` with this receipt, not with the full trip. */
+export interface TripAccepted {
+  tripId: string;
+  tripNumber: string;
+  status: string;
+  priceMinor: number;
+  currency: Currency | string;
+  requestedAt: string;
+}
+
+export type TripStatus =
+  | 'SEARCHING'
+  | 'ASSIGNED'
+  | 'ARRIVED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELLED_BY_RIDER'
+  | 'CANCELLED_BY_DRIVER'
+  | 'NO_DRIVERS_FOUND'
+  | string;
+
+export interface TripTimelineEntry {
+  status: string;
+  at: string;
+  /** `RIDER` / `DRIVER` / `SYSTEM` — whatever the service recorded. */
+  actor: string | null;
+}
+
+/**
+ * Receipt of a finished ride (`GET /api/v1/trips/{tripId}/receipt`, also embedded
+ * in the trip view of a completed trip).
+ *
+ * The service answers with the receipt or refuses with `409 TRIP_NOT_COMPLETED`:
+ * there is no "empty" receipt, and the client must not fabricate one. Optional
+ * fields are omitted from the screen rather than printed as zeros.
+ */
+export interface TripReceipt {
+  tripId: string | null;
+  tripNumber: string | null;
+  status: string | null;
+  /** When the receipt was issued — the completion moment of the ride. */
+  completedAt: string | null;
+  tariff: string | null;
+  distanceM: number | null;
+  durationS: number | null;
+  breakdown: TripQuoteBreakdown | null;
+  surgeBp: number | null;
+  priceMinor: number;
+  currency: Currency | string;
+  commissionBp: number | null;
+  commissionMinor: number | null;
+  driverNetMinor: number | null;
+  driverId: string | null;
+  driverDisplayName: string | null;
+  holdId: string | null;
+  /**
+   * Payment order behind the ride. Always `null` in the wallet phase: a ride is
+   * charged through the account, and `transactionId` is that ledger movement.
+   */
+  paymentId: string | null;
+  transactionId: string | null;
+}
+
+/**
+ * Trip view (`GET /api/v1/trips/{tripId}`).
+ *
+ * There is no ETA field in the contract, so the screen never shows "3 мин до
+ * подачи": it explains the stage instead. Optional fields stay `null` when the
+ * service did not send them, and the UI omits those rows entirely.
+ */
+export interface Trip {
+  tripId: string;
+  tripNumber: string;
+  status: TripStatus;
+  riderUserId: string | null;
+  driverId: string | null;
+  driverName: string | null;
+  vehiclePlate: string | null;
+  tariff: string;
+  pickup: TripPoint | null;
+  dropoff: TripPoint | null;
+  distanceM: number | null;
+  durationS: number | null;
+  priceMinor: number | null;
+  commissionMinor: number | null;
+  driverNetMinor: number | null;
+  currency: Currency | string;
+  holdId: string | null;
+  /** State of the money hold: `ACTIVE`, `CAPTURED`, `RELEASED`. */
+  holdStatus: string | null;
+  cancelReason: string | null;
+  ratingStars: number | null;
+  ratingComment: string | null;
+  /** Platform commission in basis points: `1200` = 12%. */
+  commissionBp: number | null;
+  requestedAt: string | null;
+  assignedAt: string | null;
+  arrivedAt: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
+  timeline: TripTimelineEntry[];
+  /** Present on a completed trip when the service embeds the receipt. */
+  receipt: TripReceipt | null;
+}
+
+export interface TripQuery {
+  status?: string;
+  page?: number;
+  size?: number;
+}
+
+export type TripPage = Page<Trip>;
+
+/* ------------------------------------------------------------------ qtime */
+
+/**
+ * A company taking bookings through QTime (`GET /api/v1/qtime/companies`).
+ *
+ * Ratings arrive in basis points (`480` = 4,8) and every counter is optional:
+ * a company without a price list has `minPriceMinor === null` and the card says
+ * nothing about prices instead of showing "от 0 ₸".
+ */
+export interface QtimeCompany {
+  companyId: string;
+  name: string;
+  category: string | null;
+  city: string | null;
+  address: string | null;
+  lat: number | null;
+  lon: number | null;
+  ratingBp: number | null;
+  reviewsCount: number | null;
+  specialistsCount: number | null;
+  servicesCount: number | null;
+  minPriceMinor: number | null;
+}
+
+export interface QtimeSpecialist {
+  specialistId: string;
+  name: string;
+  specialization: string | null;
+  ratingBp: number | null;
+  experienceYears: number | null;
+}
+
+export interface QtimeService {
+  serviceId: string;
+  name: string;
+  durationMinutes: number | null;
+  priceMinor: number | null;
+  currency: Currency | string;
+}
+
+/** Company card with the two catalogues the booking flow needs. */
+export interface QtimeCompanyDetail extends QtimeCompany {
+  /** IANA zone of the company's schedule, when the service names one. */
+  timezone: string | null;
+  specialists: QtimeSpecialist[];
+  services: QtimeService[];
+}
+
+/** One bookable window; `reason` explains an unavailable one when the service sends it. */
+export interface QtimeSlot {
+  startsAt: string;
+  endsAt: string | null;
+  available: boolean;
+  /**
+   * Human-readable phrase for a taken window («занято», «перерыв») — the service
+   * writes it for a person, so the grid shows it as it came.
+   */
+  reason: string | null;
+}
+
+export interface QtimeSlots {
+  date: string;
+  specialistId: string;
+  serviceId: string;
+  durationMinutes: number | null;
+  /** IANA zone of the schedule; the UI prints times in it, not in the browser's. */
+  timezone: string;
+  slots: QtimeSlot[];
+}
+
+export interface CreateBookingRequest {
+  specialistId: string;
+  serviceId: string;
+  /** ISO-8601 instant of the chosen window. */
+  startsAt: string;
+  comment?: string;
+}
+
+export interface QtimeBooking {
+  bookingId: string;
+  code: string;
+  status: string;
+  startsAt: string;
+  endsAt: string | null;
+  companyId: string | null;
+  companyName: string | null;
+  companyAddress: string | null;
+  specialistName: string | null;
+  serviceName: string | null;
+  durationMinutes: number | null;
+  priceMinor: number | null;
+  currency: Currency | string;
+}
+
+export interface QtimeCompanyQuery {
+  query?: string;
+  category?: string;
+  city?: string;
+  page?: number;
+  size?: number;
+}
+
+export interface BookingQuery {
+  status?: string;
+  page?: number;
+  size?: number;
+}

@@ -29,5 +29,14 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
     restoreMocks: true,
+    /**
+     * Vitest runs one worker per file. The page tests mount the real router, so a
+     * single test can initialise Leaflet, wait for a debounce and settle two queries
+     * — work that comfortably takes a second on an idle machine and several when
+     * sixteen files run at once. The default 5 s budget produced random timeouts;
+     * twenty is still short enough to fail a genuinely stuck test quickly.
+     */
+    testTimeout: 20_000,
+    hookTimeout: 20_000,
   },
 });
