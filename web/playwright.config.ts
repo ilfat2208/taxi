@@ -21,7 +21,14 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   timeout: 60_000,
   expect: { timeout: 15_000 },
-  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list']],
+  /**
+   * In CI the `github` reporter is added on purpose: it turns every failing test
+   * into a check annotation, so the failure is visible on the commit — and, unlike
+   * the job log, readable through the API without a token.
+   */
+  reporter: process.env.CI
+    ? [['list'], ['html', { open: 'never' }], ['github']]
+    : [['list']],
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
