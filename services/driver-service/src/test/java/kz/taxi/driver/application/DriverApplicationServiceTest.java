@@ -80,7 +80,15 @@ class DriverApplicationServiceTest {
 
         assertThat(driver.getUserId()).isEqualTo(USER_ID);
         assertThat(driver.getStatus()).isEqualTo(DriverStatus.OFFLINE);
-        verifyNoInteractions(outboxWriter);
+        // The fleet projection in dispatch learns who the driver is from this event,
+        // not from a synchronous call.
+        verify(outboxWriter).append(
+                eq(KafkaTopics.DRIVER_EVENTS),
+                eq(KafkaTopics.Events.DRIVER_REGISTERED),
+                eq("Driver"),
+                eq(driver.getId()),
+                anyLong(),
+                any(DriverEvents.DriverStateChanged.class));
     }
 
     @Test
@@ -123,7 +131,7 @@ class DriverApplicationServiceTest {
                 eq("Driver"),
                 eq(driver.getId()),
                 anyLong(),
-                any(DriverEvents.DutyChanged.class));
+                any(DriverEvents.DriverStateChanged.class));
     }
 
     @Test
@@ -142,7 +150,7 @@ class DriverApplicationServiceTest {
                 eq("Driver"),
                 eq(driver.getId()),
                 anyLong(),
-                any(DriverEvents.DutyChanged.class));
+                any(DriverEvents.DriverStateChanged.class));
     }
 
     @Test
@@ -234,6 +242,13 @@ class DriverApplicationServiceTest {
 
         assertThat(driver.getStatus()).isEqualTo(DriverStatus.BUSY);
         assertThat(driver.getCurrentTripId()).isEqualTo("T-1");
+        verify(outboxWriter).append(
+                eq(KafkaTopics.DRIVER_EVENTS),
+                eq(KafkaTopics.Events.DRIVER_BUSY),
+                eq("Driver"),
+                eq(driver.getId()),
+                anyLong(),
+                any(DriverEvents.DriverStateChanged.class));
     }
 
     @Test
@@ -248,5 +263,13 @@ class DriverApplicationServiceTest {
 
         assertThat(driver.getStatus()).isEqualTo(DriverStatus.ONLINE);
         assertThat(driver.getCompletedTrips()).isEqualTo(1);
+        // Back on duty means available again, and that is what the topic says.
+        verify(outboxWriter).append(
+                eq(KafkaTopics.DRIVER_EVENTS),
+                eq(KafkaTopics.Events.DRIVER_ONLINE),
+                eq("Driver"),
+                eq(driver.getId()),
+                anyLong(),
+                any(DriverEvents.DriverStateChanged.class));
     }
 }

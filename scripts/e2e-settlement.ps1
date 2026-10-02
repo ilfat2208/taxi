@@ -51,8 +51,8 @@ function Invoke-Api {
     $params = @{ Method = $Method; Uri = "$BaseUrl$Path"; UseBasicParsing = $true }
     if ($Headers.Count -gt 0) { $params['Headers'] = $Headers }
     if ($null -ne $Body) {
-        $params['Body'] = ($Body | ConvertTo-Json -Compress -Depth 6)
-        $params['ContentType'] = 'application/json'
+        $params['Body'] = [System.Text.Encoding]::UTF8.GetBytes(($Body | ConvertTo-Json -Compress -Depth 6))  # UTF-8 bytes: a string body goes out as ISO-8859-1 and mangles Cyrillic
+        $params['ContentType'] = 'application/json; charset=utf-8'
     }
     try {
         $r = Invoke-WebRequest @params

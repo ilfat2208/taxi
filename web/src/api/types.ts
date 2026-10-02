@@ -10,7 +10,7 @@
 
 export type Currency = 'KZT' | 'USD' | 'EUR' | 'RUB';
 
-export type Role = 'CUSTOMER' | 'MERCHANT' | 'SUPPORT' | 'ADMIN';
+export type Role = 'CUSTOMER' | 'MERCHANT' | 'SUPPORT' | 'ADMIN' | 'DRIVER' | 'DISPATCHER';
 
 export interface Page<T> {
   items: T[];
@@ -394,3 +394,59 @@ export interface CreateOrderRequest {
 }
 
 export type OrderPage = Page<Order>;
+
+/* -------------------------------------------------------------- dispatch */
+
+/**
+ * One driver on duty, as the dispatcher console sees him
+ * (`GET /api/v1/dispatch/drivers`).
+ *
+ * The position is a *projection*: `ageSeconds` says how old the last fix is and
+ * `stale` is the server's own verdict against `staleAfterSeconds`, so the UI never
+ * has to guess whether a dot on the map is still true.
+ */
+export interface DispatchDriver {
+  driverId: string;
+  displayName: string;
+  phone: string;
+  status: string;
+  lat: number;
+  lon: number;
+  headingDeg: number;
+  speedKph: number;
+  ageSeconds: number;
+  stale: boolean;
+}
+
+export interface DispatchDriversResponse {
+  generatedAt: string;
+  staleAfterSeconds: number;
+  /** Drivers on duty, including those whose position has not arrived yet. */
+  onDuty: number;
+  withPosition: number;
+  drivers: DispatchDriver[];
+}
+
+/** A candidate for a manual assignment (`GET /api/v1/dispatch/nearest`). */
+export interface DispatchCandidate {
+  driverId: string;
+  displayName: string;
+  /** Distance from the requested point to the driver's last known position. */
+  distanceM: number;
+  lat: number;
+  lon: number;
+  ageSeconds: number;
+}
+
+export interface DispatchNearestResponse {
+  generatedAt: string;
+  radiusM: number;
+  candidates: DispatchCandidate[];
+}
+
+export interface NearestDriversQuery {
+  lat: number;
+  lon: number;
+  radiusM?: number;
+  limit?: number;
+}

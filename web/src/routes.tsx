@@ -1,6 +1,8 @@
+import { Suspense, lazy } from 'react';
 import { createBrowserRouter, type RouteObject } from 'react-router-dom';
 import { RequireAuth } from './auth/guards';
 import { AppLayout } from './components/layout/AppLayout';
+import { PageLoader } from './components/ui/Spinner';
 import { CartPage } from './pages/CartPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
@@ -21,7 +23,15 @@ import { TransferPage } from './pages/TransferPage';
  * Everything except `/login` sits behind `<RequireAuth>`; `/merchant` adds the
  * MERCHANT role on top of the session check. The mobile-first shell lives in
  * `AppLayout`, so every page renders inside the same navigation.
+ *
+ * `/dispatch` is the one lazily loaded page: it pulls in Leaflet (~150 kB), which
+ * no customer should download to look at their balance. It checks its own role —
+ * see `DispatchPage`.
  */
+const DispatchPage = lazy(() =>
+  import('./pages/DispatchPage').then((module) => ({ default: module.DispatchPage })),
+);
+
 export const appRoutes: RouteObject[] = [
   { path: '/login', element: <LoginPage />, errorElement: <RouteErrorPage /> },
   {
@@ -45,6 +55,16 @@ export const appRoutes: RouteObject[] = [
             path: 'merchant',
             element: <RequireAuth roles={['MERCHANT']} />,
             children: [{ index: true, element: <MerchantPage /> }],
+          },
+          // `/dispatch` renders its own role gate: a user without the dispatcher role
+          // must still land on the screen that explains (and can request) the token.
+          {
+            path: 'dispatch',
+            element: (
+              <Suspense fallback={<PageLoader label="Загружаем диспетчерскую…" />}>
+                <DispatchPage />
+              </Suspense>
+            ),
           },
           { path: '*', element: <NotFoundPage /> },
         ],

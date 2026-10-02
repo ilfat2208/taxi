@@ -12,8 +12,13 @@ import type {
   CreateMerchantRequest,
   CreateOrderRequest,
   CreateProductRequest,
+  DispatchCandidate,
+  DispatchDriver,
+  DispatchDriversResponse,
+  DispatchNearestResponse,
   Merchant,
   MerchantSummary,
+  NearestDriversQuery,
   Order,
   OrderItem,
   OrderPage,
@@ -691,4 +696,81 @@ export function cancelOrder(orderId: string): Promise<Order> {
   return apiRequest<unknown>(`/v1/orders/${encodeURIComponent(orderId)}/cancel`, {
     method: 'POST',
   }).then(normalizeOrder);
+}
+
+/* -------------------------------------------------------------- dispatch */
+
+/**
+ * A driver without a usable fix is dropped from the map, not drawn at (0, 0):
+ * `Number.NaN` survives normalization so the page can filter instead of guessing.
+ */
+export function normalizeDispatchDriver(raw: unknown): DispatchDriver {
+  const driver = asRecord(raw);
+  return {
+    driverId: str(driver.driverId ?? driver.id),
+    displayName: str(driver.displayName ?? driver.name, 'Водитель'),
+    phone: str(driver.phone),
+    status: str(driver.status, 'UNKNOWN'),
+    lat: num(driver.lat ?? driver.latitude, Number.NaN),
+    lon: num(driver.lon ?? driver.lng ?? driver.longitude, Number.NaN),
+    headingDeg: num(driver.headingDeg ?? driver.heading, 0),
+    speedKph: num(driver.speedKph ?? driver.speed, 0),
+    ageSeconds: num(driver.ageSeconds ?? driver.age, 0),
+    stale: driver.stale === true,
+  };
+}
+
+export function normalizeDispatchDrivers(raw: unknown): DispatchDriversResponse {
+  const container = asRecord(raw);
+  const drivers = arr(container.drivers ?? container.items).map(normalizeDispatchDriver);
+  const withPosition = drivers.filter(
+    (driver) => Number.isFinite(driver.lat) && Number.isFinite(driver.lon),
+  ).length;
+  return {
+    generatedAt: str(container.generatedAt),
+    // The documented contract is 30 s; the fallback keeps the legend honest if the
+    // field is ever missing instead of claiming every position is fresh.
+    staleAfterSeconds: num(container.staleAfterSeconds, 30),
+    onDuty: num(container.onDuty, drivers.length),
+    withPosition: num(container.withPosition, withPosition),
+    drivers,
+  };
+}
+
+function normalizeDispatchCandidate(raw: unknown): DispatchCandidate {
+  const candidate = asRecord(raw);
+  return {
+    driverId: str(candidate.driverId ?? candidate.id),
+    displayName: str(candidate.displayName ?? candidate.name, 'Водитель'),
+    distanceM: num(candidate.distanceM ?? candidate.distance, 0),
+    lat: num(candidate.lat ?? candidate.latitude, Number.NaN),
+    lon: num(candidate.lon ?? candidate.lng ?? candidate.longitude, Number.NaN),
+    ageSeconds: num(candidate.ageSeconds ?? candidate.age, 0),
+  };
+}
+
+export function normalizeDispatchNearest(raw: unknown): DispatchNearestResponse {
+  const container = asRecord(raw);
+  return {
+    generatedAt: str(container.generatedAt),
+    radiusM: num(container.radiusM, 0),
+    candidates: arr(container.candidates ?? container.items).map(normalizeDispatchCandidate),
+  };
+}
+
+/** Live positions of everyone on duty (`GET /dispatch/drivers`). */
+export function fetchDispatchDrivers(): Promise<DispatchDriversResponse> {
+  return apiRequest<unknown>('/v1/dispatch/drivers').then(normalizeDispatchDrivers);
+}
+
+/** Drivers around a point, closest first — the manual-assignment shortlist. */
+export function fetchNearestDrivers(query: NearestDriversQuery): Promise<DispatchNearestResponse> {
+  return apiRequest<unknown>('/v1/dispatch/nearest', {
+    query: {
+      lat: query.lat,
+      lon: query.lon,
+      radiusM: query.radiusM ?? 3000,
+      limit: query.limit ?? 10,
+    },
+  }).then(normalizeDispatchNearest);
 }

@@ -52,6 +52,9 @@ public class DriverApplicationService {
                     .withDetail("userId", userId);
         }
         Driver driver = driverRepository.save(Driver.register(userId, phone, displayName, Instant.now()));
+        // The fleet projection in dispatch-service learns the name and the phone
+        // from here: it must not have to call back for them later.
+        publishState(driver, KafkaTopics.Events.DRIVER_REGISTERED, driver.getCreatedAt());
         log.info("registered driver {} for user {} ({})", driver.getId(), userId, phone);
         return driver;
     }
@@ -126,7 +129,11 @@ public class DriverApplicationService {
         // A repeated "go offline" is a no-op for the client, but it must not spam
         // the topic: dispatch would uselessly re-evaluate its candidate set.
         if (driver.getStatus() != before) {
-            publishDuty(driver, now);
+            publishState(driver,
+                    driver.getStatus() == DriverStatus.ONLINE
+                            ? KafkaTopics.Events.DRIVER_ONLINE
+                            : KafkaTopics.Events.DRIVER_OFFLINE,
+                    now);
         }
         return driver;
     }
@@ -143,7 +150,9 @@ public class DriverApplicationService {
     @Transactional
     public Driver assignTrip(String driverId, String tripId) {
         Driver driver = requireById(driverId);
-        driver.assignTrip(tripId, Instant.now());
+        Instant now = Instant.now();
+        driver.assignTrip(tripId, now);
+        publishState(driver, KafkaTopics.Events.DRIVER_BUSY, now);
         log.info("driver {} assigned to trip {}", driverId, tripId);
         return driver;
     }
@@ -152,18 +161,19 @@ public class DriverApplicationService {
     @Transactional
     public Driver finishTrip(String driverId) {
         Driver driver = requireById(driverId);
-        driver.finishTrip(Instant.now());
+        Instant now = Instant.now();
+        driver.finishTrip(now);
+        // Back to ONLINE means "available again": dispatch may offer him the next trip.
+        publishState(driver, KafkaTopics.Events.DRIVER_ONLINE, now);
         log.info("driver {} finished trip, completed={}", driverId, driver.getCompletedTrips());
         return driver;
     }
 
     // ------------------------------------------------------------------ events
 
-    private void publishDuty(Driver driver, Instant now) {
-        String eventType = driver.getStatus() == DriverStatus.ONLINE
-                ? KafkaTopics.Events.DRIVER_ONLINE
-                : KafkaTopics.Events.DRIVER_OFFLINE;
+    private void publishState(Driver driver, String eventType, Instant now) {
         outboxWriter.append(KafkaTopics.DRIVER_EVENTS, eventType, "Driver", driver.getId(), driver.getVersion(),
-                new DriverEvents.DutyChanged(driver.getId(), driver.getUserId(), driver.getStatus().name(), now));
+                new DriverEvents.DriverStateChanged(driver.getId(), driver.getUserId(), driver.getDisplayName(),
+                        driver.getPhone(), driver.getStatus().name(), now));
     }
 }

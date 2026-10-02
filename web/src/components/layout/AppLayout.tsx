@@ -2,6 +2,7 @@ import type { ComponentType, SVGProps } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import type { Role } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
+import { DISPATCH_ROLES } from '../../auth/dispatchRoles';
 import { useCart } from '../../hooks/useCart';
 import { cx } from '../../lib/cx';
 import { roleLabel } from '../../lib/format';
@@ -10,6 +11,7 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import {
   CartIcon,
+  DispatchIcon,
   HomeIcon,
   MarketIcon,
   OrdersIcon,
@@ -38,6 +40,9 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/cart', label: 'Корзина', icon: CartIcon, mobile: true },
   { to: '/orders', label: 'Заказы', icon: OrdersIcon, mobile: true },
   { to: '/merchant', label: 'Мой магазин', icon: StoreIcon, roles: ['MERCHANT'] },
+  // Desktop-only on purpose: the console is a control room, and the tab bar is
+  // already full on phones (`mobile` omitted = sidebar only).
+  { to: '/dispatch', label: 'Диспетчерская', icon: DispatchIcon, roles: DISPATCH_ROLES },
 ];
 
 function navLinkClass({ isActive }: { isActive: boolean }): string {

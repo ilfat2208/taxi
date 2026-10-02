@@ -30,6 +30,7 @@
         <module>services/catalog-service</module>
         <module>services/order-service</module>
         <module>services/driver-service</module>
+        <module>services/dispatch-service</module>
     </modules>
 
     <properties>

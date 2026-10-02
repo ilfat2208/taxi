@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Сквозная проверка платформы: инфраструктура -> токен -> счёт -> пополнение ->
     перевод -> леджер -> Kafka.
@@ -55,8 +55,10 @@ function Invoke-Api {
     $uri = "$BaseUrl$Path"
     $params = @{ Method = $Method; Uri = $uri; Headers = $Headers; UseBasicParsing = $true }
     if ($Body) {
-        $params['Body'] = $Body
-        $params['ContentType'] = 'application/json'
+        # Bytes, not a string: a PowerShell string body goes out as ISO-8859-1 and
+        # turns every Cyrillic value into "?????" on the wire.
+        $params['Body'] = [System.Text.Encoding]::UTF8.GetBytes($Body)
+        $params['ContentType'] = 'application/json; charset=utf-8'
     }
 
     try {

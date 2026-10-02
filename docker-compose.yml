@@ -144,6 +144,7 @@ services:
       CATALOG_SERVICE_URL: http://catalog-service:8083
       ORDER_SERVICE_URL: http://order-service:8084
       DRIVER_SERVICE_URL: http://driver-service:8085
+      DISPATCH_SERVICE_URL: http://dispatch-service:8087
     ports:
       - "${GATEWAY_PORT:-8080}:8080"
     healthcheck:
@@ -243,6 +244,21 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-taxi}
     ports:
       - "${DRIVER_SERVICE_PORT:-8085}:8085"
+
+  dispatch-service:
+    <<: *service-defaults
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: services/dispatch-service/Dockerfile
+    container_name: taxi-dispatch-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8087
+      # No database: positions live in Redis, the fleet projection is rebuilt from
+      # driver.events. PostGIS joins this service in Ф2, with the trip tracks.
+    ports:
+      - "${DISPATCH_SERVICE_PORT:-8087}:8087"
 
 volumes:
   pgdata:

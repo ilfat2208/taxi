@@ -113,6 +113,10 @@ public final class KafkaTopics {
 
         public static final String DRIVER_ONLINE = "driver.online";
         public static final String DRIVER_OFFLINE = "driver.offline";
+        /** A new driver profile appeared: the fleet projection learns his name and phone. */
+        public static final String DRIVER_REGISTERED = "driver.registered";
+        /** The driver took a trip and is no longer offered to anybody else. */
+        public static final String DRIVER_BUSY = "driver.busy";
 
         /** An offer was sent to a driver; it is not a booking yet. */
         public static final String OFFER_CREATED = "offer.created";

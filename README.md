@@ -11,7 +11,7 @@
 репозитории **замороженной**: её e2e продолжают проходить и служат доказательством,
 что денежный контур не привязан к одной предметной области.
 
-**Состояние работ (Ф0 — каркас вертикали такси):**
+**Состояние работ (Ф0 — каркас, Ф1 — геопозиции и живая карта):**
 
 | Готово | Где |
 |---|---|
@@ -20,27 +20,48 @@
 | Топики `trip.events`, `driver.events`, `dispatch.events` (+ DLT) | `platform/common-kafka/.../KafkaTopics.java` |
 | Роуты шлюза под `/api/v1/trips`, `/api/v1/drivers`, `/api/v1/locations`, `/api/v1/dispatch` | `services/api-gateway/src/main/resources/application.yml` |
 | PostGIS и базы `taxi_trip`, `taxi_driver`, `taxi_dispatch` | `infra/postgres/init/01-databases.sql` |
-| `driver-service`: профиль водителя, документы со сроком, выход на линию, событие в Kafka | `services/driver-service` |
-| Сквозной сценарий выхода на линию (33 проверки) | `scripts/e2e-driver-duty.ps1` |
+| `driver-service`: профиль водителя, документы со сроком, выход на линию | `services/driver-service` |
+| `dispatch-service`: приём геопозиций, Redis GEO, поиск кандидатов, живая карта (`/dispatch`) | `services/dispatch-service` |
+| Симулятор парка: 7 машин едут по Алматы и присылают позиции | `scripts/simulate-fleet.ps1` |
+| Сквозные сценарии: выход на линию (33 проверки) и диспетчерская (40 проверок) | `scripts/e2e-driver-duty.ps1`, `scripts/e2e-dispatch.ps1` |
 
-Дальше по плану: приём геопозиций и живая карта диспетчера (Ф1), поездка и деньги (Ф2),
-автоматический матчинг (Ф3), клиенты пассажира и водителя (Ф4). Полный план с оценками,
-рисками и критериями готовности — [`docs/taxi-roadmap.md`](docs/taxi-roadmap.md).
+### Живая карта диспетчера
+
+![Карта водителей на линии](docs/img/dispatch-live-map.png)
+
+Скриншот сделан на живом стеке: позиции присылает `scripts/simulate-fleet.ps1`,
+`dispatch-service` кладёт их в Redis GEO, страница `/dispatch` опрашивает
+`/api/v1/dispatch/drivers` раз в 2 секунды. Посмотреть самому:
+
+```powershell
+docker compose --profile app up -d --build      # стек
+.\scripts\simulate-fleet.ps1 -Drivers 7         # машины поехали (30 минут)
+
+cd web; pnpm install; pnpm dev                  # http://localhost:5173/dispatch
+```
+
+На странице нужна роль диспетчера: если её нет, есть кнопка «Получить токен
+диспетчера» (dev-стенд выдаёт токен с ролью `DISPATCHER`).
+
+Дальше по плану: поездка и деньги (Ф2), автоматический матчинг (Ф3), клиенты
+пассажира и водителя (Ф4). Полный план с оценками, рисками и критериями готовности —
+[`docs/taxi-roadmap.md`](docs/taxi-roadmap.md).
 
 ```
                         ┌───────────────────────────────┐
    React/TS (5173) ───► │  api-gateway (8080)           │  JWT, rate limit, корреляция
    Android (10.0.2.2)   └───────┬───────────────────────┘
-        ┌──────────────┬────────┴───────┬────────────────┬────────────────┐
-        ▼              ▼                ▼                ▼                ▼
-  account-service  payment-service  catalog-service  order-service  driver-service
-      (8081)          (8082)           (8083)          (8084)          (8085)
-   счета+леджер    платежи+сага     товары+сток     корзина+заказ    водители+смены
-        │              │                │                │                │
-        └──────────────┴──── Kafka (outbox) ─────────────┴────────────────┘
+        ┌──────────────┬────────┴───────┬────────────────┬────────────────┬──────────────┐
+        ▼              ▼                ▼                ▼                ▼              ▼
+  account-service  payment-service  catalog-service  order-service  driver-service  dispatch-service
+      (8081)          (8082)           (8083)          (8084)          (8085)          (8087)
+   счета+леджер    платежи+сага     товары+сток     корзина+заказ    водители+смены  геопозиции+поиск
+        │              │                │                │                │              │
+        └──────────────┴──── Kafka (outbox) ─────────────┴────────────────┘              │
+                                                                          driver.events ─┘
         Postgres + PostGIS          Redis          Prometheus/actuator
 
-   План: trip-service (8086) — поездка и деньги; dispatch-service (8087) — гео и матчинг.
+   План: trip-service (8086) — поездка и деньги.
 ```
 
 ---
@@ -53,6 +74,8 @@
 .\scripts\dev-up.ps1            # инфраструктура в Docker + сервисы на хосте
 .\scripts\smoke-test.ps1        # платформа: счёт, леджер, Kafka, RFC 7807
 .\scripts\e2e-driver-duty.ps1   # такси: водитель с документами выходит на линию
+.\scripts\e2e-dispatch.ps1      # такси: позиция доходит до карты и до поиска кандидатов
+.\scripts\simulate-fleet.ps1    # такси: парк машин едет по Алматы (для карты)
 .\scripts\e2e-marketplace.ps1   # (заморожено) покупка: витрина -> корзина -> PAID
 .\scripts\e2e-settlement.ps1    # (заморожено) продавец -> продажа -> выплата
 .\scripts\dev-down.ps1          # остановить сервисы (-WithInfra — ещё и контейнеры)
@@ -158,14 +181,16 @@ platform/                 общие библиотеки (не сервисы)
 services/
   api-gateway             WebFlux-шлюз: токены, роутинг, rate limit
   driver-service          водители, авто, документы со сроком, выход на линию
+  dispatch-service        приём геопозиций (Redis GEO), проекция парка, поиск кандидатов
   account-service         счета, двойная запись, holds          <- деньги пассажира
   payment-service         переводы и платежи, сага, выплаты      <- оплата и расчёты
   catalog-service         мерчанты, товары, сток (заморожено)
   order-service           корзина, заказ, checkout-сага (заморожено)
-web/                      React 19 + TypeScript + Vite
+web/                      React 19 + TypeScript + Vite (в т.ч. живая карта /dispatch)
 mobile/android/           нативный клиент: Kotlin + Jetpack Compose
 infra/                    init-скрипты Postgres (включая PostGIS)
-scripts/                  dev-up / dev-down / smoke-test / e2e-driver-duty / e2e-marketplace / e2e-settlement
+scripts/                  dev-up / dev-down / smoke-test / e2e-driver-duty / e2e-dispatch /
+                          simulate-fleet / e2e-marketplace / e2e-settlement
 docs/                     архитектура, API, ADR, план такси, мобильный клиент
 ```
 
@@ -174,24 +199,43 @@ docs/                     архитектура, API, ADR, план такси,
 ## Проверено на живом стеке
 
 ```
-mvnw clean install                     -> BUILD SUCCESS, 617 unit-тестов, 0 падений
+mvnw clean install                     -> BUILD SUCCESS, 636 unit-тестов, 0 падений
                                           (platform 105, gateway 20, account 61, payment 116,
-                                           catalog 109, order 178, driver 28)
+                                           catalog 109, order 178, driver 28, dispatch 19)
 scripts/smoke-test.ps1                 -> платформа: счёт, леджер, Kafka, RFC 7807
 scripts/e2e-driver-duty.ps1            -> такси: 33 проверки, водитель выходит на линию,
                                           событие driver.online в Kafka, инварианты в БД
+scripts/e2e-dispatch.ps1               -> такси: 40 проверок, позиция -> проекция -> карта
+                                          и поиск; событие driver.online дошло за 277 мс
+                                          (критерий Ф1: меньше секунды)
 scripts/e2e-marketplace.ps1            -> (заморожено) покупка: витрина -> корзина -> PAID
 scripts/e2e-settlement.ps1             -> (заморожено) продавец -> продажа -> выплата
-web: pnpm build && pnpm test           -> сборка без ошибок TS, 16 тестов
+web: pnpm build && pnpm test           -> сборка без ошибок TS, 21 тест
 web: pnpm e2e                          -> 14 браузерных сценариев (Playwright, chromium)
 mobile/android: gradlew testDebugUnitTest "-Dtaxi.liveTest=true"
                                        -> 42 теста, 0 падений, из них 4 — против живого шлюза
 эмулятор Android 14 (x86_64)           -> вход, перевод 250 ₸ из UI, покупка из UI -> заказ PAID
 
 docker compose --profile app up -d --build
-  -> 9 контейнеров healthy (включая taxi-driver-service), PostGIS 3.4.3
+  -> 10 контейнеров healthy (включая taxi-driver-service и taxi-dispatch-service), PostGIS 3.4.3
   -> все сценарии прогнаны повторно уже против контейнерного стека
 ```
+
+Что именно проверяет сценарий диспетчерской (`scripts/e2e-dispatch.ps1`):
+
+* **путь события целиком**: выход на линию → `driver.events` → проекция в dispatch →
+  приём позиции. Замеряется время (277 мс при цели «меньше секунды»), потому что это и
+  есть критерий готовности Ф1;
+* **карта и поиск отвечают согласованно**: водитель есть и в `/dispatch/drivers`, и в
+  `/dispatch/nearest`, и в самом Redis GEO (`GEOSEARCH` возвращает его же);
+* **устаревшая позиция**: видна на карте с `stale=true`, но кандидатом на поездку не
+  становится — диспетчеру показываем, пассажиру не обещаем;
+* **уход с линии**: проекция обновляется по `driver.offline`, позиция удаляется из Redis
+  (координаты не хранятся после смены), а новые позиции от неработающего водителя
+  отклоняются с `409 DRIVER_NOT_ON_DUTY`;
+* **мусор не попадает в индекс**: невозможные координаты, радиус больше разрешённого и
+  слишком большой батч отклоняются с `400` и своими кодами;
+* **доступ**: обычный клиент не видит парк (`403 FORBIDDEN_FLEET_ACCESS`), аноним — `401`.
 
 Что именно проверяет сценарий такси (`scripts/e2e-driver-duty.ps1`):
 
@@ -223,6 +267,9 @@ docker compose --profile app up -d --build
 | Деньги в БД | Append-only леджер, баланс — проекция; CHECK-инварианты | `account-service/.../V1__init_accounts.sql` |
 | Право выйти на линию | Документы со сроком действия + правило в агрегате, а не в контроллере | `driver-service/.../DriverDuty.java` |
 | Стейт-машина водителя | `OFFLINE → ONLINE → BUSY → ONLINE`, невозможные переходы запрещены | `driver-service/.../Driver.java` |
+| Геоиндекс | `GEOSEARCH` по Redis GEO вместо перебора машин в Java; позиция с TTL — пропавший водитель исчезает сам | `dispatch-service/.../DriverLocationStore.java` |
+| Проекция из событий | Диспетчерская не спрашивает соседа «кто на линии»: строит ответ из `driver.events`, включая имя и телефон | `dispatch-service/.../FleetService.java` |
+| Разные ответы на разные вопросы | Карта показывает и «замолчавших» (stale, флагом), а кандидатов на поездку — только свежих и свободных | `dispatch-service/.../FleetService.java` |
 | Геоданные | PostGIS 3.4 для треков и геозон, Redis — для горячего поиска | `infra/postgres/init/01-databases.sql` |
 | Сток | Резервирование (ACTIVE → COMMITTED/RELEASED) вместо декремента | `catalog-service/.../V1__init_catalog.sql` |
 | Сага checkout | Оркестратор в order-service + асинхронное доразбирательство по Kafka | `order-service/.../CheckoutSagaService.java` |

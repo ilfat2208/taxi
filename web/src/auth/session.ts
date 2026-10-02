@@ -41,9 +41,14 @@ function storage(): Storage | null {
   }
 }
 
-function isRole(value: unknown): value is Role {
+export function isRole(value: unknown): value is Role {
   return (
-    value === 'CUSTOMER' || value === 'MERCHANT' || value === 'SUPPORT' || value === 'ADMIN'
+    value === 'CUSTOMER' ||
+    value === 'MERCHANT' ||
+    value === 'SUPPORT' ||
+    value === 'ADMIN' ||
+    value === 'DRIVER' ||
+    value === 'DISPATCHER'
   );
 }
 

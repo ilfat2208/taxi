@@ -32,4 +32,14 @@ export const queryKeys = {
   order: (orderId: string) => ['orders', 'detail', orderId] as const,
 
   merchant: () => ['merchant', 'me'] as const,
+
+  /** Live fleet projection; polled every couple of seconds by the console. */
+  dispatchDrivers: () => ['dispatch', 'drivers'] as const,
+  /**
+   * Nearest drivers around one selected driver. The coordinates are deliberately
+   * NOT part of the key: the driver keeps moving, and rebuilding the key every poll
+   * would leave a trail of dead cache entries instead of refreshing one.
+   */
+  dispatchNearest: (driverId: string, radiusM: number, limit: number) =>
+    ['dispatch', 'nearest', { driverId, radiusM, limit }] as const,
 };

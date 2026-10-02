@@ -75,6 +75,12 @@ const PAYMENT_STATUS_LABELS: Record<string, string> = {
   OUT_OF_STOCK: 'Нет в наличии',
   ARCHIVED: 'В архиве',
   SUSPENDED: 'Заблокирован',
+  // driver states (dispatch console)
+  ONLINE: 'На линии',
+  OFFLINE: 'Не на линии',
+  BUSY: 'На заказе',
+  ON_TRIP: 'В поездке',
+  BLOCKED: 'Заблокирован',
 };
 
 export function statusLabel(status: string | null | undefined): string {
@@ -91,12 +97,15 @@ export function statusTone(status: string | null | undefined): Tone {
     case 'DELIVERED':
     case 'CONFIRMED':
     case 'ACTIVE':
+    case 'ONLINE':
       return 'success';
     case 'FAILED':
     case 'SUSPENDED':
+    case 'BLOCKED':
       return 'danger';
     case 'CANCELLED':
     case 'ARCHIVED':
+    case 'OFFLINE':
       return 'neutral';
     case 'REFUNDED':
     case 'PARTIALLY_REFUNDED':
@@ -108,6 +117,8 @@ export function statusTone(status: string | null | undefined): Tone {
     case 'SHIPPED':
     case 'DRAFT':
     case 'OUT_OF_STOCK':
+    case 'BUSY':
+    case 'ON_TRIP':
       return 'warning';
     default:
       return 'neutral';
@@ -187,9 +198,42 @@ export function roleLabel(role: string): string {
       return 'Поддержка';
     case 'ADMIN':
       return 'Администратор';
+    case 'DRIVER':
+      return 'Водитель';
+    case 'DISPATCHER':
+      return 'Диспетчер';
     default:
       return role;
   }
+}
+
+/** "42 с" / "3 мин" / "2 ч 5 мин" — age of a position, not a date. */
+export function formatAgeSeconds(seconds: number | null | undefined): string {
+  if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 0) {
+    return '—';
+  }
+  const total = Math.round(seconds);
+  if (total < 60) {
+    return `${total} с`;
+  }
+  const minutes = Math.floor(total / 60);
+  if (minutes < 60) {
+    return `${minutes} мин`;
+  }
+  const hours = Math.floor(minutes / 60);
+  const restMinutes = minutes % 60;
+  return restMinutes === 0 ? `${hours} ч` : `${hours} ч ${restMinutes} мин`;
+}
+
+/** Metres below a kilometre, one decimal above it: "640 м" / "1,4 км". */
+export function formatDistanceMeters(meters: number | null | undefined): string {
+  if (typeof meters !== 'number' || !Number.isFinite(meters) || meters < 0) {
+    return '—';
+  }
+  if (meters < 1000) {
+    return `${Math.round(meters)} м`;
+  }
+  return `${(meters / 1000).toFixed(1).replace('.', ',')} км`;
 }
 
 /** Truncates a long ULID/order number for dense lists while keeping it copyable. */

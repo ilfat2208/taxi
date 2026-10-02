@@ -1,0 +1,90 @@
+server:
+  port: ${SERVER_PORT:8087}
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+
+spring:
+  application:
+    name: dispatch-service
+  # No datasource and no Flyway in Ф1: the only durable thing this service owns is
+  # its Kafka offset. Positions are ephemeral by nature, and the fleet projection is
+  # rebuilt from driver.events.
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:127.0.0.1}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      timeout: 2s
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:127.0.0.1:9092}
+    consumer:
+      group-id: dispatch-service
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        isolation.level: read_committed
+    listener:
+      ack-mode: record
+
+taxi:
+  security:
+    mode: ${JWT_MODE:HMAC}
+    jwt-secret: ${JWT_SECRET:local-dev-only-secret-change-me-0123456789abcdef}
+    jwk-set-uri: ${JWK_SET_URI:}
+    jwks-cache-ttl: ${JWKS_CACHE_TTL:5m}
+    jwt-ttl: ${JWT_TTL_SECONDS:3600}s
+    issuer: ${JWT_ISSUER:https://identity.taxi.local}
+    issuer-uri: ${JWT_ISSUER_URI:}
+    roles-claim: roles
+  idempotency:
+    store: redis
+    ttl: 24h
+  outbox:
+    # Ф1: this service consumes driver events and publishes none of its own.
+    # The transactional outbox arrives here with offers in Ф3.
+    enabled: false
+  kafka:
+    partitions: 3
+    replicas: 1
+    dedup:
+      store: redis
+      ttl: 7d
+  # Shared secret authenticating service-to-service calls on /internal/ endpoints.
+  internal:
+    token: ${INTERNAL_API_TOKEN:local-internal-token-change-me}
+  dispatch:
+    # How long a position stays believable. Shorter and drivers blink on a bad
+    # connection; longer and dispatch offers trips to cars that already left.
+    stale-after: ${DISPATCH_STALE_AFTER:20s}
+    # Positions expire on their own: an app that stopped reporting (killed, out of
+    # battery, in a tunnel) leaves the index with no cleanup job involved.
+    position-ttl: ${DISPATCH_POSITION_TTL:2m}
+    max-batch-size: ${DISPATCH_MAX_BATCH_SIZE:100}
+    default-radius-m: ${DISPATCH_DEFAULT_RADIUS_M:3000}
+    max-radius-m: ${DISPATCH_MAX_RADIUS_M:20000}
+    default-limit: ${DISPATCH_DEFAULT_LIMIT:10}
+    max-limit: ${DISPATCH_MAX_LIMIT:50}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE:health,info,metrics,prometheus}
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    kz.taxi: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
