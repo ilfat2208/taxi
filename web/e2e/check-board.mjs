@@ -77,6 +77,27 @@ if (counts.duplicateTitles.length > 0) {
   console.log(`[борд] одинаковые названия подписей: ${JSON.stringify(counts.duplicateTitles.slice(0, 8))}`);
 }
 
+// Обрезка контента внутри рамок консолей: рамка — это fixed-размер с overflow:hidden,
+// поэтому слишком высокое содержимое молча исчезает. Ловим числом, а не глазами.
+const clipped = await page.evaluate(() => {
+  const bad = [];
+  for (const frame of document.querySelectorAll('.phone.tablet')) {
+    const section = frame.closest('section.sec');
+    const num = section?.querySelector('.sec-num')?.textContent?.trim() ?? '?';
+    const title = frame.closest('.stage')?.querySelector('.cap-title')?.textContent?.trim() ?? '?';
+    for (const pane of frame.querySelectorAll('.tab-main, .panel, .cover-wrap')) {
+      const over = pane.scrollHeight - pane.clientHeight;
+      if (over > 4) bad.push({ section: num, screen: title, pane: pane.className.split(' ')[0], over });
+    }
+  }
+  return bad;
+});
+if (clipped.length > 0) {
+  console.log(`[борд] ВНИМАНИЕ: контент обрезан в ${clipped.length} панелях: ${JSON.stringify(clipped.slice(0, 6))}`);
+} else {
+  console.log('[борд] обрезки контента в рамках консолей нет');
+}
+
 // Скриншоты новых разделов — по одному на контур, чтобы видеть, что вёрстка цела.
 const wanted = [
   'ORTA Business — кабинет бизнеса',
