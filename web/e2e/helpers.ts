@@ -153,11 +153,17 @@ export async function loginAs(
 
 /** Sign in as the seeded demo customer (ADMIN, so the demo top-up is available). */
 export async function loginAsDemoUser(page: Page, request: APIRequestContext): Promise<Session> {
-  return loginAs(page, request, {
+  const session = await loginAs(page, request, {
     phone: DEMO_USER.phone,
     displayName: DEMO_USER.displayName,
     roles: ['CUSTOMER', 'ADMIN'],
   });
+  // The dashboard renders a balance card and the transfer form renders a source
+  // picker only when the user actually has an account, and a fresh stack (every CI
+  // run) has none: only the platform suspense accounts are seeded. Creating it here
+  // keeps the specs independent of whatever ran before them.
+  await ensureKztAccount(request, session.accessToken);
+  return session;
 }
 
 /** The session the app itself stored, read back from the browser. */

@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import {
   DEMO_CODE,
   DEMO_PHONE,
+  DEMO_USER,
   availableBalance,
   ensureBalance,
   ensureKztAccount,
@@ -32,7 +33,7 @@ test.describe('вход по номеру телефона', () => {
     page.on('console', (message) => consoleMessages.push(message.text()));
 
     await page.goto('/login');
-    await expect(page.getByRole('heading', { name: 'taxi' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'ORTA' })).toBeVisible();
 
     await page.getByLabel('Номер телефона').fill(DEMO_PHONE);
     await page.getByLabel('Код из SMS').fill('9999');
@@ -113,7 +114,17 @@ test.describe('вход по номеру телефона', () => {
 
   test('неавторизованный посетитель попадает на вход, а после входа возвращается на свой адрес', async ({
     page,
+    request,
   }) => {
+    // The transfer form shows a source-account picker only for a user who has an
+    // account, and a fresh stack has none. Create it up front: the test is about
+    // the redirect, not about where the account came from.
+    const demoToken = await requestToken(request, DEMO_USER.phone, DEMO_USER.displayName, [
+      'CUSTOMER',
+      'ADMIN',
+    ]);
+    await ensureKztAccount(request, demoToken.accessToken);
+
     await page.goto('/transfer');
     await expect(page).toHaveURL(/\/login$/);
 

@@ -213,6 +213,15 @@ test.describe('перевод по номеру телефона', () => {
         response.request().method() === 'POST' && response.url().includes(TRANSFER_PATH),
     );
 
+    // Hold the first request for a moment so the second click is guaranteed to
+    // arrive while the first one is still in flight. Without this the test races
+    // the network: on a fast machine the first transfer sometimes finished before
+    // the second click landed, and the assertion then failed for the wrong reason.
+    await page.route(`**${TRANSFER_PATH}`, async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1_500));
+      await route.continue();
+    });
+
     // Two submits back to back, with no awaits in between: this is what a double
     // click (or a fast keyboard auto-repeat) produces on a fast machine, where
     // the browser has not re-rendered the button yet. `dispatchEvent` bypasses
