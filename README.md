@@ -54,7 +54,7 @@ Cargo/Home/Services/Build/Delivery/Business помечены бейджем «С
 | PostGIS и базы `taxi_trip`, `taxi_driver`, `taxi_dispatch` | `infra/postgres/init/01-databases.sql` |
 | `driver-service`: профиль водителя, документы со сроком, выход на линию | `services/driver-service` |
 | `dispatch-service`: приём геопозиций, Redis GEO, поиск кандидатов, живая карта (`/dispatch`) | `services/dispatch-service` |
-| Симулятор парка: 7 машин едут по Алматы и присылают позиции | `scripts/simulate-fleet.ps1` |
+| Симулятор парка: 7 машин едут по Шымкенту и присылают позиции | `scripts/simulate-fleet.ps1` |
 | Сквозные сценарии: выход на линию (33 проверки) и диспетчерская (40 проверок) | `scripts/e2e-driver-duty.ps1`, `scripts/e2e-dispatch.ps1` |
 
 ### Живая карта диспетчера
@@ -107,7 +107,7 @@ cd web; pnpm install; pnpm dev                  # http://localhost:5173/dispatch
 .\scripts\smoke-test.ps1        # платформа: счёт, леджер, Kafka, RFC 7807
 .\scripts\e2e-driver-duty.ps1   # такси: водитель с документами выходит на линию
 .\scripts\e2e-dispatch.ps1      # такси: позиция доходит до карты и до поиска кандидатов
-.\scripts\simulate-fleet.ps1    # такси: парк машин едет по Алматы (для карты)
+.\scripts\simulate-fleet.ps1    # такси: парк машин едет по Шымкенту (для карты)
 .\scripts\e2e-marketplace.ps1   # (заморожено) покупка: витрина -> корзина -> PAID
 .\scripts\e2e-settlement.ps1    # (заморожено) продавец -> продажа -> выплата
 .\scripts\dev-down.ps1          # остановить сервисы (-WithInfra — ещё и контейнеры)

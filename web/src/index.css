@@ -1,22 +1,22 @@
 @import 'tailwindcss';
 
 /**
- * Design tokens for the fintech UI: a light surface, one crimson accent close
- * to Taxi branding, generous rounding and a small neutral ramp.
+ * Design tokens for the ORTA UI: a light surface, one brand blue that matches the
+ * Android client (`Theme.kt`, #1F5FA9), generous rounding and a small neutral ramp.
  */
 @theme {
   --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
 
-  --color-brand-50: #fff1f2;
-  --color-brand-100: #ffe1e3;
-  --color-brand-200: #ffc7cc;
-  --color-brand-300: #ff9ba4;
-  --color-brand-400: #fb6572;
-  --color-brand-500: #e11d2e;
-  --color-brand-600: #c8121f;
-  --color-brand-700: #a70f1a;
-  --color-brand-800: #88121a;
-  --color-brand-900: #6f141a;
+  --color-brand-50: #eef4fb;
+  --color-brand-100: #d9e7f6;
+  --color-brand-200: #b8d1ee;
+  --color-brand-300: #8cb4e2;
+  --color-brand-400: #4d8ac9;
+  --color-brand-500: #1f5fa9;
+  --color-brand-600: #1a4f8d;
+  --color-brand-700: #164a85;
+  --color-brand-800: #123a68;
+  --color-brand-900: #0f2f53;
 
   --color-ink-50: #f8fafc;
   --color-ink-100: #f1f5f9;

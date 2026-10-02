@@ -28,9 +28,9 @@
 param(
     [string]$BaseUrl = 'http://localhost:8080',
     [string]$Code = '0000',
-    # Точка в стороне от центра, где обычно крутится симулятор парка.
-    [double]$Lat = 43.3100,
-    [double]$Lon = 76.9500
+    # Точка в стороне от центра Шымкента, где обычно крутится симулятор парка.
+    [double]$Lat = 42.3600,
+    [double]$Lon = 69.6500
 )
 
 $ErrorActionPreference = 'Stop'

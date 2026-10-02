@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    Симулирует парк водителей: регистрация, выход на линию и движение по Алматы.
+    Симулирует парк водителей: регистрация, выход на линию и движение по Шымкенту.
 
 .DESCRIPTION
     Нужен, чтобы живую карту диспетчера было на что смотреть без настоящих машин.
@@ -32,8 +32,8 @@ param(
     [int]$Drivers = 6,
     [int]$IntervalSeconds = 4,
     [int]$Minutes = 10,
-    [double]$CenterLat = 43.2389,
-    [double]$CenterLon = 76.8897,
+    [double]$CenterLat = 42.3155,
+    [double]$CenterLon = 69.5867,
     [int]$RadiusM = 2500,
     [string]$Code = '0000'
 )

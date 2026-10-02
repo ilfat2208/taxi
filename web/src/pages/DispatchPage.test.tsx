@@ -195,11 +195,11 @@ describe('dispatcher console', () => {
     expect(await screen.findByTestId('dispatch-map')).toBeInTheDocument();
     await waitFor(() => expect(container.querySelectorAll('.taxi-driver-marker')).toHaveLength(2));
 
-    // Fresh and stale drivers are visually different: brand red vs grey.
+    // Fresh and stale drivers are visually different: brand blue vs grey.
     const markers = Array.from(container.querySelectorAll<HTMLElement>('.taxi-driver-marker'));
     const bodies = markers.map((marker) => marker.innerHTML);
     expect(new Set(bodies).size).toBe(2);
-    expect(bodies.some((html) => html.includes('#e11d2e'))).toBe(true);
+    expect(bodies.some((html) => html.includes('#1f5fa9'))).toBe(true);
     expect(bodies.some((html) => html.includes('#94a3b8'))).toBe(true);
 
     const freshMarker = markers.find((marker) => marker.getAttribute('title') === 'Айбек Сериков');

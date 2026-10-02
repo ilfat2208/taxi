@@ -42,16 +42,16 @@ import {
 const PAGE_TITLE = 'Диспетчерская';
 const PAGE_SUBTITLE = 'Живая карта водителей на линии';
 
-/** Almaty, Abay avenue area — the demo city centre. */
-const ALMATY_CENTER: L.LatLngTuple = [43.2389, 76.8897];
+/** Шымкент, центр города — пилотный город ORTA (см. docs/orta.md). */
+const CITY_CENTER: L.LatLngTuple = [42.3155, 69.5867];
 const DEFAULT_ZOOM = 13;
 
 const OSM_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
-const FRESH_COLOR = '#e11d2e'; // brand-500
+const FRESH_COLOR = '#1f5fa9'; // brand-500: тот же синий, что в клиенте ORTA
 const STALE_COLOR = '#94a3b8'; // ink-400
-const CANDIDATE_COLOR = '#2563eb'; // info blue
+const CANDIDATE_COLOR = '#0e7c7b'; // TaxiTeal: «ближайшие к выбранному» не путать со свежими (brand blue)
 const SELECTED_RING = '#0f172a'; // ink-900
 const MARKER_SIZE = 26;
 const CANDIDATE_SIZE = 14;
@@ -147,7 +147,7 @@ function DriverMap({ drivers, candidates, selectedId, onSelect }: DriverMapProps
       return;
     }
     const map = L.map(container, {
-      center: ALMATY_CENTER,
+      center: CITY_CENTER,
       zoom: DEFAULT_ZOOM,
       zoomControl: true,
       attributionControl: true,
