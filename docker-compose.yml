@@ -1,0 +1,234 @@
+# ---------------------------------------------------------------------------
+# Taxi local stack.
+#
+#   docker compose up -d postgres kafka redis      # infrastructure only
+#   docker compose --profile tools up -d           # + kafka-ui
+#   docker compose --profile app up -d --build     # + all microservices
+#
+# Services run on the host during development (`mvnw spring-boot:run`), so the
+# infra ports are published and every service has a `docker` Spring profile
+# that speaks to the compose network instead of localhost.
+# ---------------------------------------------------------------------------
+
+name: taxi
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  networks: [taxi-net]
+  depends_on:
+    postgres:
+      condition: service_healthy
+    kafka:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+x-app-env: &app-env
+  SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+  SPRING_DATA_REDIS_HOST: redis
+  SPRING_DATA_REDIS_PORT: 6379
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: 5432
+  POSTGRES_USER: ${POSTGRES_USER:-taxi}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-taxi}
+  JWT_SECRET: ${JWT_SECRET:-local-dev-only-secret-change-me-0123456789abcdef}
+  JWT_TTL_SECONDS: ${JWT_TTL_SECONDS:-3600}
+  INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-local-internal-token-change-me}
+
+services:
+  # ------------------------------------------------------------------ infra
+  postgres:
+    image: postgres:16-alpine
+    container_name: taxi-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-taxi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-taxi}
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-taxi} -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks: [taxi-net]
+
+  kafka:
+    image: apache/kafka:3.8.0
+    container_name: taxi-kafka
+    environment:
+      # --- KRaft single-node broker+controller ---
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://:29092,CONTROLLER://:9093,EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:${KAFKA_PORT:-9092}
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "${KAFKA_AUTO_CREATE_TOPICS:-true}"
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_LOG_RETENTION_HOURS: 168
+      CLUSTER_ID: taxi-kraft-cluster
+    ports:
+      - "${KAFKA_PORT:-9092}:9092"
+    volumes:
+      - kafkadata:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 20s
+    restart: unless-stopped
+    networks: [taxi-net]
+
+  redis:
+    image: redis:7-alpine
+    container_name: taxi-redis
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    networks: [taxi-net]
+
+  # ------------------------------------------------------------ dev tooling
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: taxi-kafka-ui
+    profiles: [tools]
+    environment:
+      KAFKA_CLUSTERS_0_NAME: taxi-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      DYNAMIC_CONFIG_ENABLED: "true"
+    ports:
+      - "8090:8080"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [taxi-net]
+
+  # -------------------------------------------------------------- services
+  api-gateway:
+    <<: *service-defaults
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    container_name: taxi-api-gateway
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8080
+      ACCOUNT_SERVICE_URL: http://account-service:8081
+      PAYMENT_SERVICE_URL: http://payment-service:8082
+      CATALOG_SERVICE_URL: http://catalog-service:8083
+      ORDER_SERVICE_URL: http://order-service:8084
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  account-service:
+    <<: *service-defaults
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: services/account-service/Dockerfile
+    container_name: taxi-account-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_account
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-taxi}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-taxi}
+    ports:
+      - "${ACCOUNT_SERVICE_PORT:-8081}:8081"
+
+  payment-service:
+    <<: *service-defaults
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    container_name: taxi-payment-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_payment
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-taxi}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-taxi}
+      ACCOUNT_SERVICE_URL: http://account-service:8081
+      # Settlement asks the catalog where to pay a merchant, so payment-service
+      # needs its address too (it is the only payment -> catalog dependency).
+      CATALOG_SERVICE_URL: http://catalog-service:8083
+      # Demo stack: settle as soon as a sale is paid so the payout is visible in one
+      # session. A real deployment holds money longer (taxi.settlement.hold-period).
+      SETTLEMENT_HOLD_PERIOD: ${SETTLEMENT_HOLD_PERIOD:-0s}
+    ports:
+      - "${PAYMENT_SERVICE_PORT:-8082}:8082"
+
+  catalog-service:
+    <<: *service-defaults
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: services/catalog-service/Dockerfile
+    container_name: taxi-catalog-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8083
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_catalog
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-taxi}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-taxi}
+    ports:
+      - "${CATALOG_SERVICE_PORT:-8083}:8083"
+
+  order-service:
+    <<: *service-defaults
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
+    container_name: taxi-order-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8084
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_order
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-taxi}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-taxi}
+      CATALOG_SERVICE_URL: http://catalog-service:8083
+      PAYMENT_SERVICE_URL: http://payment-service:8082
+      # session. A real deployment uses T+1 or longer (taxi.settlement.hold-period).
+    ports:
+      - "${ORDER_SERVICE_PORT:-8084}:8084"
+
+volumes:
+  pgdata:
+  kafkadata:
+  redisdata:
+
+networks:
+  taxi-net:
+    driver: bridge

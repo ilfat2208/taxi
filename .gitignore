@@ -1,0 +1,53 @@
+# build (maven)
+target/
+*.jar
+# ...but the two wrapper jars are how a fresh clone builds this repo at all,
+# so the negations must come AFTER `*.jar` (the last matching rule wins).
+!.mvn/wrapper/maven-wrapper.jar
+!mobile/android/gradle/wrapper/gradle-wrapper.jar
+*.war
+*.class
+
+# local tooling (maven distribution downloaded for offline dev)
+.tools/
+
+# ide
+.idea/
+*.iml
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+
+# node
+node_modules/
+web/dist/
+web/.vite/
+*.tsbuildinfo
+pnpm-debug.log*
+npm-debug.log*
+
+# android / gradle
+**/build/
+mobile/android/.gradle/
+mobile/android/.kotlin/
+mobile/android/local.properties
+*.apk
+*.aab
+*.hprof
+captures/
+
+# env & secrets (the annotated example stays in the repo)
+.env
+.env.local
+!.env.example
+*.local
+
+# os
+Thumbs.db
+.DS_Store
+
+# logs
+*.log
+logs/

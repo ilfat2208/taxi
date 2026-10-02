@@ -1,0 +1,2 @@
+kz.taxi.common.web.autoconfigure.CommonWebAutoConfiguration
+kz.taxi.common.web.openapi.OpenApiConfiguration

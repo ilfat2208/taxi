@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      The Compose UI carries the real Material 3 theme; this platform theme only has to
+      be a valid NoActionBar window theme so the app does not need the
+      com.google.android.material XML dependency.
+    -->
+    <style name="Theme.TaxiMobile" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/taxi_background</item>
+        <item name="android:statusBarColor">@color/taxi_primary</item>
+        <item name="android:navigationBarColor">@color/taxi_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

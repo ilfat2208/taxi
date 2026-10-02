@@ -1,0 +1,2 @@
+kz.taxi.common.security.autoconfigure.ServletSecurityAutoConfiguration
+kz.taxi.common.security.autoconfigure.ServiceToServiceAutoConfiguration

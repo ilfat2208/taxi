@@ -1,0 +1,28 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{yml,yaml,json,ts,tsx,js,jsx,css,html}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{cmd,bat}]
+end_of_line = crlf
+
+[*.ps1]
+# Windows PowerShell 5.1 decodes a script that has no BOM using the ANSI code page,
+# which turns Cyrillic comments and messages into mojibake and can even break
+# parsing. PowerShell scripts in this repo are UTF-8 *with* BOM.
+charset = utf-8-bom
+end_of_line = crlf
+
+[*.sh]
+end_of_line = lf

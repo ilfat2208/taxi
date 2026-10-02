@@ -1,0 +1,2 @@
+kz.taxi.common.kafka.autoconfigure.KafkaMessagingAutoConfiguration
+kz.taxi.common.kafka.autoconfigure.OutboxAutoConfiguration

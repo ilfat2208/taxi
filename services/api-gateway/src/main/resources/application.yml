@@ -1,0 +1,167 @@
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  netty:
+    connection-timeout: 3s
+
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:127.0.0.1}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      timeout: 2s
+  cloud:
+    gateway:
+      # ---------------------------------------------------------------------
+      # Routing table. One prefix per bounded context, so a client can tell
+      # from the URL alone which service owns the resource.
+      # ---------------------------------------------------------------------
+      default-filters:
+        - AddRequestHeader=X-Gateway, api-gateway
+      routes:
+        - id: account-service
+          uri: ${ACCOUNT_SERVICE_URL:http://127.0.0.1:8081}
+          predicates:
+            - Path=/api/v1/accounts/**,/api/v1/ledger/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@principalOrIpKeyResolver}"
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                redis-rate-limiter.requestedTokens: 1
+        - id: payment-service
+          uri: ${PAYMENT_SERVICE_URL:http://127.0.0.1:8082}
+          predicates:
+            # Merchant payouts have their own route below. Support reads of payments
+            # reuse these endpoints with the SUPPORT role, so they need no path of
+            # their own — and a bare /api/v1/support/** here would swallow the support
+            # paths of catalog-service and order-service.
+            - Path=/api/v1/payments/**,/api/v1/transfers/**,/api/v1/refunds/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@principalOrIpKeyResolver}"
+                # money movement is limited harder than reads
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+        - id: catalog-service
+          uri: ${CATALOG_SERVICE_URL:http://127.0.0.1:8083}
+          predicates:
+            - Path=/api/v1/catalog/**,/api/v1/merchants/**,/api/v1/support/merchants/**,/api/v1/support/products/**,/api/v1/support/reservations/**,/api/v1/support/audit/catalog
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@principalOrIpKeyResolver}"
+                redis-rate-limiter.replenishRate: 100
+                redis-rate-limiter.burstCapacity: 200
+                redis-rate-limiter.requestedTokens: 1
+        - id: settlement-api
+          uri: ${PAYMENT_SERVICE_URL:http://127.0.0.1:8082}
+          predicates:
+            - Path=/api/v1/settlements/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@principalOrIpKeyResolver}"
+                # payouts are read-heavy for merchants and rare for operators
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+        - id: order-service
+          uri: ${ORDER_SERVICE_URL:http://127.0.0.1:8084}
+          predicates:
+            - Path=/api/v1/cart/**,/api/v1/orders/**,/api/v1/support/orders/**,/api/v1/support/audit/orders
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@principalOrIpKeyResolver}"
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns:
+              - "http://localhost:5173"
+              - "http://127.0.0.1:5173"
+            allowedMethods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+            allowedHeaders: "*"
+            exposedHeaders: [X-Correlation-Id]
+            allowCredentials: false
+            maxAge: 3600
+
+springdoc:
+  swagger-ui:
+    # One portal for the whole platform: each service's document is proxied here.
+    urls:
+      - name: account-service
+        url: /api/v1/accounts/v3/api-docs
+      - name: payment-service
+        url: /api/v1/payments/v3/api-docs
+      - name: catalog-service
+        url: /api/v1/catalog/v3/api-docs
+      - name: order-service
+        url: /api/v1/orders/v3/api-docs
+    urls-primary-name: account-service
+    path: /swagger-ui.html
+
+taxi:
+  security:
+    # HMAC (shared secret, HS256) or JWKS (asymmetric RS256, public key set).
+    # HMAC stays the default so an existing deployment needs no change; flipping
+    # JWT_MODE=JWKS makes the gateway sign with its private key, publish it at
+    # /.well-known/jwks.json, and verify tokens against JWK_SET_URI.
+    mode: ${JWT_MODE:HMAC}
+    jwt-secret: ${JWT_SECRET:local-dev-only-secret-change-me-0123456789abcdef}
+    jwt-ttl: ${JWT_TTL_SECONDS:3600}s
+    issuer: ${JWT_ISSUER:https://identity.taxi.local}
+    # Expected `iss` when validating; leave empty to use `issuer` above.
+    issuer-uri: ${JWT_ISSUER_URI:}
+    # Where services (and the gateway itself) download the public keys. In JWKS mode the
+    # gateway can verify its own tokens through its own endpoint.
+    jwk-set-uri: ${JWK_SET_URI:}
+    # How long a downloaded key set is cached; a token with an unknown kid refreshes it sooner.
+    jwks-cache-ttl: ${JWKS_CACHE_TTL:5m}
+    # Issuer-only signing key (PKCS#8 PEM or JWK JSON). Left empty in local dev, where an
+    # ephemeral key is generated per process; set it for anything that must survive a restart
+    # or run more than one replica.
+    signing-key: ${JWT_SIGNING_KEY:}
+    roles-claim: roles
+    public-paths:
+      - /actuator/health/**
+      - /actuator/info
+      - /actuator/prometheus
+      - /api/v1/auth/**
+      - /.well-known/jwks.json
+      - /swagger-ui/**
+      - /swagger-ui.html
+      - /v3/api-docs/**
+      - /webjars/**
+  gateway:
+    trust-forwarded-headers: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE:health,info,metrics,prometheus,gateway}
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    kz.taxi: INFO
+    org.springframework.cloud.gateway: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
+

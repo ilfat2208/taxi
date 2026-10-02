@@ -1,0 +1,69 @@
+@import 'tailwindcss';
+
+/**
+ * Design tokens for the fintech UI: a light surface, one crimson accent close
+ * to Taxi branding, generous rounding and a small neutral ramp.
+ */
+@theme {
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  --color-brand-50: #fff1f2;
+  --color-brand-100: #ffe1e3;
+  --color-brand-200: #ffc7cc;
+  --color-brand-300: #ff9ba4;
+  --color-brand-400: #fb6572;
+  --color-brand-500: #e11d2e;
+  --color-brand-600: #c8121f;
+  --color-brand-700: #a70f1a;
+  --color-brand-800: #88121a;
+  --color-brand-900: #6f141a;
+
+  --color-ink-50: #f8fafc;
+  --color-ink-100: #f1f5f9;
+  --color-ink-200: #e2e8f0;
+  --color-ink-300: #cbd5e1;
+  --color-ink-400: #94a3b8;
+  --color-ink-500: #64748b;
+  --color-ink-600: #475569;
+  --color-ink-700: #334155;
+  --color-ink-800: #1e293b;
+  --color-ink-900: #0f172a;
+
+  --color-success-50: #ecfdf5;
+  --color-success-500: #15803d;
+  --color-success-700: #14532d;
+
+  --color-warning-50: #fffbeb;
+  --color-warning-500: #b45309;
+  --color-warning-700: #92400e;
+
+  --color-info-50: #eff6ff;
+  --color-info-500: #1d4ed8;
+  --color-info-700: #1e40af;
+
+  --radius-card: 1rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-ink-50);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+  }
+
+  /* Amounts and ids line up in tables and lists. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
