@@ -19,6 +19,8 @@ import { RouteErrorPage } from './pages/RouteErrorPage';
 import { ServiceCompanyPage } from './pages/ServiceCompanyPage';
 import { ServicesPage } from './pages/ServicesPage';
 import { TransferPage } from './pages/TransferPage';
+import { DemoGalleryPage } from './demo/DemoGalleryPage';
+import { DemoScreenPage } from './demo/DemoScreenPage';
 
 /**
  * Route table.
@@ -51,6 +53,10 @@ const TripPage = lazy(() =>
 
 export const appRoutes: RouteObject[] = [
   { path: '/login', element: <LoginPage />, errorElement: <RouteErrorPage /> },
+  // Демо-макеты открыты без входа: в них нет чужих данных и нет запросов к API —
+  // это витрина экранов, и сессия ради неё только мешала бы (см. DemoLayout).
+  { path: '/demo', element: <DemoGalleryPage />, errorElement: <RouteErrorPage /> },
+  { path: '/demo/:screenId', element: <DemoScreenPage />, errorElement: <RouteErrorPage /> },
   {
     element: <RequireAuth />,
     errorElement: <RouteErrorPage />,
@@ -68,6 +74,7 @@ export const appRoutes: RouteObject[] = [
           { path: 'cart', element: <CartPage /> },
           { path: 'orders', element: <OrdersPage /> },
           { path: 'orders/:orderId', element: <OrderDetailPage /> },
+
           // `/taxi` renders its own role gate (like `/dispatch`): a rider without the
           // CUSTOMER role must still land on the screen that explains why.
           {

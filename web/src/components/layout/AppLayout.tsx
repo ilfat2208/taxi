@@ -45,6 +45,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/market', label: 'Маркет', icon: MarketIcon, mobile: true },
   { to: '/cart', label: 'Корзина', icon: CartIcon, mobile: true },
   { to: '/orders', label: 'Заказы', icon: OrdersIcon, mobile: true },
+  { to: '/demo', label: 'Демо-макеты', icon: OrdersIcon },
   { to: '/merchant', label: 'Мой магазин', icon: StoreIcon, roles: ['MERCHANT'] },
   // Desktop-only on purpose: the console is a control room, and the tab bar is
   // already full on phones (`mobile` omitted = sidebar only).
