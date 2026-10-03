@@ -55,7 +55,13 @@ const counts = await page.evaluate(() => {
     screens: document.querySelectorAll('.swrap').length,
     consoles: document.querySelectorAll('.phone.tablet').length,
     captions: document.querySelectorAll('.cap-num').length,
-    coverageRows: document.querySelectorAll('table.cov tbody tr').length,
+    coverageRows: (() => {
+      // Считаем строки именно таблицы покрытия — последней .cov в документе.
+      // Во фрагментах есть свои таблицы с тем же классом, и они искажали число.
+      const tables = [...document.querySelectorAll('table.cov')];
+      const last = tables[tables.length - 1];
+      return last ? last.querySelectorAll('tbody tr').length : 0;
+    })(),
     docHeight: document.body.scrollHeight,
     docWidth: document.documentElement.scrollWidth,
     viewportWidth: window.innerWidth,
@@ -77,25 +83,48 @@ if (counts.duplicateTitles.length > 0) {
   console.log(`[борд] одинаковые названия подписей: ${JSON.stringify(counts.duplicateTitles.slice(0, 8))}`);
 }
 
-// Обрезка контента внутри рамок консолей: рамка — это fixed-размер с overflow:hidden,
+// Обрезка контента внутри рамок: рамка — фиксированный размер с overflow:hidden,
 // поэтому слишком высокое содержимое молча исчезает. Ловим числом, а не глазами.
+// Проверяются ОБА вида рамок: консоль (.phone.tablet, 1024x768) и телефон
+// (.phone, 390x844). Проверять только консоли недостаточно — так был пропущен
+// целый фрагмент из 20 мобильных экранов, обрезанных на 57–624 px.
 const clipped = await page.evaluate(() => {
   const bad = [];
-  for (const frame of document.querySelectorAll('.phone.tablet')) {
+  for (const frame of document.querySelectorAll('.phone')) {
     const section = frame.closest('section.sec');
     const num = section?.querySelector('.sec-num')?.textContent?.trim() ?? '?';
-    const title = frame.closest('.stage')?.querySelector('.cap-title')?.textContent?.trim() ?? '?';
-    for (const pane of frame.querySelectorAll('.tab-main, .panel, .cover-wrap')) {
+    const title = frame.closest('.stage')?.querySelector('.cap-title')?.textContent?.trim()
+      ?? frame.closest('.swrap')?.querySelector('.cap-title')?.textContent?.trim() ?? '?';
+    const isConsole = frame.classList.contains('tablet');
+    const panes = isConsole
+      ? frame.querySelectorAll('.tab-main, .panel, .cover-wrap')
+      : frame.querySelectorAll('.ph');
+    for (const pane of panes) {
       const over = pane.scrollHeight - pane.clientHeight;
-      if (over > 4) bad.push({ section: num, screen: title, pane: pane.className.split(' ')[0], over });
+      const overX = pane.scrollWidth - pane.clientWidth;
+      if (over > 4 || overX > 4) {
+        bad.push({ section: num, screen: title, kind: isConsole ? 'консоль' : 'телефон', pane: pane.className.split(' ')[0], over, overX });
+      }
     }
   }
   return bad;
 });
 if (clipped.length > 0) {
-  console.log(`[борд] ВНИМАНИЕ: контент обрезан в ${clipped.length} панелях: ${JSON.stringify(clipped.slice(0, 6))}`);
+  const byScreen = new Map();
+  for (const c of clipped) {
+    const key = `${c.section}|${c.kind}|${c.screen}`;
+    const prev = byScreen.get(key) ?? { over: 0, overX: 0 };
+    byScreen.set(key, { over: Math.max(prev.over, c.over), overX: Math.max(prev.overX, c.overX) });
+  }
+  console.log(`[борд] ВНИМАНИЕ: контент обрезан в ${clipped.length} панелях на ${byScreen.size} экранах`);
+  let shown = 0;
+  for (const [key, v] of byScreen) {
+    if (shown++ >= 12) { console.log(`[борд]   …и ещё ${byScreen.size - 12} экранов`); break; }
+    const [section, kind, screen] = key.split('|');
+    console.log(`[борд]   раздел ${section}, ${kind}: ${screen} — по высоте ${v.over}px, по ширине ${v.overX}px`);
+  }
 } else {
-  console.log('[борд] обрезки контента в рамках консолей нет');
+  console.log('[борд] обрезки контента нет ни в телефонах, ни в консолях');
 }
 
 // Скриншоты новых разделов — по одному на контур, чтобы видеть, что вёрстка цела.

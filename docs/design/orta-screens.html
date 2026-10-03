@@ -887,7 +887,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <dl class="meta-card"><dt>Дата борда</dt><dd>2 октября 2026</dd></dl>
     <dl class="meta-card"><dt>Экосистема</dt><dd>3 уровня · 6 доменов · 15 направлений</dd></dl>
     <dl class="meta-card"><dt>Готовность вертикалей</dt><dd>Ф1 и Ф2 закрыты: такси и запись работают</dd></dl>
-    <dl class="meta-card"><dt>На борде</dt><dd>12 разделов · 178 макетов · 226 строк карты покрытия</dd></dl>
+    <dl class="meta-card"><dt>На борде</dt><dd>12 разделов · 178 макетов · 199 строк карты покрытия</dd></dl>
       <dl class="meta-card"><dt>Платформа</dt><dd>Java 17 / Spring Boot · React 19 · Kotlin + Compose</dd></dl>
   </div>
 </header>
@@ -15099,9 +15099,9 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <span class="chip">DRIVER</span>
           <span class="chip">MERCHANT</span>
         </div>
-        <p class="small mt-10">
-          Роли выдаются при выдаче токена и приходят в том же JWT, что и идентификатор.
-          Роль <code>DISPATCHER</code> у этого аккаунта не выдана — раздела «Диспетчерская» он не увидит.
+        <p class="small mt-8">
+          Роли приходят в том же JWT, что и идентификатор: у этого аккаунта нет <code>DISPATCHER</code>,
+          поэтому раздела «Диспетчерская» он не увидит.
         </p>
       </div>
 
@@ -15119,12 +15119,8 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-id)"><use href="#i-doc"/></svg><span class="f-title">Согласия и персональные данные</span></span>
           <span class="st st-plan">План</span>
         </div>
-        <div class="frow" style="padding:12px 14px;border-bottom:1px solid var(--ink-100)">
-          <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-id)"><use href="#i-pin"/></svg><span class="f-title">Мои адреса</span></span>
-          <span class="st st-plan">План</span>
-        </div>
         <div class="frow" style="padding:12px 14px">
-          <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-id)"><use href="#i-business"/></svg><span class="f-title">Бизнес-аккаунт и доступы</span></span>
+          <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-id)"><use href="#i-business"/></svg><span class="f-title">Адреса и бизнес-аккаунт</span></span>
           <span class="st st-plan">План</span>
         </div>
       </div>
@@ -15163,46 +15159,27 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
 
       <div class="notice info">
         <b>Этого раздела в коде ещё нет</b>
-        Токен сейчас живёт до истечения срока и не отзывается: списка сессий, отзыва и смены
-        телефона нет ни в приложении, ни в API. Экран показывает, как это должно выглядеть.
+        Токен живёт до истечения срока и не отзывается: ни списка сессий, ни смены номера в API нет.
       </div>
 
-      <p class="sec-title mt-14" style="margin-bottom:8px">Активные сессии <span class="mut" style="font-weight:400">· демо-данные</span></p>
+      <p class="sec-title mt-12" style="margin-bottom:8px">Активные сессии <span class="mut" style="font-weight:400">· демо</span></p>
 
-      <div class="fcard">
-        <div class="frow">
-          <span class="thumb" style="width:42px;height:42px;border-radius:13px;background:linear-gradient(140deg,var(--svc-id),var(--brand-700))"><svg class="ic" viewBox="0 0 24 24" style="width:21px;height:21px"><use href="#i-device"/></svg></span>
-          <span class="grow">
-            <span class="f-title">Pixel 7 · Android 15</span>
-            <span class="f-sub">Шымкент · сейчас · это устройство</span>
-          </span>
+      <div class="fcard" style="padding:0">
+        <div class="frow" style="padding:10px 14px;border-bottom:1px solid var(--ink-100)">
+          <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-id)"><use href="#i-device"/></svg><span class="f-title">Pixel 7 · Android · сейчас</span></span>
           <span class="pill ok">Текущая</span>
         </div>
-      </div>
-
-      <div class="fcard">
-        <div class="frow">
-          <span class="thumb" style="width:42px;height:42px;border-radius:13px;background:linear-gradient(140deg,var(--svc-id),var(--brand-700))"><svg class="ic" viewBox="0 0 24 24" style="width:21px;height:21px"><use href="#i-laptop"/></svg></span>
-          <span class="grow">
-            <span class="f-title">Chrome · Windows</span>
-            <span class="f-sub">Шымкент · 2 октября, 21:14 · вход по коду из SMS</span>
-          </span>
+        <div class="frow" style="padding:10px 14px;border-bottom:1px solid var(--ink-100)">
+          <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-id)"><use href="#i-laptop"/></svg><span class="f-title">Chrome · Windows</span></span>
+          <span class="link">Завершить</span>
+        </div>
+        <div class="frow" style="padding:10px 14px">
+          <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-id)"><use href="#i-device"/></svg><span class="f-title">iPhone 12 · Алматы</span></span>
           <span class="link">Завершить</span>
         </div>
       </div>
 
-      <div class="fcard">
-        <div class="frow">
-          <span class="thumb" style="width:42px;height:42px;border-radius:13px;background:linear-gradient(140deg,var(--svc-id),var(--brand-700))"><svg class="ic" viewBox="0 0 24 24" style="width:21px;height:21px"><use href="#i-device"/></svg></span>
-          <span class="grow">
-            <span class="f-title">iPhone 12 · iOS 18</span>
-            <span class="f-sub">Алматы · 28 сентября, 08:02</span>
-          </span>
-          <span class="link">Завершить</span>
-        </div>
-      </div>
-
-      <div class="divider"></div>
+      <div class="divider" style="margin:10px 0"></div>
 
       <p class="sec-title" style="margin-bottom:8px">Смена номера телефона</p>
       <div class="fcard">
@@ -15214,22 +15191,14 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <div class="fl">Новый номер</div>
           <div class="fv">+7 701 000 00 00</div>
         </div>
-        <p class="hint">Подтверждение кодами с обоих номеров: старый номер подтверждает отказ от аккаунта, новый — владение им.</p>
+        <p class="hint">Старый номер подтверждает отказ от аккаунта, новый — владение им.</p>
         <div class="notice mt-10">
           <b>Почему одной SMS недостаточно</b>
-          Номер — это и логин, и адрес перевода по телефону. Если менять его по коду только
-          с нового номера, угон SIM превращается в угон денег: переводы уходят на чужой счёт.
-          При смене номера все выданные токены должны отзываться, иначе старая сессия продолжит
-          работать с новым логином.
+          Номер — это и логин, и адрес перевода: подтверждение только с нового номера превращает
+          угон SIM в угон денег, поэтому меняются и все токены.
         </div>
-        <div class="btn btn-primary btn-md mt-12" style="width:100%">Подтвердить смену номера</div>
+        <div class="btn btn-primary btn-md mt-10" style="width:100%">Подтвердить смену номера</div>
       </div>
-
-      <p class="hint mt-10" style="margin-bottom:10px">
-        Предлагаемые эндпоинты: <span class="mono">GET /api/v1/auth/sessions</span>,
-        <span class="mono">DELETE /api/v1/auth/sessions/{id}</span>,
-        <span class="mono">POST /api/v1/auth/phone/change</span>. Ошибки — в том же RFC 7807.
-      </p>
     </div>
     <div class="home-ind"><span></span></div>
   </div>
@@ -15261,42 +15230,30 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="frow">
           <span class="grow">
             <span class="f-title">Обработка персональных данных</span>
-            <span class="f-sub">Имя, телефон, история заказов · редакция 1.0 от 01.09.2026</span>
+            <span class="f-sub">Имя, телефон, история заказов · редакция 1.0</span>
           </span>
           <span class="pill ok">Дано</span>
         </div>
-        <p class="small mt-10">
-          Без этого согласия аккаунт не работает: заказ, оплата и доставка без адреса и телефона невозможны.
-          Отзыв согласия означает закрытие аккаунта, а не «приложение без данных».
-        </p>
       </div>
 
       <div class="fcard">
         <div class="frow">
           <span class="grow">
             <span class="f-title">Геолокация</span>
-            <span class="f-sub">Для «рядом со мной», подачи машины и зон обслуживания</span>
+            <span class="f-sub">«Рядом со мной», подача машины, зоны обслуживания</span>
           </span>
           <span class="pill ok">Дано</span>
         </div>
-        <p class="small mt-10">
-          Можно отозвать в любой момент: карта перестанет показывать «кто рядом», но адрес можно
-          вводить руками. Фоновое отслеживание включается только на время поездки — об этом сказано отдельно.
-        </p>
       </div>
 
       <div class="fcard">
         <div class="frow">
           <span class="grow">
             <span class="f-title">Публичность профиля и рейтинга</span>
-            <span class="f-sub">Имя, фото, оценки, отзывы — для других пользователей</span>
+            <span class="f-sub">Имя, фото, оценки и отзывы — для других</span>
           </span>
           <span class="pill warn">Не дано</span>
         </div>
-        <p class="small mt-10">
-          По умолчанию профиль не публичный. Публичность — продуктовое решение, а не настройка
-          по умолчанию, и открывать её будете вы и только вы (см. экраны 18–19).
-        </p>
       </div>
 
       <div class="fcard">
@@ -15307,52 +15264,35 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           </span>
           <span class="pill">Нет</span>
         </div>
-        <p class="small mt-10">
-          Сервисные сообщения (заказ, запись, деньги) отключаются только вместе с уведомлениями о
-          событиях и перечислены отдельно — центр уведомлений на экране 20.
-        </p>
       </div>
 
-      <div class="divider"></div>
-
-      <p class="sec-title" style="margin-bottom:8px">Мои данные</p>
+      <p class="sec-title mt-14" style="margin-bottom:8px">Мои данные</p>
       <div class="fcard" style="padding:0">
-        <div class="frow" style="padding:12px 14px;border-bottom:1px solid var(--ink-100)">
+        <div class="frow" style="padding:11px 14px;border-bottom:1px solid var(--ink-100)">
           <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-id)"><use href="#i-doc"/></svg><span class="f-title">Скачать копию данных</span></span>
           <svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-400)"><use href="#i-arrow-right"/></svg>
         </div>
-        <div class="frow" style="padding:12px 14px;border-bottom:1px solid var(--ink-100)">
+        <div class="frow" style="padding:11px 14px;border-bottom:1px solid var(--ink-100)">
           <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-id)"><use href="#i-list"/></svg><span class="f-title">Журнал доступа к данным</span></span>
           <svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-400)"><use href="#i-arrow-right"/></svg>
         </div>
-        <div class="frow" style="padding:12px 14px">
+        <div class="frow" style="padding:11px 14px">
           <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--danger-500)"><use href="#i-logout"/></svg><span class="f-title">Удалить аккаунт</span></span>
           <svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-400)"><use href="#i-arrow-right"/></svg>
         </div>
       </div>
-
-      <div class="notice mt-12">
-        <b>Удаление аккаунта — не удаление истории денег</b>
-        Операции по леджжеру хранятся по правилам бухгалтерского и налогового учёта: их нельзя
-        «стереть по кнопке». Удаляется профиль и доступ, а финансовые записи остаются обезличенными —
-        это надо сказать пользователю заранее, а не в момент удаления.
-      </div>
-      <p class="hint mt-10" style="margin-bottom:10px">
-        Согласие — это запись, а не галочка в интерфейсе: нужны версия редакции, время, <code>userId</code>,
-        устройство и источник. Предлагаемые эндпоинты: <span class="mono">GET /api/v1/consents</span>,
-        <span class="mono">POST /api/v1/consents/{code}/grant</span>,
-        <span class="mono">POST /api/v1/consents/{code}/revoke</span>.
-      </p>
     </div>
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
     <div class="cap-line"><span class="cap-num">3</span><span class="cap-title">ORTA ID — согласия и персональные данные</span><span class="st st-plan">План</span></div>
     <p class="cap-note">
-      Ни согласий, ни их журнала в коде нет — это макет. Главное решение видно в тексте: согласие
-      хранится как запись с версией редакции, временем и устройством, а не как галочка; геолокацию
-      можно отозвать без потери приложения; публичность профиля и рейтинга выключена по умолчанию.
-      Удаление аккаунта не стирает денежную историю — об этом сказано до нажатия, а не после.
+      Ни согласий, ни их журнала в коде нет — это макет. Согласие здесь не галочка, а запись с версией
+      редакции, временем, <code>userId</code> и устройством: предлагаемые ручки —
+      <code>GET /api/v1/consents</code>, <code>POST /api/v1/consents/{code}/grant</code> и
+      <code>…/revoke</code>. Геолокацию можно отозвать без потери приложения, публичность профиля и
+      рейтинга выключена по умолчанию, а удаление аккаунта не стирает денежную историю — об этом
+      сказано до нажатия. Сервисные сообщения отключаются отдельно от рекламных (экран 20).
     </p>
   </div>
 </div>
@@ -15416,29 +15356,14 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
                 <td><span class="pill">нет</span></td><td><span class="pill info">просмотр</span></td><td><span class="pill ok">да</span></td>
               </tr>
               <tr>
-                <td>Пополнение счёта <span class="mono">top-up</span></td>
+                <td>Пополнение счёта и лимиты</td>
                 <td><span class="pill">нет</span></td><td><span class="pill">нет</span></td><td><span class="pill">нет</span></td>
                 <td><span class="pill">нет</span></td><td><span class="pill">нет</span></td><td><span class="pill ok">да</span></td>
-              </tr>
-              <tr>
-                <td>Лимиты счёта: чтение и изменение</td>
-                <td><span class="pill">нет</span></td><td><span class="pill">нет</span></td><td><span class="pill">нет</span></td>
-                <td><span class="pill">нет</span></td><td><span class="pill">нет</span></td><td><span class="pill ok">да</span></td>
-              </tr>
-              <tr>
-                <td>Профиль и документы водителя</td>
-                <td><span class="pill">нет</span></td><td><span class="pill ok">да</span></td><td><span class="pill">нет</span></td>
-                <td><span class="pill">нет</span></td><td><span class="pill">нет</span></td><td><span class="pill info">dev</span></td>
               </tr>
               <tr>
                 <td>Живая карта и поиск ближайших</td>
                 <td><span class="pill">нет</span></td><td><span class="pill">нет</span></td><td><span class="pill">нет</span></td>
                 <td><span class="pill ok">да</span></td><td><span class="pill">нет</span></td><td><span class="pill ok">да</span></td>
-              </tr>
-              <tr>
-                <td>Товары и цены мерчанта</td>
-                <td><span class="pill">нет</span></td><td><span class="pill">нет</span></td><td><span class="pill ok">да</span></td>
-                <td><span class="pill">нет</span></td><td><span class="pill">нет</span></td><td><span class="pill ok">да</span></td>
               </tr>
               <tr>
                 <td>Отмена записи в QTime</td>
@@ -15447,21 +15372,17 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
               </tr>
             </tbody>
           </table>
+          <p class="f-sub mt-10">
+            Показаны четыре спорных права из семи. Роли <code>DRIVER</code> и <code>MERCHANT</code> устроены
+            так же: у водителя свои ручки «про себя», у мерчанта — свои товары и цены.
+          </p>
 
           <div class="notice bad mt-12">
             <b>Известная дыра, записанная в коде</b>
-            Связь «мерчант ↔ компания» в QTime не смоделирована: пока её нет, роль
-            <code>MERCHANT</code> может отменить <b>любую</b> запись, а не только свою. Это
-            задокументировано в <code>QtimeAccess</code> и в <code>docs/api.md</code> §8 — дыра известна,
-            а не обнаружена на проде. Матрица выше показывает её красным, а не прячет.
+            Связь «мерчант ↔ компания» в QTime не смоделирована, поэтому <code>MERCHANT</code> может
+            отменить любую запись, а не только свою. Строка выше показывает это красным; в аудите —
+            <code>QtimeAccess</code> и <code>docs/api.md</code> §8.
           </div>
-
-          <p class="small mt-12">
-            Чего в коде нет: аудита выдачи ролей. Роли выдаются по запросу при получении токена, и
-            запись «кто, когда и почему выдал роль» нигде не хранится. Для ролей
-            <code>SUPPORT</code> и <code>ADMIN</code> это обязательство перед безопасностью,
-            и до продакшена его нужно закрыть.
-          </p>
         </div>
       </div>
     </div>
@@ -15621,14 +15542,12 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
 
       <div class="fcard mt-12">
         <div class="kv"><span class="k">Номер счёта</span><span class="v mono" style="font-size:11.5px">01J8ZCQ7Y4R3F0N5G8</span></div>
-        <div class="kv"><span class="k">Тип</span><span class="v">CUSTOMER</span></div>
-        <div class="kv"><span class="k">Валюта</span><span class="v">KZT</span></div>
+        <div class="kv"><span class="k">Тип · валюта</span><span class="v">CUSTOMER · KZT</span></div>
         <div class="kv"><span class="k">Статус</span><span class="v"><span class="pill ok">ACTIVE</span></span></div>
         <div class="kv"><span class="k">Дневной лимит</span><span class="v">1 000,00 ₸ · использовано 600,00 ₸</span></div>
-        <div class="kv"><span class="k">Активных резервов</span><span class="v">2</span></div>
       </div>
 
-      <p class="sec-title mt-16" style="margin-bottom:8px">Все счета</p>
+      <p class="sec-title mt-14" style="margin-bottom:8px">Все счета</p>
       <div class="fcard" style="padding:0">
         <div class="frow" style="padding:12px 14px;border-bottom:1px solid var(--ink-100)">
           <span class="thumb" style="width:38px;height:38px;border-radius:12px;background:linear-gradient(140deg,var(--svc-pay),#0E5B36)"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-card"/></svg></span>
@@ -15644,9 +15563,8 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
 
       <div class="notice ok mt-12" style="margin-bottom:10px">
         <b>Деньги двигаются только двойной записью</b>
-        Каждая операция — проводка, у которой дебет равен кредиту:
-        <span class="mono">СУММА(debit) = СУММА(credit)</span>. Экран не «рисует баланс»:
-        он показывает то, что вернул леджжер.
+        Экран не «рисует баланс»: он показывает то, что вернул леджжер, где
+        <span class="mono">СУММА(debit) = СУММА(credit)</span> в каждой проводке.
       </div>
     </div>
     <div class="home-ind"><span></span></div>
@@ -15694,17 +15612,12 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="hint mt-10">Сумма демо. Минимум — 100 ₸, максимум за одну операцию — 200 000 ₸.</div>
       </div>
 
-      <p class="sec-title mt-16" style="margin-bottom:8px">Способ пополнения</p>
+      <p class="sec-title mt-14" style="margin-bottom:8px">Способ пополнения</p>
       <div class="fcard" style="padding:0">
         <div class="frow" style="padding:12px 14px;border-bottom:1px solid var(--ink-100)">
           <span class="thumb" style="width:38px;height:38px;border-radius:12px;background:linear-gradient(140deg,var(--brand-400),var(--brand-600))"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-card"/></svg></span>
-          <span class="grow"><span class="f-title">Карта · Kaspi Gold ····4417</span><span class="f-sub">Зачисление за 1–3 минуты · без комиссии</span></span>
+          <span class="grow"><span class="f-title">Карта · Kaspi Gold ····4417</span><span class="f-sub">Зачисление 1–3 минуты · без комиссии</span></span>
           <span class="pill">выбран</span>
-        </div>
-        <div class="frow" style="padding:12px 14px;border-bottom:1px solid var(--ink-100)">
-          <span class="thumb" style="width:38px;height:38px;border-radius:12px;background:linear-gradient(140deg,var(--ink-400),var(--ink-600))"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-plus"/></svg></span>
-          <span class="grow"><span class="f-title">Привязать другую карту</span><span class="f-sub">Карта проверяется списанием 1 ₸ и возвратом</span></span>
-          <svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-400)"><use href="#i-arrow-right"/></svg>
         </div>
         <div class="frow" style="padding:12px 14px">
           <span class="thumb" style="width:38px;height:38px;border-radius:12px;background:linear-gradient(140deg,var(--tile-services),var(--svc-wallet))"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-qr"/></svg></span>
@@ -15713,27 +15626,12 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         </div>
       </div>
 
-      <div class="notice mt-12">
+      <div class="notice mt-12" style="margin-bottom:10px">
         <b>Пополнение сейчас — только демо-ручка</b>
-        <code>POST /api/v1/accounts/{id}/top-up</code> открыт роли <code>ADMIN</code> и служит для
-        проверки леджжера: это не «пополнение картой». Приём денег от карт и банков — работа
-        лицензированного провайдера, и до договора с ним кнопка «Пополнить» честно остаётся макетом.
+        <code>POST /api/v1/accounts/{id}/top-up</code> открыт роли <code>ADMIN</code>: это не
+        «пополнение картой». Приём денег от банков — лицензированный провайдер, и до договора
+        с ним кнопка «Пополнить» честно остаётся макетом. ORTA Points и кешбэк — Ф5.
       </div>
-
-      <div class="fcard mt-12">
-        <div class="between">
-          <span class="f-title">ORTA Points</span>
-          <span class="pill">План · Ф5</span>
-        </div>
-        <p class="small mt-8">
-          Единые баллы за покупки во всех сервисах: начисление, сгорание, оплата частью баллов.
-          В коде их нет — есть только история операций и возвраты.
-        </p>
-        <div class="divider"></div>
-        <div class="kv"><span class="k">Кешбэк и сертификаты</span><span class="v">план</span></div>
-        <div class="kv"><span class="k">Промокоды</span><span class="v">поле скидки в заказе есть</span></div>
-      </div>
-      <div style="height:10px"></div>
     </div>
     <div class="home-ind"><span></span></div>
   </div>
@@ -15771,15 +15669,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <span class="chip">Возвраты</span>
       </div>
 
-      <div class="fcard" style="padding:10px 12px">
-        <div class="frow">
-          <svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--ink-400)"><use href="#i-clock"/></svg>
-          <span class="f-sub grow">Период: 1–8 октября 2026</span>
-          <span class="pill brand">изменить</span>
-        </div>
-      </div>
-
-      <p class="sec-title mt-14" style="margin-bottom:6px">8 октября 2026</p>
+      <p class="sec-title mt-12" style="margin-bottom:6px">8 октября 2026</p>
       <div class="fcard">
         <div class="frow">
           <span class="thumb g" style="width:38px;height:38px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-arrow-right"/></svg></span>
@@ -15797,14 +15687,13 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <span class="thumb a" style="width:38px;height:38px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-box"/></svg></span>
           <span class="grow">
             <span class="f-title">Резерв под заказ · ORTA Market</span>
-            <span class="f-sub">заказ 01J8ZQ…7K · HOLD · истекает 8 окт, 22:30</span>
+            <span class="f-sub">01J8ZQ…7K · HOLD · истекает 8 окт, 22:30</span>
           </span>
           <span class="f-money" style="color:var(--warning-700)">заморожено 1 500,00 ₸</span>
         </div>
-        <p class="hint" style="margin-left:48px">резерв не списание: деньги ещё на счёте, но недоступны</p>
       </div>
 
-      <p class="sec-title mt-14" style="margin-bottom:6px">7 октября 2026</p>
+      <p class="sec-title mt-12" style="margin-bottom:6px">7 октября 2026</p>
       <div class="fcard">
         <div class="frow">
           <span class="thumb g" style="width:38px;height:38px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-refresh"/></svg></span>
@@ -15814,28 +15703,13 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           </span>
           <span class="f-money" style="color:var(--success-700)">+2 490,00 ₸</span>
         </div>
-        <p class="hint" style="margin-left:48px">остаток после операции: 6 500,00 ₸</p>
       </div>
 
-      <div class="fcard">
-        <div class="frow">
-          <span class="thumb" style="width:38px;height:38px;border-radius:12px;background:linear-gradient(140deg,var(--svc-pay),#0E5B36)"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-plus"/></svg></span>
-          <span class="grow">
-            <span class="f-title">Пополнение счёта</span>
-            <span class="f-sub">демо-пополнение · TOP_UP · ADMIN</span>
-          </span>
-          <span class="f-money" style="color:var(--success-700)">+5 000,00 ₸</span>
-        </div>
-      </div>
-
-      <div class="notice info mt-12">
+      <div class="notice info mt-12" style="margin-bottom:10px">
         <b>Фильтры «Все / Списания / Зачисления» — клиентские</b>
-        Сервер умеет отдавать выписку постранично — <code>GET /api/v1/accounts/{id}/transactions?page&amp;size</code>.
-        Фильтра по типу операции и по периоду в API пока нет: пока список небольшой,
-        их делает приложение, но это надо заменить серверным фильтром, иначе счёт начнёт
-        грузить всю историю целиком.
+        Сервер отдаёт выписку постранично, но фильтра по типу и периоду в API нет:
+        их пока делает приложение, а это надо заменить серверным фильтром.
       </div>
-      <div style="height:10px"></div>
     </div>
     <div class="home-ind"><span></span></div>
   </div>
@@ -15872,57 +15746,36 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="f-money lg mt-8">1 000,00 ₸</div>
         <div class="f-sub">израсходовано 600,00 ₸ · остаток 400,00 ₸</div>
         <div class="progress mt-10"><i style="width:60%"></i></div>
-        <div class="f-sub mt-6">Окно: 8 окт 00:00 — 9 окт 00:00</div>
-        <div class="kv mt-10"><span class="k">Операций в окне</span><span class="v">3</span></div>
       </div>
 
-      <div class="fcard">
-        <div class="between">
+      <div class="fcard" style="padding:0">
+        <div class="between" style="padding:12px 14px;border-bottom:1px solid var(--ink-100)">
           <span class="f-title">Месячный лимит исходящих</span>
           <span class="pill">не настроен</span>
         </div>
-        <div class="f-money lg mt-8" style="color:var(--ink-500)">без ограничения</div>
-        <p class="small mt-8">
-          Отсутствие лимита — это «без ограничения», а не «лимит 0»: в API <code>configured=false</code>
-          и <code>null</code> вместо нуля, чтобы клиент не показывал человеку ложный запрет.
-        </p>
-      </div>
-
-      <div class="fcard">
-        <div class="between">
-          <span class="f-title">Защита от частых операций</span>
+        <div class="frow" style="padding:12px 14px">
+          <span class="grow"><span class="f-title">Защита от частых операций</span><span class="f-sub">10 операций за 5 минут</span></span>
           <span class="pill ok">включена</span>
         </div>
-        <div class="kv mt-8"><span class="k">Порог</span><span class="v">10 операций за 5 минут</span></div>
-        <div class="kv"><span class="k">Сейчас в окне</span><span class="v">3 из 10</span></div>
-        <p class="small mt-10">
-          Это антифрод по частоте: мошенник, получивший доступ к телефону, обычно не тратит время
-          на одну крупную операцию, а «размазывает» вывод. Проверка стоит до движения денег.
-        </p>
       </div>
 
       <div class="notice mt-12">
         <b>Лимит проверяется при резервировании</b>
-        Проверка происходит до проводки, поэтому отказ не оставляет ни резерва, ни записи в леджжере.
-        Превышение возвращает <code>422 LIMIT_EXCEEDED</code> или <code>422 VELOCITY_EXCEEDED</code>
-        с деталями: окно, лимит, использовано, запрошено, остаток. Приложение показывает это
-        человеку словами, а не «что-то пошло не так».
+        Отказ не оставляет ни резерва, ни проводки. Превышение — <code>422 LIMIT_EXCEEDED</code> или
+        <code>422 VELOCITY_EXCEEDED</code> с разбором: окно, лимит, использовано, остаток.
       </div>
 
-      <div class="fcard mt-12">
+      <div class="fcard mt-12" style="margin-bottom:10px">
         <div class="between">
           <span class="f-title">Изменить лимит</span>
           <span class="st st-plan">План</span>
         </div>
         <p class="small mt-8">
-          В коде изменение лимита доступно только роли <code>ADMIN</code>
-          (<code>PUT /api/v1/accounts/{id}/limits</code>): человек сам себе лимит пока выставить не может.
-          Для продакшена нужен пользовательский путь со вторым фактором — снижение лимита сразу,
-          повышение — с подтверждением.
+          В коде лимит меняет только <code>ADMIN</code>: человек сам себе лимит выставить не может.
+          Нужен путь со вторым фактором: снижение сразу, повышение с подтверждением.
         </p>
         <div class="btn btn-secondary btn-md mt-10" style="width:100%">Настроить лимит</div>
       </div>
-      <div style="height:10px"></div>
     </div>
     <div class="home-ind"><span></span></div>
   </div>
@@ -15968,42 +15821,30 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
 
       <p class="sec-title mt-14" style="margin-bottom:8px">Активные резервы <span class="mut" style="font-weight:400">· 2</span></p>
 
-      <div class="fcard">
-        <div class="frow">
-          <span class="thumb a" style="width:40px;height:40px;border-radius:13px"><svg class="ic" viewBox="0 0 24 24" style="width:20px;height:20px"><use href="#i-cart"/></svg></span>
+      <div class="fcard" style="padding:0">
+        <div class="frow" style="padding:12px 14px;border-bottom:1px solid var(--ink-100)">
+          <span class="thumb a" style="width:38px;height:38px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-cart"/></svg></span>
           <span class="grow">
-            <span class="f-title">ORTA Market · заказ 01J8ZQ…7K</span>
-            <span class="f-sub">3 товара · продавец ИП «Сейтказы»</span>
+            <span class="f-title">ORTA Market · 01J8ZQ…7K</span>
+            <span class="f-sub">ожидает продавца · истекает 8 окт, 22:30</span>
           </span>
           <span class="f-money">1 200,00 ₸</span>
         </div>
-        <div class="divider" style="margin:10px 0"></div>
-        <div class="kv"><span class="k">Причина</span><span class="v">ожидает подтверждения продавца</span></div>
-        <div class="kv"><span class="k">Зарезервировано</span><span class="v">8 окт, 21:12</span></div>
-        <div class="kv"><span class="k">Истекает</span><span class="v">8 окт, 22:30</span></div>
-        <div class="kv"><span class="k">Статус</span><span class="v"><span class="pill ok">ACTIVE</span></span></div>
-      </div>
-
-      <div class="fcard">
-        <div class="frow">
-          <span class="thumb" style="width:40px;height:40px;border-radius:13px;background:linear-gradient(140deg,var(--tile-beauty),#8E2F5C)"><svg class="ic" viewBox="0 0 24 24" style="width:20px;height:20px"><use href="#i-clock"/></svg></span>
+        <div class="frow" style="padding:12px 14px">
+          <span class="thumb" style="width:38px;height:38px;border-radius:12px;background:linear-gradient(140deg,var(--tile-beauty),#8E2F5C)"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-clock"/></svg></span>
           <span class="grow">
             <span class="f-title">Запись в салон · QTime</span>
-            <span class="f-sub">9 окт, 15:30 · маникюр, мастер Айгуль</span>
+            <span class="f-sub">9 окт, 15:30 · гарантия явки</span>
           </span>
           <span class="f-money">300,00 ₸</span>
         </div>
-        <div class="divider" style="margin:10px 0"></div>
-        <div class="kv"><span class="k">Причина</span><span class="v">гарантия явки: резерв под запись</span></div>
-        <div class="kv"><span class="k">Истекает</span><span class="v">по завершении визита</span></div>
-        <div class="kv"><span class="k">Статус</span><span class="v"><span class="pill ok">ACTIVE</span></span></div>
       </div>
 
       <p class="sec-title mt-14" style="margin-bottom:8px">Что происходит дальше</p>
       <div class="fcard">
         <div class="tl">
           <span class="tl-dot g"></span>
-          <span class="tl-body last">
+          <span class="tl-body">
             <span class="tl-t">reserve — деньги зарезервированы</span>
             <span class="tl-s">Сумма уходит из доступного остатка, но остаётся на счёте</span>
           </span>
@@ -16011,7 +15852,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="tl">
           <span class="tl-dot"></span>
           <span class="tl-body">
-            <span class="tl-t">capture — резерв превращается в списание</span>
+            <span class="tl-t">capture — резерв становится списанием</span>
             <span class="tl-s">Заказ выполнен: деньги уходят продавцу одной проводкой</span>
           </span>
         </div>
@@ -16019,19 +15860,16 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <span class="tl-dot mut"></span>
           <span class="tl-body last">
             <span class="tl-t">release — резерв снимается</span>
-            <span class="tl-s">Заказ отменён или истёк: сумма снова доступна</span>
+            <span class="tl-s">Отмена или истечение: сумма снова доступна</span>
           </span>
         </div>
       </div>
 
-      <div class="notice mt-12">
+      <div class="notice mt-12" style="margin-bottom:10px">
         <b>Почему нельзя «просто списать сразу»</b>
-        Между «человек нажал оплатить» и «заказ выполнен» проходит время: продавец подтверждает,
-        курьер везёт, салон оказывает услугу. Если списывать сразу, каждый отказ превращается в
-        возврат — а возврат это отдельная операция, срок банка и спор. Резерв занимает деньги
-        заранее, но оставляет их на счёте, пока сделка не закрыта.
+        Между нажатием «оплатить» и выполнением заказа проходит время. Если списывать сразу,
+        каждый отказ превращается в возврат — отдельную операцию, срок банка и спор.
       </div>
-      <div style="height:10px"></div>
     </div>
     <div class="home-ind"><span></span></div>
   </div>
@@ -16066,61 +15904,46 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="fl">Номер получателя</div>
         <div class="fv">+7 701 555 22 11</div>
       </div>
-      <p class="hint">Внутри ORTA получатель определяется по номеру: счёт ищется по телефону, реквизиты вводить не нужно.</p>
+      <p class="hint">Получатель ищется по номеру: реквизиты вводить не нужно.</p>
 
-      <div class="fcard mt-12">
+      <div class="fcard mt-10">
         <div class="frow">
           <span class="avatar" style="width:40px;height:40px;font-size:15px">А</span>
           <span class="grow">
             <span class="f-title">Айгуль Т.</span>
-            <span class="f-sub">Получатель найден по номеру</span>
+            <span class="f-sub">найден по номеру</span>
           </span>
           <span class="pill ok">проверен</span>
         </div>
       </div>
 
-      <div class="field focus mt-12">
-        <div class="fl">Сумма</div>
+      <div class="field focus mt-10">
+        <div class="fl">Сумма · комментарий «Обед»</div>
         <div class="fv" style="font-size:22px">15 000 ₸</div>
       </div>
-      <div class="hint">Комиссия за перевод внутри ORTA — 0 ₸. Переводы третьим лицам ограничены дневным лимитом.</div>
 
       <div class="chips mt-10">
         <span class="chip">5 000 ₸</span>
         <span class="chip brand-on">15 000 ₸</span>
-        <span class="chip">50 000 ₸</span>
         <span class="chip">Вся доступная</span>
       </div>
 
-      <div class="field mt-12">
-        <div class="fl">Комментарий</div>
-        <div class="fv" style="font-weight:500">Обед</div>
-      </div>
-
-      <div class="fcard mt-12">
-        <div class="kv"><span class="k">Со счёта</span><span class="v">Основной · 3 500,00 ₸ доступно</span></div>
-        <div class="kv"><span class="k">Сумма перевода</span><span class="v">150,00 ₸ <span class="mut" style="font-weight:400">(15 000 ₸)</span></span></div>
-        <div class="kv"><span class="k">Комиссия</span><span class="v">0,00 ₸</span></div>
+      <div class="fcard mt-10">
+        <div class="kv"><span class="k">Со счёта</span><span class="v">Основной · доступно 3 500,00 ₸</span></div>
+        <div class="kv"><span class="k">Комиссия внутри ORTA</span><span class="v">0,00 ₸</span></div>
         <div class="kv"><span class="k">Останется на счёте</span><span class="v">3 350,00 ₸</span></div>
       </div>
 
-      <div class="notice info mt-12">
+      <div class="notice info mt-10">
         <b>Повтор нажатия не спишет дважды</b>
         Запрос уходит с ключом <code>Idempotency-Key</code>: тот же ключ с тем же телом вернёт исходный
-        ответ, а не создаст второй перевод. Тот же ключ с другим телом — <code>409 IDEMPOTENCY_CONFLICT</code>.
-        Это защита от двойного нажатия и от повторной отправки при обрыве сети.
-      </div>
-
-      <div class="notice bad mt-10">
-        <b>Если денег не хватает</b>
-        <code>422 INSUFFICIENT_FUNDS</code> — не хватает доступных денег (зарезервированные не
-        считаются). Превышение дневного лимита — <code>422 LIMIT_EXCEEDED</code> с разбором:
-        сколько использовано и сколько осталось. Резерв не создаётся, проводки не появляется.
+        ответ, а с другим телом — <code>409 IDEMPOTENCY_CONFLICT</code>. Нехватка денег —
+        <code>422 INSUFFICIENT_FUNDS</code> (зарезервированные не считаются), лимит —
+        <code>422 LIMIT_EXCEEDED</code>. Резерв при отказе не создаётся.
       </div>
 
       <span class="appbar-spacer"></span>
-      <div class="btn btn-primary" style="width:100%">Перевести 15 000 ₸</div>
-      <p class="hint center" style="margin:8px 0 10px"><span class="mono">POST /api/v1/payments/transfers</span></p>
+      <div class="btn btn-primary" style="width:100%;margin-bottom:10px">Перевести 15 000 ₸</div>
     </div>
     <div class="home-ind"><span></span></div>
   </div>
@@ -16154,46 +15977,34 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="kv"><span class="k">Оплачено</span><span class="v">3 990,00 ₸</span></div>
         <div class="kv"><span class="k">Возвращено</span><span class="v" style="color:var(--success-700)">2 490,00 ₸</span></div>
         <div class="kv"><span class="k">Осталось у продавца</span><span class="v">1 500,00 ₸</span></div>
-        <div class="kv"><span class="k">Комиссия платформы</span><span class="v">58,50 ₸ <span class="mut" style="font-weight:400">(1,5%)</span></span></div>
       </div>
 
-      <p class="sec-title mt-14" style="margin-bottom:8px">Возвраты по этому платежу</p>
+      <p class="sec-title mt-12" style="margin-bottom:8px">Возвраты по этому платежу</p>
 
-      <div class="fcard">
-        <div class="frow">
+      <div class="fcard" style="padding:0">
+        <div class="frow" style="padding:12px 14px;border-bottom:1px solid var(--ink-100)">
           <span class="thumb g" style="width:38px;height:38px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-refresh"/></svg></span>
           <span class="grow">
             <span class="f-title">2 490,00 ₸ · частичный</span>
-            <span class="f-sub">7 окт, 14:02 · 2 из 3 товаров</span>
+            <span class="f-sub">7 окт, 14:02 · 2 из 3 товаров · продавец</span>
           </span>
           <span class="pill ok">зачислен</span>
         </div>
-        <div class="divider" style="margin:10px 0"></div>
-        <div class="kv"><span class="k">Причина</span><span class="v">товар не подошёл</span></div>
-        <div class="kv"><span class="k">Инициатор</span><span class="v">продавец</span></div>
-        <div class="kv"><span class="k">Куда</span><span class="v">счёт Основной · KZT</span></div>
-      </div>
-
-      <div class="fcard">
-        <div class="frow">
+        <div class="frow" style="padding:12px 14px">
           <span class="thumb" style="width:38px;height:38px;border-radius:12px;background:linear-gradient(140deg,var(--ink-400),var(--ink-600))"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-clock"/></svg></span>
           <span class="grow">
             <span class="f-title">1 500,00 ₸ · полный остаток</span>
-            <span class="f-sub">заявка от 8 окт, 09:40 · ожидает решения</span>
+            <span class="f-sub">заявка от 8 окт, 09:40</span>
           </span>
           <span class="pill warn">в обработке</span>
         </div>
-        <p class="small mt-8">
-          Заявка на возврат по третьему товару. Пока продавец не подтвердил, деньги остаются
-          у него — платформа не может списать их со счёта продавца без основания.
-        </p>
       </div>
 
       <p class="sec-title mt-14" style="margin-bottom:8px">Как считается возврат</p>
       <div class="fcard">
         <div class="tl">
           <span class="tl-dot g"></span>
-          <span class="tl-body last">
+          <span class="tl-body">
             <span class="tl-t">Платёж прошёл · COMPLETED</span>
             <span class="tl-s">Деньги на счетах продавцов, комиссия — на счёте платформы</span>
           </span>
@@ -16202,26 +16013,16 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <span class="tl-dot"></span>
           <span class="tl-body last">
             <span class="tl-t">Возврат · обратная проводка</span>
-            <span class="tl-s">Возврат — новая операция, а не «отмена» старой: леджжер не переписывается</span>
-          </span>
-        </div>
-        <div class="tl">
-          <span class="tl-dot mut"></span>
-          <span class="tl-body last">
-            <span class="tl-t">Комиссия возвращается пропорционально</span>
-            <span class="tl-s">Правило пропорции — решается продуктом: сейчас возврат считает сервис</span>
+            <span class="tl-s">Новая операция, а не «отмена» старой: леджжер не переписывается</span>
           </span>
         </div>
       </div>
 
-      <div class="notice mt-12">
+      <div class="notice mt-12" style="margin-bottom:10px">
         <b>Полный возврат против частичного</b>
-        Полный возврат переводит платёж в <code>REVERSED</code>. Частичных возвратов может быть
-        несколько, и их сумма не может превысить платёж — иначе продавец получит деньги дважды.
-        Возврат тоже требует <code>Idempotency-Key</code>: повтор возврата без ключа — это
-        подарок покупателю за счёт продавца.
+        Полный переводит платёж в <code>REVERSED</code>; частичных может быть несколько, и их сумма
+        не может превысить платёж. Возврат тоже требует <code>Idempotency-Key</code>.
       </div>
-      <div style="height:10px"></div>
     </div>
     <div class="home-ind"><span></span></div>
   </div>
@@ -16243,7 +16044,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
   <div class="phone">
     <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
     <div class="ph" style="background:var(--bg)">
-      <div class="mapbox" style="height:430px;background:linear-gradient(180deg,#EDF1F5,#E7EDF2)">
+      <div class="mapbox" style="height:330px;background:linear-gradient(180deg,#EDF1F5,#E7EDF2)">
         <svg viewBox="60 60 280 260" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
           <use href="#mapPhone" x="0" y="0"/>
           <circle cx="196" cy="176" r="40" fill="rgba(15,110,140,.10)" stroke="#0F6E8C" stroke-width="1.5" stroke-dasharray="4 5"/>
@@ -16283,8 +16084,8 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <span class="chip">Компании</span>
         </div>
 
-        <div class="fcard">
-          <div class="frow">
+        <div class="fcard" style="padding:0">
+          <div class="frow" style="padding:11px 14px;border-bottom:1px solid var(--ink-100)">
             <span class="thumb" style="width:38px;height:38px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-car"/></svg></span>
             <span class="grow">
               <span class="f-title">Машина такси · 4 мин</span>
@@ -16292,32 +16093,26 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
             </span>
             <span class="pill ok">работает</span>
           </div>
-        </div>
-
-        <div class="fcard">
-          <div class="frow">
+          <div class="frow" style="padding:11px 14px;border-bottom:1px solid var(--ink-100)">
             <span class="thumb p" style="width:38px;height:38px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-person"/></svg></span>
             <span class="grow">
-              <span class="f-title">Мастер по кондиционерам · Ерлан</span>
+              <span class="f-title">Мастер по кондиционерам</span>
               <span class="f-sub">0,9 км · 4,8 ★ · свободен сегодня</span>
             </span>
             <span class="st st-plan">План</span>
           </div>
-        </div>
-
-        <div class="fcard">
-          <div class="frow">
+          <div class="frow" style="padding:11px 14px">
             <span class="thumb a" style="width:38px;height:38px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-box"/></svg></span>
             <span class="grow">
-              <span class="f-title">Курьер · свободен</span>
-              <span class="f-sub">1,2 км · вертикали доставки пока нет</span>
+              <span class="f-title">Курьер · 1,2 км</span>
+              <span class="f-sub">вертикали доставки пока нет</span>
             </span>
             <span class="st st-plan">План</span>
           </div>
         </div>
 
         <p class="hint" style="margin:10px 0 4px">
-          Слои компаний, мастеров и курьеров — макет: в коде карта умеет только машины такси.
+          Слои компаний, мастеров и курьеров — макет: карта умеет только машины такси.
           Гео есть: Redis GEO для «кто рядом», PostGIS для треков и зон.
         </p>
       </div>
@@ -16341,7 +16136,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
   <div class="phone">
     <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
     <div class="ph" style="background:var(--bg)">
-      <div class="mapbox" style="height:400px;background:linear-gradient(180deg,#EDF1F5,#E9EFF4)">
+      <div class="mapbox" style="height:320px;background:linear-gradient(180deg,#EDF1F5,#E9EFF4)">
         <svg viewBox="80 90 240 220" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
           <use href="#mapPhone" x="0" y="0"/>
           <circle cx="196" cy="168" r="52" fill="rgba(31,95,169,.08)"/>
@@ -16364,22 +16159,15 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
             <svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-map)"><use href="#i-pin"/></svg>
             <span class="grow">
               <span class="f-title ell">пр. Тауке хана, 24</span>
-              <span class="f-sub">Шымкент, Аль-Фарабийский район · подобран на карте</span>
+              <span class="f-sub">Аль-Фарабийский район · подобран на карте</span>
             </span>
             <span class="pill brand">точно</span>
           </div>
-          <div class="frow" style="padding:11px 14px;border-bottom:1px solid var(--ink-100)">
+          <div class="frow" style="padding:11px 14px">
             <svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-map)"><use href="#i-build"/></svg>
             <span class="grow">
               <span class="f-title ell">пр. Тауке хана, 24/1</span>
-              <span class="f-sub">Шымкент · рядом 40 м</span>
-            </span>
-          </div>
-          <div class="frow" style="padding:11px 14px">
-            <svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-map)"><use href="#i-home"/></svg>
-            <span class="grow">
-              <span class="f-title ell">пр. Тауке хана, 26</span>
-              <span class="f-sub">Шымкент · рядом 120 м</span>
+              <span class="f-sub">рядом 40 м · проверьте номер дома</span>
             </span>
           </div>
         </div>
@@ -16389,23 +16177,14 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
             <span class="f-title">Детали адреса</span>
             <span class="pill">для курьера</span>
           </div>
-          <div class="field mt-10">
-            <div class="fl">Квартира / офис</div>
-            <div class="fv" style="font-weight:500">кв. 42, подъезд 2, код 4200</div>
-          </div>
-          <div class="field mt-10">
-            <div class="fl">Комментарий</div>
-            <div class="fv" style="font-weight:500">Домофон не работает — звоните</div>
-          </div>
+          <p class="small mt-8">кв. 42, подъезд 2, код 4200 · домофон не работает, звоните</p>
         </div>
 
-        <div class="notice mt-10">
+        <div class="notice mt-10" style="margin-bottom:10px">
           <b>Адреса пока негде хранить</b>
-          Список «мои адреса» относится к ORTA ID, а его в коде нет: адрес можно ввести в поле
-          заказа, но сохранить как «Дом» или «Работа» — некуда. Пока этого нет, курьер каждый раз
-          получает адрес заново, а человек вводит код домофона руками.
+          «Мои адреса» относятся к ORTA ID, а его в коде нет: адрес вводится в поле заказа,
+          но сохранить его как «Дом» — некуда.
         </div>
-        <div style="height:10px"></div>
       </div>
     </div>
     <div class="home-ind"><span></span></div>
@@ -16426,7 +16205,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
   <div class="phone">
     <div class="sb"><span class="tnum">9:41</span><span class="sb-right"><svg class="ic" viewBox="0 0 24 24"><use href="#i-signal"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-wifi"/></svg><svg class="ic" viewBox="0 0 24 24"><use href="#i-battery"/></svg></span></div>
     <div class="ph" style="background:var(--bg)">
-      <div class="mapbox" style="height:330px;background:linear-gradient(180deg,#EDF1F5,#E9EFF4)">
+      <div class="mapbox" style="height:270px;background:linear-gradient(180deg,#EDF1F5,#E9EFF4)">
         <svg viewBox="40 70 320 220" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
           <use href="#mapPhone" x="0" y="0"/>
           <path d="M60 118 L150 96 L232 120 L268 176 L214 250 L118 252 L62 196 Z" fill="rgba(27,127,75,.14)" stroke="#1B7F4B" stroke-width="2"/>
@@ -16453,27 +16232,14 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="fcard">
           <div class="kv"><span class="k">Зона A · центр</span><span class="v">такси, доставка, услуги</span></div>
           <div class="kv"><span class="k">Зона B · окраины</span><span class="v">только такси и доставка</span></div>
-          <div class="kv"><span class="k">Вне зон</span><span class="v">заказ принимается предварительно</span></div>
-          <div class="kv"><span class="k">Хранение контуров</span><span class="v">PostGIS · геозоны</span></div>
         </div>
 
-        <div class="notice mt-10">
-          <b>Что здесь честно, а что нет</b>
-          Геозоны и PostGIS в коде есть — но они обслуживают такси и треки, а не «зоны обслуживания
-          для всех направлений». Полигоны на этом экране — рисунок: границы зон ещё не утверждены
-          продуктом, поэтому показывать их как настоящие нельзя.
+        <div class="notice bad mt-10" style="margin-bottom:10px">
+          <b>Где здесь честность и где лицензия</b>
+          Геозоны и PostGIS в коде есть, но обслуживают такси: границы зон продуктом не утверждены,
+          поэтому полигоны — рисунок. Подложка в консоли — OpenStreetMap под ODbL, публичные тайлы
+          для мобильного приложения непригодны — нужен свой сервер или провайдер. Маршрут — OSRM.
         </div>
-
-        <div class="notice bad mt-10">
-          <b>Лицензия на карты — открытый вопрос</b>
-          Подложка в веб-консоли — карты OpenStreetMap: данные под ODbL, и при публичном показе
-          нужна атрибуция «© OpenStreetMap contributors». Для нагруженного мобильного приложения
-          публичные тайлы OSM использовать нельзя — нужен либо свой тайл-сервер, либо коммерческий
-          провайдер по договору. Дорожный маршрут и время в пути требуют OSRM или аналога:
-          сегодня маршрут между точками рисуется прямой линией, и это подписано в чеке поездки.
-          Выбор провайдера — решение до запуска карты как продукта, а не деталь реализации.
-        </div>
-        <div style="height:10px"></div>
       </div>
     </div>
     <div class="home-ind"><span></span></div>
@@ -16505,30 +16271,23 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
 
       <div class="frow" style="justify-content:flex-start">
         <div class="ai-bubble" style="max-width:300px;background:#fff;border-color:var(--ink-200)">
-          У вас выросло на 18% за неделю: такси и доставка еды. Такси — 4 поездки, из них
-          две в одно место по будням в 08:40.
+          Расходы выросли на 18%: такси — 4 поездки, две по одному маршруту в 08:40.
         </div>
       </div>
 
-      <div class="frow mt-10" style="justify-content:flex-start">
+      <div class="frow mt-8" style="justify-content:flex-start">
         <div class="ai-bubble" style="max-width:300px;background:#fff;border-color:var(--ink-200)">
-          Повторить прошлый заказ продуктов? В прошлый раз: 14 позиций, доставка 19:00–20:00.
+          Повторить прошлый заказ продуктов? 14 позиций, доставка 19:00–20:00.
         </div>
       </div>
 
-      <div class="chips mt-10" style="justify-content:flex-end">
-        <span class="chip brand-on">Повторить заказ</span>
-        <span class="chip">Покажи расходы за месяц</span>
-      </div>
-
-      <div class="frow mt-12" style="justify-content:flex-end">
+      <div class="frow mt-10" style="justify-content:flex-end">
         <div class="ai-bubble" style="max-width:300px">
           Запиши меня на маникюр в субботу
         </div>
       </div>
-      <p class="hint" style="text-align:right;margin-top:5px">21:15 · голосом или текстом</p>
 
-      <div class="fcard mt-12">
+      <div class="fcard mt-10">
         <div class="sec-title row"><span>Нашёл три окна на субботу, 11 октября</span><span class="pill">черновик</span></div>
 
         <div class="ai-step">
@@ -16553,22 +16312,19 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <span class="an">3</span>
           <span class="grow">
             <span class="at">18:00 · Студия «Айгуль»</span>
-            <span class="as">1,4 км · Айгуль, 4,9 ★ · маникюр 90 мин</span>
+            <span class="as">1,4 км · Айгуль, 4,9 ★ · 90 мин</span>
           </span>
           <span class="ar">8 000 ₸</span>
         </div>
 
         <div class="divider"></div>
-        <div class="kv"><span class="k">Время с дорогой</span><span class="v">по ORTA Map · 22 мин</span></div>
-        <div class="kv"><span class="k">Оплата</span><span class="v">ORTA Pay · резерв после подтверждения</span></div>
-        <div class="kv"><span class="k">Отмена</span><span class="v">по правилам студии</span></div>
+        <div class="kv"><span class="k">Время с дорогой</span><span class="v">ORTA Map · 22 мин</span></div>
+        <div class="kv"><span class="k">Оплата</span><span class="v">резерв после подтверждения</span></div>
       </div>
 
       <div class="notice mt-10" style="margin-bottom:10px">
         <b>Ничего не выполнено</b>
-        Свободные окна взяты из расписания, но не заняты: пока не нажато «Записаться», ассистент
-        не создаёт запись и не резервирует деньги. Окно может уйти к другому человеку — и это
-        нормально, потому что брони ещё нет.
+        Окна взяты из расписания, но не заняты: без нажатия «Записаться» ни записи, ни резерва нет.
       </div>
     </div>
     <div class="home-ind"><span></span></div>
@@ -16605,12 +16361,8 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         </div>
         <div class="kv mt-8"><span class="k">Показать расходы и подсказать</span><span class="v">чтение</span></div>
         <div class="kv"><span class="k">Повторить корзину в черновике</span><span class="v">черновик</span></div>
-        <div class="kv"><span class="k">Найти свободные окна</span><span class="v">чтение</span></div>
-        <div class="kv"><span class="k">Собрать маршрут и посчитать время</span><span class="v">чтение</span></div>
-        <p class="small mt-10">
-          Общее правило: ассистент свободно делает то, что ничего не меняет. Чтение данных человека
-          и подготовка черновика не создают обязательств — ни у него, ни у исполнителя.
-        </p>
+        <div class="kv"><span class="k">Найти окна и собрать маршрут</span><span class="v">чтение</span></div>
+        <p class="small mt-8">Правило: свободно то, что ничего не меняет — чтение и черновик обязательств не создают.</p>
       </div>
 
       <div class="fcard">
@@ -16623,38 +16375,19 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="kv"><span class="k">Зарезервировать или списать деньги</span><span class="v">движение денег</span></div>
         <div class="kv"><span class="k">Отменить заказ, запись или поездку</span><span class="v">штраф и ущерб</span></div>
         <div class="kv"><span class="k">Отправить перевод по телефону</span><span class="v">необратимо</span></div>
-        <div class="kv"><span class="k">Изменить лимит, телефон или доступы</span><span class="v">безопасность</span></div>
-        <div class="kv"><span class="k">Написать отзыв от имени человека</span><span class="v">репутация</span></div>
-        <p class="small mt-10">
-          Почему без подтверждения нельзя: за записью стоит чужое рабочее время и деньги, за
-          переводом — необратимая операция, за отзывом — чужая репутация. Цена ошибки ассистента
-          (неверно понятая фраза, устаревшее окно) падает не на него, а на человека, поэтому
-          подтверждение — не «лишний клик», а место, где ответственность возвращается владельцу.
+        <div class="kv"><span class="k">Изменить лимит, телефон, доступы</span><span class="v">безопасность</span></div>
+        <p class="small mt-8">
+          За записью стоит чужое рабочее время, за переводом — необратимая операция: цена ошибки
+          ассистента падает на человека, поэтому подтверждение обязательно.
         </p>
       </div>
 
-      <div class="fcard">
+      <div class="fcard" style="margin-bottom:10px">
         <div class="between">
           <span class="f-title"><span class="stockdot out"></span>Не делает никогда</span>
           <span class="pill bad">запрещено</span>
         </div>
-        <div class="kv mt-8"><span class="k">Менять медицинские данные и записи ORTA Health</span><span class="v">нет</span></div>
-        <div class="kv"><span class="k">Хранить данные карты или код из SMS</span><span class="v">нет</span></div>
-        <div class="kv"><span class="k">Отвечать клиенту от имени человека без пометки</span><span class="v">нет</span></div>
-        <div class="kv"><span class="k">Обещать цену или срок, которых нет в сервисе</span><span class="v">нет</span></div>
-        <p class="small mt-10">
-          Отдельно: ассистент для бизнеса (ответы клиентам, отчёты, прогноз загрузки) работает
-          в тех же границах — он готовит ответ, но отправка и запись остаются за человеком,
-          пока в компании не назначен ответственный за автодействия.
-        </p>
-      </div>
-
-      <div class="notice mt-12" style="margin-bottom:10px">
-        <b>Список критических действий не зафиксирован</b>
-        Выше — предложение борда. Продуктовое решение ещё не принято: входит ли в критическое
-        «изменение адреса доставки», «чаевые» и «продление аренды», зависит от того, чем ORTA
-        готова отвечать перед человеком. До решения список живёт в одном месте и меняется целиком,
-        а не «по действию» в каждой вертикали.
+        <div class="kv mt-8"><span class="k">Менять медицинские данные ORTA Health</span><span class="v">нет</span></div>
       </div>
     </div>
     <div class="home-ind"><span></span></div>
@@ -16662,11 +16395,12 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
   <div class="cap">
     <div class="cap-line"><span class="cap-num">17</span><span class="cap-title">ORTA AI — границы: что требует человека</span><span class="st st-plan">План</span></div>
     <p class="cap-note">
-      Экран отвечает на обязательный вопрос «что ассистент НЕ делает сам». Критическими признаны
-      действия, создающие обязательство или необратимый результат: запись, заказ, резерв и списание
-      денег, отмена, перевод, изменение лимита и телефона, отзыв от имени человека. Причина прямая:
-      ошибку ассистента оплачивает человек, значит подтверждение — место возврата ответственности.
-      Отдельно подписано спорное: перечень критических действий продуктом ещё не утверждён.
+      Экран отвечает на вопрос «что ассистент НЕ делает сам». Критическими признаны действия,
+      создающие обязательство или необратимый результат: запись, заказ, резерв и списание денег,
+      отмена, перевод, изменение лимита и телефона, отзыв от имени человека. Причина прямая: ошибку
+      ассистента оплачивает человек, значит подтверждение — место возврата ответственности. Спорное
+      подписано отдельно: перечень критических действий продуктом ещё не утверждён, и от ответа
+      зависит, войдут ли туда «изменение адреса доставки», «чаевые» и «продление аренды».
     </p>
   </div>
 </div>
@@ -16708,43 +16442,31 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="kv"><span class="k">Поездки как пассажир</span><span class="v">4,8 · 96 оценок</span></div>
         <div class="kv"><span class="k">Покупки в маркете</span><span class="v">4,6 · 21 оценка</span></div>
         <div class="kv"><span class="k">Записи на услуги</span><span class="v">4,5 · 11 оценок</span></div>
-        <p class="small mt-10">
-          Один профиль — разные оценки. Сантехника и стоматология оценивают по разным критериям:
-          «пришёл вовремя», «не намусорил» и «вылечил без боли» нельзя усреднить в одну цифру,
-          иначе отличный мастер получит 3,9 из-за отрасли, где все ставят 3.
+        <p class="small mt-8">
+          «Пришёл вовремя» и «вылечил без боли» нельзя усреднить в одну цифру: иначе хороший мастер
+          получит 3,9 из-за отрасли, где все ставят 3.
         </p>
       </div>
 
       <p class="sec-title mt-14" style="margin-bottom:8px">Последние отзывы</p>
-      <div class="fcard">
-        <div class="frow">
+      <div class="fcard" style="padding:0">
+        <div class="frow" style="padding:11px 14px;border-bottom:1px solid var(--ink-100)">
           <span class="avatar" style="width:34px;height:34px;font-size:13px;background:linear-gradient(135deg,var(--ink-500),var(--ink-700))">Е</span>
-          <span class="grow"><span class="f-title">Ерлан К.</span><span class="f-sub">поездка · 6 октября · водитель</span></span>
+          <span class="grow"><span class="f-title">Ерлан К.</span><span class="f-sub">поездка · водитель · «приехал за 3 минуты»</span></span>
           <span class="pill ok">завершён</span>
         </div>
-        <p class="small mt-8">Машина чистая, приехал за 3 минуты. Помог с сумками.</p>
-      </div>
-      <div class="fcard">
-        <div class="frow">
+        <div class="frow" style="padding:11px 14px">
           <span class="avatar" style="width:34px;height:34px;font-size:13px;background:linear-gradient(135deg,var(--ink-500),var(--ink-700))">Д</span>
-          <span class="grow"><span class="f-title">Дина М.</span><span class="f-sub">заказ в маркете · 4 октября · продавец</span></span>
+          <span class="grow"><span class="f-title">Дина М.</span><span class="f-sub">маркет · продавец · «ждала замену 4 дня»</span></span>
           <span class="pill warn">спор</span>
         </div>
-        <p class="small mt-8">Товар пришёл с царапиной. Продавец заменил, но ждала четыре дня.</p>
       </div>
 
-      <div class="notice mt-12">
+      <div class="notice mt-12" style="margin-bottom:10px">
         <b>Оценить можно только завершённый заказ</b>
-        Оценка привязана к заказу, поездке или записи — не к человеку «в воздухе». Иначе рейтинг
-        превращается в инструмент давления: «поставь пять, иначе не поеду». Одна оценка на один
-        завершённый заказ, и она не удаляется задним числом.
-      </div>
-
-      <div class="notice mt-10" style="margin-bottom:10px">
-        <b>Рейтинг водителей уже есть, единого профиля нет</b>
-        В коде живёт рейтинг водителя — в базисных пунктах, вместе с долей принятых заказов, и
-        история продаж продавца в карточке товара. Единого рейтинга по всем направлениям и оценок
-        по завершённым заказам пока нет: это макет.
+        Оценка привязана к заказу, поездке или записи, а не к человеку «в воздухе»: иначе она
+        становится инструментом давления. В коде уже живёт рейтинг водителя и история продаж
+        продавца; единого рейтинга по всем направлениям пока нет — это макет.
       </div>
     </div>
     <div class="home-ind"><span></span></div>
@@ -16779,23 +16501,15 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <span class="f-title">Как всё прошло?</span>
           <span class="pill">оценка не поставлена</span>
         </div>
-        <div class="stars mt-10" style="justify-content:center">
-          <svg class="ic" viewBox="0 0 24 24"><use href="#i-star"/></svg>
-          <svg class="ic" viewBox="0 0 24 24"><use href="#i-star"/></svg>
-          <svg class="ic" viewBox="0 0 24 24"><use href="#i-star"/></svg>
-          <svg class="ic" viewBox="0 0 24 24" class="off"><use href="#i-star"/></svg>
-          <svg class="ic" viewBox="0 0 24 24" class="off"><use href="#i-star"/></svg>
-        </div>
-        <div class="chips mt-12">
+        <div class="chips mt-10">
           <span class="chip brand-on">Товар как в описании</span>
           <span class="chip">Быстрая доставка</span>
-          <span class="chip">Вежливый курьер</span>
         </div>
         <div class="field mt-10">
           <div class="fl">Комментарий</div>
           <div class="fv" style="font-weight:500">Царапина на корпусе, но заменили.</div>
         </div>
-        <div class="btn btn-primary btn-md mt-12" style="width:100%">Опубликовать отзыв</div>
+        <div class="btn btn-primary btn-md mt-10" style="width:100%">Опубликовать отзыв</div>
       </div>
 
       <p class="sec-title mt-14" style="margin-bottom:8px">Кто увидит отзыв</p>
@@ -16807,49 +16521,31 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           </span>
           <span class="pill warn">выключен</span>
         </div>
-        <p class="small mt-10">
-          Публичность — продуктовое решение, а не значение по умолчанию. Оценки нужны, чтобы
-          выбирать исполнителя; публичный профиль участника — это уже другое: он позволяет
-          посмотреть историю человека. Поэтому умолчание — «выключено», а включение — осознанное
-          действие с объяснением, что станет видно.
+        <p class="small mt-8">
+          Публичность — продуктовое решение, а не значение по умолчанию: публичный профиль
+          открывает историю человека.
         </p>
         <div class="divider"></div>
-        <div class="kv"><span class="k">Что видно всегда</span><span class="v">оценка исполнителя</span></div>
-        <div class="kv"><span class="k">Что видно только с согласия</span><span class="v">ваш профиль и история</span></div>
-        <div class="kv"><span class="k">Что не видно никому</span><span class="v">телефон, адрес, суммы заказов</span></div>
+        <div class="kv"><span class="k">Только с согласия</span><span class="v">ваш профиль и история</span></div>
+        <div class="kv"><span class="k">Не видно никому</span><span class="v">телефон, адрес, суммы</span></div>
       </div>
 
       <p class="sec-title mt-14" style="margin-bottom:8px">Оспаривание оценки</p>
-      <div class="fcard">
+      <div class="fcard" style="margin-bottom:10px">
         <div class="tl">
           <span class="tl-dot"></span>
           <span class="tl-body last">
             <span class="tl-t">Исполнитель оспаривает отзыв</span>
-            <span class="tl-s">Не «удалите», а «вот что было»: причина и подтверждение — чек, фото, таймлайн заказа</span>
+            <span class="tl-s">Не «удалите», а «вот что было»: причина и чек или фото</span>
           </span>
         </div>
         <div class="tl">
           <span class="tl-dot mut"></span>
           <span class="tl-body last">
-            <span class="tl-t">Проверяет поддержка, а не алгоритм</span>
-            <span class="tl-s">Роль <code>SUPPORT</code>: отзывы за поездки и выплаты разбирают люди со знанием города</span>
+            <span class="tl-t">Разбирает поддержка, а не алгоритм</span>
+            <span class="tl-s">Роль <code>SUPPORT</code>: отзывы разбирают люди со знанием города</span>
           </span>
         </div>
-        <div class="tl">
-          <span class="tl-dot mut"></span>
-          <span class="tl-body last">
-            <span class="tl-t">Отзыв не удаляется молча</span>
-            <span class="tl-s">Если оценка снята — автор видит причину; иначе это выглядит как пропажа отзыва</span>
-          </span>
-        </div>
-      </div>
-
-      <div class="notice info mt-12" style="margin-bottom:10px">
-        <b>Отдельная сложность: удаление аккаунта</b>
-        Если человек удалил аккаунт, его отзывы остаются частью чужого рейтинга. Вариантов два —
-        обезличить автора или скрыть отзыв вместе с аккаунтом. Решение продуктовое и его лучше
-        принять до запуска рейтингов, а не после первой жалобы: от этого зависит, можно ли
-        «обнулить» себе рейтинг, удалив аккаунт.
       </div>
     </div>
     <div class="home-ind"><span></span></div>
@@ -16858,10 +16554,11 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="cap-line"><span class="cap-num">19</span><span class="cap-title">Отзыв: публичность и оспаривание</span><span class="st st-plan">План</span></div>
     <p class="cap-note">
       Макет: модели отзывов в коде нет. Экран фиксирует три решения, которые обычно забывают.
-      Публичность профиля выключена по умолчанию — оценка исполнителя видна всегда, история
-      человека только с согласия. Оспаривание не удаляет отзыв молча: нужна причина исполнителя
-      и разбор поддержкой с таймлайном заказа. И отдельно — что делать с отзывами удалённого
-      аккаунта, иначе удаление станет способом обнулить себе рейтинг.
+      Публичность профиля выключена по умолчанию — оценка исполнителя видна всегда, история человека
+      только с согласия. Оспаривание не удаляет отзыв молча: нужна причина исполнителя и разбор
+      поддержкой. И третье — судьба отзывов удалённого аккаунта: обезличить автора или скрыть отзыв,
+      иначе удаление станет способом обнулить себе рейтинг. Решение продуктовое, и его лучше принять
+      до запуска рейтингов.
     </p>
   </div>
 </div>
@@ -16889,73 +16586,57 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
 
       <p class="sec-title" style="margin-bottom:6px">Сегодня</p>
 
-      <div class="fcard">
-        <div class="frow">
-          <span class="thumb" style="width:38px;height:38px;border-radius:12px;background:linear-gradient(140deg,var(--svc-pay),#0E5B36)"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-refresh"/></svg></span>
+      <div class="fcard" style="padding:0">
+        <div class="frow" style="padding:11px 14px;border-bottom:1px solid var(--ink-100)">
+          <span class="thumb" style="width:36px;height:36px;border-radius:12px;background:linear-gradient(140deg,var(--svc-pay),#0E5B36)"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><use href="#i-refresh"/></svg></span>
           <span class="grow">
             <span class="f-title">Возврат 2 490 ₸ зачислен</span>
-            <span class="f-sub">ORTA Pay · 7 окт, 14:02 · заказ 01J8ZP…2M</span>
+            <span class="f-sub">ORTA Pay · 14:02 · заказ 01J8ZP…2M</span>
           </span>
           <span style="width:8px;height:8px;border-radius:50%;background:var(--info-500);flex:none"></span>
         </div>
-      </div>
-
-      <div class="fcard">
-        <div class="frow">
-          <span class="thumb a" style="width:38px;height:38px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-box"/></svg></span>
+        <div class="frow" style="padding:11px 14px;border-bottom:1px solid var(--ink-100)">
+          <span class="thumb a" style="width:36px;height:36px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><use href="#i-box"/></svg></span>
           <span class="grow">
             <span class="f-title">Заказ ждёт подтверждения продавца</span>
-            <span class="f-sub">ORTA Market · 7 окт, 21:12 · резерв 1 200 ₸ истекает в 22:30</span>
+            <span class="f-sub">ORTA Market · 21:12 · резерв 1 200 ₸ до 22:30</span>
           </span>
           <span style="width:8px;height:8px;border-radius:50%;background:var(--info-500);flex:none"></span>
         </div>
-      </div>
-
-      <div class="fcard">
-        <div class="frow">
-          <span class="thumb p" style="width:38px;height:38px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-clock"/></svg></span>
+        <div class="frow" style="padding:11px 14px;border-bottom:1px solid var(--ink-100)">
+          <span class="thumb p" style="width:36px;height:36px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><use href="#i-clock"/></svg></span>
           <span class="grow">
             <span class="f-title">Напоминание: маникюр завтра в 15:30</span>
-            <span class="f-sub">QTime · 7 окт, 20:00 · мастер Айгуль, 1,4 км</span>
+            <span class="f-sub">QTime · 20:00 · мастер Айгуль, 1,4 км</span>
           </span>
         </div>
-      </div>
-
-      <div class="fcard">
-        <div class="frow">
-          <span class="thumb" style="width:38px;height:38px;border-radius:12px;background:linear-gradient(140deg,var(--danger-500),var(--danger-700))"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-shield"/></svg></span>
+        <div class="frow" style="padding:11px 14px">
+          <span class="thumb" style="width:36px;height:36px;border-radius:12px;background:linear-gradient(140deg,var(--danger-500),var(--danger-700))"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><use href="#i-shield"/></svg></span>
           <span class="grow">
             <span class="f-title">Новый вход в аккаунт</span>
-            <span class="f-sub">Chrome, Windows · Шымкент · 7 окт, 21:14</span>
+            <span class="f-sub">Chrome, Windows · Шымкент · 21:14</span>
           </span>
         </div>
       </div>
 
-      <p class="sec-title mt-14" style="margin-bottom:6px">Вчера</p>
+      <p class="sec-title mt-12" style="margin-bottom:6px">Вчера</p>
 
       <div class="fcard">
         <div class="frow">
-          <span class="thumb" style="width:38px;height:38px;border-radius:12px;background:linear-gradient(140deg,var(--tile-taxi),var(--brand-700))"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-taxi"/></svg></span>
+          <span class="thumb" style="width:36px;height:36px;border-radius:12px;background:linear-gradient(140deg,var(--tile-taxi),var(--brand-700))"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><use href="#i-taxi"/></svg></span>
           <span class="grow">
             <span class="f-title">Поездка завершена · чек готов</span>
-            <span class="f-sub">ORTA Taxi · 6 окт, 18:42 · 905,72 ₸</span>
+            <span class="f-sub">ORTA Taxi · 18:42 · 905,72 ₸</span>
           </span>
         </div>
       </div>
 
-      <div class="notice mt-12">
-        <b>Лишнего не приходит</b>
-        Сервисные сообщения (заказ, деньги, запись, безопасность) объединяются: одно событие —
-        одно сообщение, даже если в нём участвуют три сервиса. «Напоминание за час» и «резерв
-        истекает через час» — это два разных повода, и они не склеиваются в одно.
-      </div>
-
-      <div class="notice info mt-10" style="margin-bottom:10px">
+      <div class="notice info mt-12" style="margin-bottom:10px">
         <b>События уже ходят, пушей нет</b>
-        Транзакционный outbox и Kafka работают: <span class="mono">payment.events</span>,
-        <span class="mono">order.*</span>, <span class="mono">trip.events</span>,
-        <span class="mono">driver.events</span> (+ DLT). Но превратить событие в пущ, SMS или письмо
-        пока нечему: центра уведомлений, шаблонов и очереди отправки в коде нет. Этот список — макет.
+        Outbox и Kafka работают: <span class="mono">payment.events</span>,
+        <span class="mono">trip.events</span>, <span class="mono">driver.events</span> (+ DLT).
+        Но превратить событие в пущ, SMS или письмо пока нечему. Правило списка: одно событие —
+        одно сообщение, даже если в нём участвуют несколько сервисов.
       </div>
     </div>
     <div class="home-ind"><span></span></div>
@@ -16986,76 +16667,48 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
 
       <p class="sec-title" style="margin-bottom:8px">Каналы</p>
-      <div class="fcard">
-        <div class="frow">
+      <div class="fcard" style="padding:0">
+        <div class="frow" style="padding:11px 14px;border-bottom:1px solid var(--ink-100)">
           <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-notify)"><use href="#i-bell"/></svg><span class="f-title">Push в приложении</span></span>
           <span class="pill ok">включён</span>
         </div>
-        <div class="divider" style="margin:10px 0"></div>
-        <div class="frow">
-          <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-notify)"><use href="#i-chat"/></svg><span class="f-title">SMS</span></span>
+        <div class="frow" style="padding:11px 14px;border-bottom:1px solid var(--ink-100)">
+          <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-notify)"><use href="#i-chat"/></svg><span class="f-title">SMS для денег и входов</span></span>
           <span class="pill ok">включён</span>
         </div>
-        <p class="small mt-8">
-          SMS оставляем включённым для денег и безопасности: push приходит не всегда — телефон
-          без сети, отключены уведомления, приложение удалено. Сообщение о переводе должно дойти
-          и без приложения.
-        </p>
-        <div class="divider" style="margin:10px 0"></div>
-        <div class="frow">
+        <div class="frow" style="padding:11px 14px">
           <span class="frow" style="gap:10px;flex:1"><svg class="ic" viewBox="0 0 24 24" style="color:var(--svc-notify)"><use href="#i-mail"/></svg><span class="f-title">E-mail</span></span>
           <span class="pill">выключен</span>
         </div>
       </div>
+      <p class="hint">SMS включён для денег и входов: push доходит не всегда.</p>
 
-      <p class="sec-title mt-14" style="margin-bottom:8px">Темы</p>
+      <p class="sec-title mt-12" style="margin-bottom:8px">Темы</p>
       <div class="fcard">
-        <div class="kv"><span class="k">Заказы и доставка</span><span class="v">push · SMS нет</span></div>
+        <div class="kv"><span class="k">Заказы и доставка</span><span class="v">push</span></div>
         <div class="kv"><span class="k">Деньги и переводы</span><span class="v">push + SMS</span></div>
         <div class="kv"><span class="k">Записи и напоминания</span><span class="v">push</span></div>
-        <div class="kv"><span class="k">Безопасность и входы</span><span class="v">push + SMS · не отключается отдельно</span></div>
-        <div class="kv"><span class="k">Акции и скидки</span><span class="v">выключены</span></div>
+        <div class="kv"><span class="k">Безопасность и входы</span><span class="v">не отключается</span></div>
       </div>
 
-      <p class="sec-title mt-14" style="margin-bottom:8px">Тишина по ночам</p>
+      <p class="sec-title mt-12" style="margin-bottom:8px">Тишина по ночам</p>
       <div class="fcard">
         <div class="between">
           <span class="f-title">Не беспокоить</span>
           <span class="pill ok">22:00 — 08:00</span>
         </div>
-        <div class="frow mt-10" style="gap:10px">
-          <span class="field grow"><span class="fl">С</span><span class="fv">22:00</span></span>
-          <span class="field grow"><span class="fl">До</span><span class="fv">08:00</span></span>
-        </div>
-        <p class="small mt-10">
-          Ночью молчат акции, напоминания и статусы заказов. Не молчат деньги и безопасность:
-          сообщение о списании, о входе с нового устройства или о возврате приходит всегда —
-          иначе «тихие часы» станут удобным окном для мошенника.
-        </p>
-      </div>
-
-      <p class="sec-title mt-14" style="margin-bottom:8px">История и отписка</p>
-      <div class="fcard">
-        <div class="frow">
-          <span class="grow"><span class="f-title">Хранить историю</span><span class="f-sub">90 дней · дальше только в выписке</span></span>
-          <span class="pill ok">включено</span>
-        </div>
-        <div class="divider" style="margin:10px 0"></div>
-        <div class="frow">
-          <span class="grow"><span class="f-title">Отписаться от акций</span><span class="f-sub">Одно нажатие, действует во всех сервисах сразу</span></span>
+        <div class="frow mt-8">
+          <span class="grow"><span class="f-title">Отписаться от акций</span><span class="f-sub">Одно нажатие — во всех сервисах</span></span>
           <span class="pill bad">отписаться</span>
         </div>
-        <p class="small mt-10">
-          Отписка одна на всю экосистему. Если её придётся повторять в каждом направлении,
-          это не отписка, а отговорка: человек отписывается один раз и ожидает тишины везде.
+        <p class="small mt-8">
+          Ночью молчат акции, напоминания и статусы заказов. Деньги и безопасность не молчат.
         </p>
       </div>
 
-      <div class="notice mt-12" style="margin-bottom:10px">
+      <div class="notice mt-10" style="margin-bottom:10px">
         <b>Этого раздела в коде нет</b>
-        Ни шаблонов, ни очереди отправки, ни хранения истории уведомлений, ни настроек по каналам —
-        всё это макет. Он опирается на то, что уже работает: события из outbox и Kafka, из которых
-        уведомление и будет собираться, когда появится сервис.
+        Ни шаблонов, ни очереди отправки, ни истории, ни настроек — всё это макет.
       </div>
     </div>
     <div class="home-ind"><span></span></div>
@@ -17099,65 +16752,47 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <span class="chip">Работа</span>
       </div>
 
-      <p class="sec-title mt-14" style="margin-bottom:8px">Услуги <span class="mut" style="font-weight:400">· рядом со мной</span></p>
+      <p class="sec-title mt-12" style="margin-bottom:8px">Услуги <span class="mut" style="font-weight:400">· рядом со мной</span></p>
 
       <div class="spec">
         <span class="sa p">А</span>
         <span class="grow">
           <span class="sn">Студия «Айгуль» · маникюр</span>
-          <span class="sm">1,4 км · Айгуль, 4,9 ★ · 90 мин · свободно суббота 12:30</span>
-          <span class="sm">8 000 ₸ · QTime</span>
+          <span class="sm">1,4 км · Айгуль, 4,9 ★ · свободно сб 12:30 · 8 000 ₸</span>
         </span>
       </div>
 
-      <div class="spec">
-        <span class="sa">М</span>
-        <span class="grow">
-          <span class="sn">Салон «Мия» · маникюр, педикюр</span>
-          <span class="sm">2,2 км · Дина, 4,7 ★ · 75 мин · свободно суббота 15:00</span>
-          <span class="sm">6 500 ₸ · QTime</span>
-        </span>
-      </div>
-
-      <p class="sec-title mt-14" style="margin-bottom:8px">Товары</p>
+      <p class="sec-title mt-12" style="margin-bottom:8px">Товары</p>
       <div class="fcard">
         <div class="frow">
-          <span class="thumb g" style="width:38px;height:38px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:19px;height:19px"><use href="#i-box"/></svg></span>
+          <span class="thumb g" style="width:36px;height:36px;border-radius:12px"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><use href="#i-box"/></svg></span>
           <span class="grow">
             <span class="f-title">Набор для маникюра, 12 предметов</span>
-            <span class="f-sub">ИП «Сейтказы» · 4,6 ★ · 1 240 продаж · остаток 8</span>
+            <span class="f-sub">ИП «Сейтказы» · 4,6 ★ · остаток 8</span>
           </span>
           <span class="f-money">9 900 ₸</span>
         </div>
       </div>
 
-      <p class="sec-title mt-14" style="margin-bottom:8px">Другие направления</p>
+      <p class="sec-title mt-12" style="margin-bottom:8px">Другие направления</p>
       <div class="fcard" style="padding:0">
         <div class="frow" style="padding:11px 14px;border-bottom:1px solid var(--ink-100)">
           <svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-400)"><use href="#i-car"/></svg>
-          <span class="grow"><span class="f-title">Поездки по адресу или месту</span><span class="f-sub">ORTA Taxi · поиск по адресу и точке на карте</span></span>
-          <span class="st st-plan">План</span>
-        </div>
-        <div class="frow" style="padding:11px 14px;border-bottom:1px solid var(--ink-100)">
-          <svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-400)"><use href="#i-home"/></svg>
-          <span class="grow"><span class="f-title">Помещение под студию маникюра</span><span class="f-sub">ORTA Home · ни объявлений, ни вертикали</span></span>
+          <span class="grow"><span class="f-title">Поездки по адресу или месту</span><span class="f-sub">ORTA Taxi</span></span>
           <span class="st st-plan">План</span>
         </div>
         <div class="frow" style="padding:11px 14px">
-          <svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-400)"><use href="#i-person"/></svg>
-          <span class="grow"><span class="f-title">Мастер маникюра, вакансия</span><span class="f-sub">ORTA Jobs · вертикали нет</span></span>
+          <svg class="ic" viewBox="0 0 24 24" style="color:var(--ink-400)"><use href="#i-home"/></svg>
+          <span class="grow"><span class="f-title">Помещение под студию</span><span class="f-sub">ORTA Home · вертикали нет</span></span>
           <span class="st st-plan">План</span>
         </div>
       </div>
 
-      <div class="notice info mt-12" style="margin-bottom:10px">
+      <div class="notice info mt-10" style="margin-bottom:10px">
         <b>Сегодня поиск сквозной только по каталогу</b>
-        Работает <code>GET /api/v1/catalog/products?query=…&amp;sort=relevance</code> —
-        полнотекстовый поиск Postgres по <code>search_vector</code>, по названию, бренду и описанию.
-        Компании и окна выше — из QTime. Сквозной поиск по всем направлениям (поездка, недвижимость,
-        вакансия) — проект: он заработает ровно настолько, насколько единообразно вертикали
-        описывают свои сущности. Пока их модели разные, «один поиск» будет собираться из
-        несопоставимых результатов.
+        Работает <code>GET /api/v1/catalog/products?query=…&amp;sort=relevance</code> — полнотекстовый
+        поиск Postgres по <code>search_vector</code>. Компании и окна выше — из QTime. Сквозной поиск
+        по поездкам, недвижимости и вакансиям — проект.
       </div>
     </div>
     <div class="home-ind"><span></span></div>
