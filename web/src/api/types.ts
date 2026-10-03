@@ -141,6 +141,11 @@ export interface Payment {
   feeMinor: number;
   totalMinor: number;
   currency: Currency | string;
+  /**
+   * Владелец платежа (тот, с чьего счёта ушли деньги). Приходит в `PaymentResponse`;
+   * без него админке приходилось спрашивать счёт по `sourceAccountId` на каждую строку.
+   */
+  ownerUserId: string | null;
   sourceAccountId: string | null;
   targetAccountId: string | null;
   merchantId: string | null;

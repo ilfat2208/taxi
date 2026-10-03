@@ -96,19 +96,37 @@ export function AdminPage() {
         </Card>
       ) : (
         <>
-          <div className="mb-5">
+          {/* Заголовок раздела в стиле обычной админки: название, назначение и — отдельно,
+              под раскрытием — эндпоинты. Держать список путей всегда на виду незачем: он
+              нужен, когда проверяешь, откуда взялись числа, а не когда читаешь цифры. */}
+          <div className="mb-5 border-b border-ink-200 pb-4">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-xl font-semibold text-ink-900">{section.title}</h1>
-              {section.write && (
+              <h1 className="text-2xl font-semibold tracking-tight text-ink-900">{section.title}</h1>
+              {section.write ? (
                 <Badge tone={canWrite ? 'warning' : 'neutral'}>
                   {canWrite
                     ? `Меняет данные: ${section.write}`
-                    : `Только чтение: ${section.write} — доступно роли ${roleLabel('ADMIN')}`}
+                    : `Изменения недоступны: ${section.write} — только роль ${roleLabel('ADMIN')}`}
                 </Badge>
+              ) : (
+                <Badge tone="neutral">Изменяющих действий нет</Badge>
               )}
+              <span className="ml-auto flex items-center gap-3">
+                <Link to="/admin/overview" className="text-xs text-ink-500 hover:text-ink-700">
+                  Обзор платформы
+                </Link>
+                <Link to="/admin/pulse" className="text-xs text-ink-500 hover:text-ink-700">
+                  Пульт
+                </Link>
+              </span>
             </div>
-            <p className="mt-1 max-w-3xl text-sm text-ink-600">{section.description}</p>
-            <p className="mt-2 font-mono text-xs break-words text-ink-400">{section.endpoints}</p>
+            <p className="mt-1.5 max-w-4xl text-sm text-ink-600">{section.description}</p>
+            <details className="mt-2">
+              <summary className="cursor-pointer text-xs text-ink-500 hover:text-ink-700">
+                Эндпоинты раздела
+              </summary>
+              <p className="mt-1 font-mono text-xs break-words text-ink-400">{section.endpoints}</p>
+            </details>
           </div>
 
           {Section ? (

@@ -7,6 +7,7 @@ import {
   cityDayKey,
   cityTime,
   formatDurationMinutes,
+  formatFiveStarBp,
   formatRatingBp,
   slotLabel,
   upcomingDays,
@@ -69,6 +70,16 @@ describe('city time helpers', () => {
     // No rating in the payload means no stars at all, not "0,0".
     expect(formatRatingBp(null)).toBeNull();
     expect(formatRatingBp(0)).toBeNull();
+  });
+
+  it('formats the QTime scale separately: 50 000 is five stars there, not 500', () => {
+    // У QTime и водителей `rating_bp` ограничен 0…50000, у каталога — 0…500. Один и тот же
+    // «480» означает разные вещи, и на карточке компании это была бы «★ 480,0».
+    expect(formatFiveStarBp(48000)).toBe('4,8');
+    expect(formatFiveStarBp(49000)).toBe('4,9');
+    expect(formatFiveStarBp(50000)).toBe('5,0');
+    expect(formatFiveStarBp(null)).toBeNull();
+    expect(formatFiveStarBp(0)).toBeNull();
   });
 
   it('labels a slot with its time and day', () => {

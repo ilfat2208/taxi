@@ -3,7 +3,7 @@ import { formatMoney } from '../../api/money';
 import type { QtimeCompany } from '../../api/types';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
-import { formatRatingBp } from '../../lib/cityTime';
+import { formatFiveStarBp } from '../../lib/cityTime';
 
 /**
  * Company card of the QTime catalogue.
@@ -12,7 +12,8 @@ import { formatRatingBp } from '../../lib/cityTime';
  * without a rating shows no stars. "0 ₸" and "4,0" would both be made up.
  */
 export function CompanyCard({ company }: { company: QtimeCompany }) {
-  const rating = formatRatingBp(company.ratingBp);
+  // QTime хранит рейтинг в 0…50000 (50 000 = 5,00), у каталога шкала другая — см. cityTime.ts.
+  const rating = formatFiveStarBp(company.ratingBp);
   const place = [company.city, company.address].filter((part): part is string => Boolean(part));
 
   return (

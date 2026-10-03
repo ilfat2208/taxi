@@ -8,6 +8,7 @@ import {
   cancelTripAsOperator,
   fetchAdminBooking,
   normalizeAdminBooking,
+  toCsv,
 } from './tripAdmin';
 
 /**
@@ -275,5 +276,36 @@ describe('cancelAdminBooking', () => {
     await expect(cancelAdminBooking('b-1', { reason: 'поздно' })).rejects.toSatisfy(
       (error: unknown) => isApiError(error) && error.code === 'BOOKING_NOT_CANCELLABLE',
     );
+  });
+});
+
+describe('экспорт загруженных строк в CSV', () => {
+  it('собирает шапку и строки через точку с запятой', () => {
+    const csv = toCsv(
+      ['tripId', 'status', 'priceMinor'],
+      [
+        ['trip-1', 'COMPLETED', 132_600],
+        ['trip-2', 'SEARCHING', null],
+      ],
+    );
+
+    expect(csv).toBe(
+      ['tripId;status;priceMinor', 'trip-1;COMPLETED;132600', 'trip-2;SEARCHING;'].join('\r\n'),
+    );
+  });
+
+  it('экранирует кавычки и разделители по RFC 4180', () => {
+    const csv = toCsv(['driverName'], [['Айдар "Терминал"'], ['Сериков; младший'], ['строка\nвторая']]);
+
+    expect(csv.split('\r\n')).toEqual([
+      'driverName',
+      '"Айдар ""Терминал"""',
+      '"Сериков; младший"',
+      '"строка\nвторая"',
+    ]);
+  });
+
+  it('не выдумывает данные: пустой список даёт только шапку', () => {
+    expect(toCsv(['code', 'status'], [])).toBe('code;status');
   });
 });

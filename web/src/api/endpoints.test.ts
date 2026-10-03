@@ -122,11 +122,11 @@ describe('qtime payloads', () => {
       address: 'ул. Байтурсынова, 12',
       lat: 42.315,
       lon: 69.59,
-      ratingBp: 480,
+      ratingBp: 48000,
       reviewsCount: 312,
       timezone: 'Asia/Almaty',
       specialists: [
-        { specialistId: 's-1', name: 'Айгуль', specialization: 'маникюр', ratingBp: 490, experienceYears: 6 },
+        { specialistId: 's-1', name: 'Айгуль', specialization: 'маникюр', ratingBp: 49000, experienceYears: 6 },
       ],
       services: [
         { serviceId: 'sv-1', name: 'Маникюр', durationMinutes: 90, priceMinor: 450_000, currency: 'KZT' },
@@ -134,7 +134,7 @@ describe('qtime payloads', () => {
     });
 
     expect(detail.name).toBe('Салон «Лотос»');
-    expect(detail.ratingBp).toBe(480);
+    expect(detail.ratingBp).toBe(48000);
     expect(detail.timezone).toBe('Asia/Almaty');
     expect(detail.specialists).toHaveLength(1);
     expect(detail.services[0]?.priceMinor).toBe(450_000);

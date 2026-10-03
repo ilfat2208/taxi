@@ -238,6 +238,8 @@ export function normalizePayment(raw: unknown): Payment {
     feeMinor,
     totalMinor: num(payment.totalMinor, amountMinor + feeMinor),
     currency: str(payment.currency, 'KZT'),
+    // ownerUserId в ответе есть, и без него админка выясняла владельца запросом счёта.
+    ownerUserId: optionalStr(payment.ownerUserId),
     sourceAccountId: optionalStr(payment.sourceAccountId),
     targetAccountId: optionalStr(payment.targetAccountId),
     merchantId: optionalStr(payment.merchantId),

@@ -261,7 +261,10 @@ describe('раздел «Расчёты»', () => {
     renderSection(false);
 
     await screen.findByText('SET-240902-A1B2C');
-    await user.selectOptions(screen.getByLabelText(/Статус \(по странице\)/i), 'FAILED');
+    // Статус выбирается в рейле: сервис параметр status не принимает, поэтому это
+    // отбор по загруженной странице, и рядом написано именно так.
+    expect(screen.getByText(/Числа в пилюлях — по загруженной странице/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Ошибка/ }));
 
     expect(screen.queryByText('SET-240902-A1B2C')).toBeNull();
     expect(

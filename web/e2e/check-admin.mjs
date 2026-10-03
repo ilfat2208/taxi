@@ -42,8 +42,12 @@ const PHONE = process.env.PHONE ?? '+77009990001';
  */
 async function apiReachable() {
   try {
-    const response = await fetch(`${API_URL}/actuator/health`, { signal: AbortSignal.timeout(3_000) });
-    return response.ok;
+    // Достаточно того, что хост ответил: `DOWN` тоже ответ (503), и это по-прежнему живой
+    // стек, из которого надо брать настоящий токен. Короткий таймаут здесь вреден: под
+    // нагрузкой шлюз отвечает медленнее трёх секунд, и проверка молча уходила в режим
+    // заглушки, то есть переставала проверять данные.
+    await fetch(`${API_URL}/actuator/health`, { signal: AbortSignal.timeout(8_000) });
+    return true;
   } catch {
     return false;
   }
@@ -59,12 +63,16 @@ async function readSections() {
   return entries.map((m) => {
     const block = m[0];
     const title = /title:\s*'([^']+)'/.exec(block);
+    const density = /density:\s*\{\s*kpis:\s*(\d+),\s*panels:\s*(\d+)/.exec(block);
     return {
       id: m[1],
       title: title ? title[1] : m[1],
       // Раздел, который меняет данные, обязан иметь хотя бы одно помеченное действие
       // (см. data-admin-write) — иначе правило «SUPPORT только читает» нечем проверить.
       writes: /write:\s*'/.test(block),
+      // Сколько блоков раздел обещает показать — это и проверяем, а не «выглядит богато».
+      kpis: density ? Number(density[1]) : 0,
+      panels: density ? Number(density[2]) : 1,
     };
   });
 }
@@ -161,6 +169,7 @@ const sections = await readSections();
 const only = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const selected = only.length > 0 ? sections.filter((s) => only.includes(s.id)) : sections;
 const problems = [];
+const density = [];
 
 await mkdir(OUT, { recursive: true });
 
@@ -197,6 +206,17 @@ for (const role of roles) {
     // недоступным API сеть не успокаивается никогда.
     const main = page.locator('[data-admin-section]');
     await main.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {});
+
+    // Дашборд рисует плитки после ответов сервисов, и на медленном стеке это секунды.
+    // Ждём первую плитку явно: иначе проверка плотности меряет пустой экран и обвиняет
+    // раздел в том, чего он не делал.
+    if (section.kpis > 0) {
+      await main
+        .locator('[data-admin-kpi]')
+        .first()
+        .waitFor({ timeout: LIVE ? 20_000 : 3_000 })
+        .catch(() => {});
+    }
     await page.waitForTimeout(LIVE ? 1_500 : 800);
 
     const active = await page.locator('[data-admin-nav] a').count();
@@ -207,7 +227,9 @@ for (const role of roles) {
     const text = ((await main.textContent()) ?? '').trim();
     if (text.length < 40) {
       problems.push(`${role}/${section.id}: содержимое раздела пустое (${text.length} символов)`);
-    } else if (/ещё не сделан/.test(text)) {
+    } else if (text.includes(`Раздел «${section.title}» ещё не сделан`)) {
+      // Ищем именно заглушку оболочки, а не любые слова «ещё не сделано» в тексте раздела:
+      // раздел вправе честно написать так о неготовом поле API, и это не отсутствие раздела.
       problems.push(`${role}/${section.id}: раздела нет — нет файла src/admin/sections/${section.id}.tsx`);
     }
 
@@ -258,6 +280,22 @@ for (const role of roles) {
       }
     }
 
+    // Плотность раздела: реестр обещает плитки и карточки, проверка их считает. Так «богатый
+    // раздел» — это требование к коду, а не впечатление от скриншота. У SUPPORT на один блок
+    // меньше там, где блок был формой изменения: она для этой роли не рисуется вовсе.
+    const kpis = await main.locator('[data-admin-kpi]').count();
+    const panels = await main.locator('[data-admin-panel]').count();
+    const minPanels = role === 'SUPPORT' && section.writes ? Math.max(1, section.panels - 1) : section.panels;
+    // Без стека разделы честно показывают ошибки вместо данных, поэтому плотность меряем
+    // только в живом режиме — иначе проверка требовала бы плиток от экрана без данных.
+    if (LIVE && kpis < section.kpis) {
+      problems.push(`${role}/${section.id}: плиток ${kpis}, реестр обещает ${section.kpis} (data-admin-kpi)`);
+    }
+    if (LIVE && panels < minPanels) {
+      problems.push(`${role}/${section.id}: блоков ${panels}, реестр обещает ${minPanels} (data-admin-panel)`);
+    }
+    density.push(`${section.id}: ${kpis} плиток, ${panels} блоков`);
+
     if (role === 'SUPPORT') {
       if (banner === 0) {
         problems.push(`${role}/${section.id}: нет пометки «только чтение»`);
@@ -304,6 +342,7 @@ const mode = LIVE
   ? 'живой стек: данные обязаны приходить'
   : 'без стека: проверены интерфейс, роли и вёрстка; данные НЕ проверялись';
 console.log(`Разделов: ${selected.length}, ролей: ${roles.length}, режим: ${mode}`);
+console.log(`Плотность разделов: ${density.join('; ')}`);
 console.log(`Скриншоты: ${OUT}`);
 if (problems.length === 0) {
   console.log('Проблем нет.');

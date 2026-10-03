@@ -28,6 +28,32 @@ import { apiRequest } from '../../api/client';
 import { normalizeQtimeBooking, normalizeTrip } from '../../api/endpoints';
 import type { QtimeBooking, Trip } from '../../api/types';
 
+/* --------------------------------------------------------------------- экспорт */
+
+/**
+ * CSV из строк, которые уже загружены в браузер.
+ *
+ * Экспорт в админке — это «скопировать то, что видно», а не выгрузка всей базы: серверного
+ * экспорта ни у trip-service, ни у qtime-service нет, и обещать его кнопкой нельзя. Значения
+ * экранируются по RFC 4180 (кавычка удваивается, поле берётся в кавычки), разделитель —
+ * точка с запятой: в русской локали Excel открывает такой файл без настройки, а запятая
+ * остаётся десятичным разделителем внутри сумм.
+ *
+ * Живёт здесь, а не в разделе, потому что кнопка «Экспорт CSV» есть и в «Поездках», и в
+ * «Записях QTime»: две копии одного формата разошлись бы при первой же правке.
+ */
+export function toCsv(
+  header: readonly string[],
+  rows: ReadonlyArray<ReadonlyArray<string | number | null | undefined>>,
+): string {
+  const cell = (value: string | number | null | undefined): string => {
+    const text = value === null || value === undefined ? '' : String(value);
+    return /[";\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  };
+
+  return [header.map(cell).join(';'), ...rows.map((row) => row.map(cell).join(';'))].join('\r\n');
+}
+
 /* ------------------------------------------------------------------- поездки */
 
 /**

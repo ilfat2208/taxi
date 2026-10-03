@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { IDEMPOTENCY_HEADER } from '../../api/client';
 import {
@@ -17,16 +17,22 @@ import BookingsSection from './bookings';
  *
  * Проверяются правила раздела:
  *  - данные берутся из ответов qtime-service, суммы — из минорных единиц;
+ *  - «всего» — счёт сервера, а не длина выборки, и это подписано на экране;
+ *  - числа рейла статусов — серверный `Page.totalElements` по каждому статусу;
  *  - отмена помечена `data-admin-write`, у SUPPORT её нет вовсе (по этой пометке роль
  *    проверяет `e2e/check-admin.mjs`);
  *  - отмена уходит с необязательным, но осмысленным `Idempotency-Key` — иначе повтор
  *    успешной отмены получил бы 409 `BOOKING_NOT_CANCELLABLE`;
- *  - форма отмены не предлагается для статусов, которые сервис всё равно отвергнет:
- *    окно занимает только CONFIRMED (`BookingStatus`);
- *  - отсутствие клиента в контракте названо прямо, а не добито выдуманным именем.
+ *  - форма отмены не предлагается для статусов, которые сервис всё равно отвергнет: окно
+ *    занимает только CONFIRMED (`BookingStatus`);
+ *  - отсутствие клиента в контракте названо прямо, а не добито выдуманным именем;
+ *  - плотность раздела не ниже обещанной в реестре (`density`).
  */
 
 const SECTION = adminSectionById('bookings')!;
+
+/** Плотность из реестра: раздел обязан показать не меньше, иначе проверка в браузере падает. */
+const DENSITY = SECTION.density ?? { kpis: 0, panels: 0 };
 
 /** Как `QtimeDtos.BookingResponse` собирает `QtimeMapper.toBooking`. */
 const BOOKING_CONFIRMED = {
@@ -60,12 +66,18 @@ const BOOKING_CANCELLED = {
 };
 
 interface BookingsApiOptions {
-  items?: unknown[];
+  items?: Array<Record<string, unknown>>;
   detail?: unknown;
   failList?: boolean;
 }
 
-/** Ответы qtime-service: страница (и выборка KPI), деталь, отмена. */
+/**
+ * Ответы qtime-service: страница, выборка для сводки, счёт по каждому статусу, деталь и отмена.
+ *
+ * Счёт по статусу отдаётся по фильтру из запроса — так отвечает и сервис. «Всего по фильтру» для
+ * страницы при этом больше длины страницы (42 против 2 строк): именно это различие и проверяет
+ * подпись «счёт сервера».
+ */
 function bookingsApi(options: BookingsApiOptions = {}) {
   const items = options.items ?? [BOOKING_CONFIRMED, BOOKING_CANCELLED];
   const detail = options.detail ?? BOOKING_CONFIRMED;
@@ -88,13 +100,18 @@ function bookingsApi(options: BookingsApiOptions = {}) {
       if (!url.includes('?')) {
         return jsonResponse(detail);
       }
+      const params = new URLSearchParams(url.slice(url.indexOf('?') + 1));
+      const status = params.get('status');
+      const size = Number(params.get('size') ?? '20');
+      const page = status === null ? items : items.filter((item) => item.status === status);
+      const serverTotal = size !== 1 && status === null ? 42 : page.length;
       return jsonResponse({
-        items,
+        items: page,
         page: 0,
-        size: 20,
-        totalElements: 42,
-        totalPages: 3,
-        hasNext: true,
+        size,
+        totalElements: serverTotal,
+        totalPages: serverTotal > page.length ? 3 : 1,
+        hasNext: serverTotal > page.length,
       });
     }
     return problemResponse({ code: 'NOT_FOUND', detail: url }, 404);
@@ -111,6 +128,27 @@ function posts(fetchMock: ReturnType<typeof stubFetch>) {
   return fetchMock.mock.calls.filter(([, init]) => init?.method === 'POST');
 }
 
+/** Панель раздела по её id: у панелей кита он стабилен. */
+function panel(id: string): HTMLElement {
+  const node = document.getElementById(id);
+  expect(node).not.toBeNull();
+  return node as HTMLElement;
+}
+
+/** Плитка сводки по её подписи: значения и подписи живут внутри `[data-admin-kpi]`. */
+function kpiTile(label: string): HTMLElement {
+  const tile = screen.getByText(label).closest('[data-admin-kpi]');
+  expect(tile).not.toBeNull();
+  return tile as HTMLElement;
+}
+
+/** Запись открывается кликом по строке — так же, как это делает человек. */
+async function openBooking(code: string) {
+  fireEvent.click(await screen.findByRole('button', { name: `Открыть запись ${code}` }));
+  // «Окно (начало)» есть только в детали: по нему и видно, что она загрузилась.
+  await screen.findByText('Окно (начало)');
+}
+
 describe('раздел «Записи QTime»: список и счётчики', () => {
   it('показывает записи из ответа сервиса и цены в минорных единицах', async () => {
     bookingsApi();
@@ -118,12 +156,13 @@ describe('раздел «Записи QTime»: список и счётчики'
 
     expect(await screen.findByText('QT-778812')).toBeInTheDocument();
     expect(screen.getByText('QT-778813')).toBeInTheDocument();
-    expect(screen.getAllByText('Салон «Лотос»').length).toBe(2);
-    expect(screen.getAllByText('Айгуль').length).toBe(2);
+    // Компания видна прямо в списке — у обеих записей она одна и та же.
+    expect(within(panel('admin-bookings-list')).getAllByText('Салон «Лотос»')).toHaveLength(2);
     // 450 000 минорных единиц = 4 500,00 ₸ — цена-снимок есть у обеих записей
-    expect(screen.getAllByText(/4 500,00/)).toHaveLength(2);
+    expect(screen.getAllByText(/4\s?500,00/)).toHaveLength(2);
     expect(screen.getAllByText('Подтверждена · окно занято').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Отменена клиентом').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('1 ч 30 мин')).toHaveLength(2);
   });
 
   it('называет отсутствие клиента в контракте вместо выдуманного имени', async () => {
@@ -138,21 +177,66 @@ describe('раздел «Записи QTime»: список и счётчики'
     bookingsApi();
     renderSection(true);
 
-    const total = (await screen.findByText('Всего по фильтру')).closest('section');
-    // «Всего» — счёт сервера: Page.totalElements, а не длина выборки.
-    expect(await within(total as HTMLElement).findByText('42')).toBeInTheDocument();
+    // «Всего по фильтру» — счёт сервера: Page.totalElements (42), а не длина выборки.
+    expect(await within(kpiTile('Всего по фильтру')).findByText('42')).toBeInTheDocument();
+    expect(within(kpiTile('Подтверждено')).getByText('1')).toBeInTheDocument();
+    expect(within(kpiTile('Завершено')).getByText('0')).toBeInTheDocument();
+    expect(within(kpiTile('Отменено')).getByText('1')).toBeInTheDocument();
+    expect(within(kpiTile('Неявки')).getByText('0')).toBeInTheDocument();
+    // Сумма цен — по загруженной странице: 4 500,00 + 4 500,00 = 9 000,00 ₸.
+    expect(within(kpiTile('Сумма цен на странице')).getByText(/9\s?000,00/)).toBeInTheDocument();
 
-    const cancelled = screen.getByText('Отменено').closest('section');
-    expect(await within(cancelled as HTMLElement).findByText('1')).toBeInTheDocument();
-
-    expect(screen.getByText(/Агрегатов у qtime-service нет/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Агрегатов у qtime-service нет/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/GET \/api\/v1\/qtime\/bookings\?size=100/)).toBeInTheDocument();
   });
 
-  it('объясняет пустой список', async () => {
+  it('показывает распределение по статусам по загруженной выборке', async () => {
+    bookingsApi();
+    renderSection(true);
+
+    const distribution = (await screen.findByText('Распределение по статусам')).closest(
+      '[data-admin-panel]',
+    ) as HTMLElement;
+    expect(distribution).not.toBeNull();
+    expect(await within(distribution).findByText(/по загруженной выборке · строк: 2/)).toBeInTheDocument();
+    expect(within(distribution).getByRole('img', { name: 'записей в выборке' })).toBeInTheDocument();
+    expect(within(distribution).getAllByText('Клиент не пришёл').length).toBeGreaterThan(0);
+  });
+
+  it('рейл статусов показывает серверный счёт и фильтрует список', async () => {
+    const fetchMock = bookingsApi();
+    renderSection(true);
+
+    const rail = await screen.findByRole('list', { name: 'Фильтр по статусу записи' });
+    await waitFor(() =>
+      expect(within(rail).getByRole('button', { name: /Все\s*2/ })).toBeInTheDocument(),
+    );
+    expect(
+      within(rail).getByRole('button', { name: /Подтверждена · окно занято\s*1/ }),
+    ).toBeInTheDocument();
+    expect(within(rail).getByRole('button', { name: /Отменена клиентом\s*1/ })).toBeInTheDocument();
+    expect(within(rail).getByRole('button', { name: /Клиент не пришёл\s*0/ })).toBeInTheDocument();
+
+    fireEvent.click(within(rail).getByRole('button', { name: /Отменена клиентом/ }));
+
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(
+          ([url, init]) =>
+            init?.method !== 'POST' &&
+            String(url).includes('status=CANCELLED_BY_CLIENT') &&
+            String(url).includes('size=20'),
+        ),
+      ).toBe(true),
+    );
+  });
+
+  it('объясняет пустой список и пустую выборку', async () => {
     bookingsApi({ items: [] });
     renderSection(true);
 
     expect(await screen.findByText('Записей нет')).toBeInTheDocument();
+    expect(screen.getByText('Данных не найдено')).toBeInTheDocument();
   });
 
   it('показывает ошибку загрузки', async () => {
@@ -160,6 +244,41 @@ describe('раздел «Записи QTime»: список и счётчики'
     renderSection(true);
 
     expect(await screen.findByText('Не удалось загрузить записи')).toBeInTheDocument();
+  });
+
+  it('отдаёт плотность не ниже обещанной в реестре разделов', async () => {
+    bookingsApi();
+    renderSection(true);
+    await screen.findByText('QT-778812');
+
+    expect(DENSITY.kpis).toBeGreaterThanOrEqual(5);
+    expect(DENSITY.panels).toBeGreaterThanOrEqual(3);
+    expect(document.querySelectorAll('[data-admin-kpi]').length).toBeGreaterThanOrEqual(DENSITY.kpis);
+    expect(document.querySelectorAll('[data-admin-panel]').length).toBeGreaterThanOrEqual(
+      DENSITY.panels,
+    );
+  });
+
+  it('копирует загруженные строки в CSV, когда буфер обмена доступен', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+
+    bookingsApi();
+    renderSection(true);
+    await screen.findByText('QT-778812');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Экспорт CSV' }));
+
+    await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+    const csv = String(writeText.mock.calls[0]?.[0] ?? '');
+    expect(csv.split('\r\n')[0]).toBe(
+      'bookingId;code;status;startsAt;endsAt;companyId;companyName;specialistName;serviceName;durationMinutes;priceMinor;currency',
+    );
+    expect(csv).toContain('b-1;QT-778812;CONFIRMED');
+    expect(await screen.findByText('скопировано строк: 2')).toBeInTheDocument();
   });
 });
 
@@ -182,20 +301,28 @@ describe('раздел «Записи QTime»: право на запись', ()
     expect(document.querySelectorAll('[data-admin-write]')).toHaveLength(0);
     expect(screen.queryByRole('button', { name: 'Подтвердить отмену' })).toBeNull();
     expect(screen.queryByLabelText(/Причина отмены/)).toBeNull();
+    expect(screen.queryByText('Отмена записи')).toBeNull();
+
+    // Даже после открытия записи формы не появляется.
+    await openBooking('QT-778812');
+    expect(document.querySelectorAll('[data-admin-write]')).toHaveLength(0);
+    expect(document.querySelectorAll('[data-admin-panel]').length).toBeGreaterThanOrEqual(
+      Math.max(1, DENSITY.panels - 1),
+    );
   });
 });
 
 describe('раздел «Записи QTime»: отмена', () => {
-  it('требует ID записи и причину, затем шлёт reason с ключом идемпотентности', async () => {
+  it('требует открытую запись и причину, затем шлёт reason с ключом идемпотентности', async () => {
     const fetchMock = bookingsApi();
     renderSection(true);
 
     fireEvent.click(await screen.findByRole('button', { name: 'Подтвердить отмену' }));
-    expect(await screen.findByText(/Сначала укажите ID записи/)).toBeInTheDocument();
+    expect(await screen.findByText(/Сначала откройте запись/)).toBeInTheDocument();
     expect(posts(fetchMock)).toHaveLength(0);
 
-    fireEvent.change(await screen.findByLabelText(/ID записи/), { target: { value: 'b-1' } });
-    fireEvent.click(await screen.findByRole('button', { name: 'Подтвердить отмену' }));
+    await openBooking('QT-778812');
+    fireEvent.click(screen.getByRole('button', { name: 'Подтвердить отмену' }));
     expect(await screen.findByText(/Укажите причину/)).toBeInTheDocument();
     expect(posts(fetchMock)).toHaveLength(0);
 
@@ -216,7 +343,7 @@ describe('раздел «Записи QTime»: отмена', () => {
     bookingsApi({ detail: BOOKING_CANCELLED });
     renderSection(true);
 
-    fireEvent.change(await screen.findByLabelText(/ID записи/), { target: { value: 'b-2' } });
+    await openBooking('QT-778813');
 
     expect(await screen.findByText(/Отмена невозможна: статус «Отменена клиентом»/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Подтвердить отмену' })).toBeNull();
@@ -225,29 +352,54 @@ describe('раздел «Записи QTime»: отмена', () => {
 });
 
 describe('раздел «Записи QTime»: деталь', () => {
-  it('показывает комментарий клиента и честно говорит, чего в контракте нет', async () => {
+  it('показывает компанию, мастера, услугу, окно и комментарий клиента', async () => {
     bookingsApi();
     renderSection(true);
 
-    fireEvent.change(await screen.findByLabelText(/ID записи/), { target: { value: 'b-1' } });
+    await openBooking('QT-778812');
 
-    expect(await screen.findByText('Запись QT-778812')).toBeInTheDocument();
+    expect(within(panel('admin-bookings-detail')).getByText('Запись QT-778812')).toBeInTheDocument();
+    expect(within(panel('admin-bookings-detail')).getByText('Салон «Лотос»')).toBeInTheDocument();
+    expect(screen.getByText('Айгуль')).toBeInTheDocument();
+    expect(screen.getByText('Маникюр с покрытием')).toBeInTheDocument();
+    expect(screen.getByText('Окно (начало)')).toBeInTheDocument();
+    expect(screen.getByText('Окно (конец)')).toBeInTheDocument();
+    expect(screen.getByText('Цена-снимок')).toBeInTheDocument();
     // Комментарий клиента — единственный его след в ответе QTime.
-    expect(await screen.findByText('Прошу без лака')).toBeInTheDocument();
+    expect(screen.getByText('Прошу без лака')).toBeInTheDocument();
+    // Хронология строится из времени создания и текущего статуса — так и подписана.
     expect(screen.getByText(/Отдельной истории переходов у QTime нет/)).toBeInTheDocument();
-    // Цена-снимок подписана как снимок, а не как ссылка на прайс.
     expect(screen.getByText(/Цена — снимок, а не ссылка на прайс/)).toBeInTheDocument();
-    expect(screen.getByText('Запись создана')).toBeInTheDocument();
+    expect(screen.getByText(/Запись создана: QTime заводит её сразу подтверждённой/)).toBeInTheDocument();
   });
 
   it('объясняет отсутствие комментария и клиента в ответе', async () => {
     bookingsApi({ detail: BOOKING_CANCELLED });
     renderSection(true);
 
-    fireEvent.change(await screen.findByLabelText(/ID записи/), { target: { value: 'b-2' } });
+    await openBooking('QT-778813');
 
     expect(await screen.findByText(/Комментарий клиента при записи не оставлен/)).toBeInTheDocument();
     expect(screen.getByText('не смогу прийти')).toBeInTheDocument();
+  });
+
+  it('открывает запись по ID из обращения — в том числе ролью без права записи', async () => {
+    bookingsApi();
+    renderSection(false);
+
+    fireEvent.change(await screen.findByLabelText('Открыть запись по ID'), {
+      target: { value: 'b-1' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Открыть' }));
+
+    expect(await within(panel('admin-bookings-detail')).findByText('Запись QT-778812')).toBeInTheDocument();
+  });
+
+  it('до открытия записи показывает пустое состояние вместо пустой карточки', async () => {
+    bookingsApi();
+    renderSection(true);
+
+    expect(await screen.findByText('Запись не выбрана')).toBeInTheDocument();
   });
 
   it('сообщает, что записи с таким идентификатором нет', async () => {
@@ -259,7 +411,10 @@ describe('раздел «Записи QTime»: деталь', () => {
     );
     renderSection(true);
 
-    fireEvent.change(await screen.findByLabelText(/ID записи/), { target: { value: 'no-such-booking' } });
+    fireEvent.change(await screen.findByLabelText('Открыть запись по ID'), {
+      target: { value: 'no-such-booking' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Открыть' }));
 
     expect(await screen.findByText('Запись не найдена')).toBeInTheDocument();
   });

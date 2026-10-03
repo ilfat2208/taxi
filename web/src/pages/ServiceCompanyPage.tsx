@@ -20,7 +20,7 @@ import {
   cityDate,
   cityTime,
   formatDurationMinutes,
-  formatRatingBp,
+  formatFiveStarBp,
   upcomingDays,
 } from '../lib/cityTime';
 import { cx } from '../lib/cx';
@@ -48,7 +48,7 @@ function SpecialistOption({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const rating = formatRatingBp(specialist.ratingBp);
+  const rating = formatFiveStarBp(specialist.ratingBp);
   return (
     <button
       type="button"
@@ -216,7 +216,7 @@ export function ServiceCompanyPage() {
   }
 
   const place = [company.city, company.address].filter((part): part is string => Boolean(part));
-  const rating = formatRatingBp(company.ratingBp);
+  const rating = formatFiveStarBp(company.ratingBp);
   const duration = formatDurationMinutes(slotsQuery.data?.durationMinutes ?? service?.durationMinutes ?? null);
 
   const submit = () => {

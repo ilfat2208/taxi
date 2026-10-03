@@ -169,12 +169,29 @@ export function formatDurationMinutes(minutes: number | null | undefined): strin
   return rest === 0 ? `${hours} ч` : `${hours} ч ${rest} мин`;
 }
 
-/** Basis points -> `"4,8"`; `null` means "the service did not send a rating". */
+/**
+ * Рейтинг каталога в базисных пунктах -> `"4,8"`; `null` — «сервис не прислал оценку».
+ *
+ * Внимание: у каталога и у QTime РАЗНАЯ шкала, и это не опечатка клиента, а расхождение
+ * сервисов. `catalog.merchant.rating_basis_points` ограничен `between 0 and 500`
+ * (V1__init_catalog.sql:31), поэтому здесь деление на 100. У QTime и водителей
+ * `rating_bp between 0 and 50000` (V1__init_qtime.sql:40, V1__init_driver.sql:26) —
+ * для них есть `formatFiveStarBp`. Пока шкалы не сведены в сервисах, путать их нельзя:
+ * цена ошибки — «★ 480,0» на карточке компании.
+ */
 export function formatRatingBp(basisPoints: number | null | undefined): string | null {
   if (typeof basisPoints !== 'number' || !Number.isFinite(basisPoints) || basisPoints <= 0) {
     return null;
   }
   return (basisPoints / 100).toFixed(1).replace('.', ',');
+}
+
+/** Рейтинг QTime и водителей (`rating_bp`, 50 000 = 5,00) -> `"4,8"`. */
+export function formatFiveStarBp(basisPoints: number | null | undefined): string | null {
+  if (typeof basisPoints !== 'number' || !Number.isFinite(basisPoints) || basisPoints <= 0) {
+    return null;
+  }
+  return (basisPoints / 10_000).toFixed(1).replace('.', ',');
 }
 
 /** `"15:30 · 2 октября"` — the slot label used across the booking screens. */
