@@ -88,18 +88,26 @@ function Invoke-Psql([string]$database, [string]$sql) {
 
 # Подбор адреса: TCP-порт может отвечать и у чужого сервера, поэтому проверяем
 # настоящее подключение драйвером — тем же, которым ходят тесты.
-function Get-JdbcHost {
+#
+# Возвращает 'OK' или 'FAIL <причина>'. Отдельная функция, потому что тот же
+# вопрос задаётся и к адресу, указанному вручную: без проверки `-DatabaseHost
+# localhost` на машине с системным PostgreSQL уводит тесты в чужой сервер, и
+# вместо понятной причины получается пять ошибок «роль не существует».
+function Test-DatabaseCandidate {
+    param(
+        [Parameter(Mandatory)][string]$HostName,
+        [Parameter(Mandatory)][int]$Port,
+        [Parameter(Mandatory)][string]$User,
+        [Parameter(Mandatory)][string]$Password
+    )
+
     $driver = Get-ChildItem (Join-Path $env:USERPROFILE '.m2\repository\org\postgresql\postgresql') `
         -Recurse -Filter 'postgresql-*.jar' -ErrorAction SilentlyContinue |
         Where-Object { $_.Name -notmatch 'sources|javadoc' } |
         Sort-Object Name -Descending | Select-Object -First 1
-    if (-not $driver) {
-        Write-Host '  [i] JDBC-драйвер в ~/.m2 не найден, беру localhost' -ForegroundColor Yellow
-        return 'localhost'
-    }
-    if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
-        Write-Host '  [i] java не найдена в PATH, беру localhost' -ForegroundColor Yellow
-        return 'localhost'
+    if (-not $driver -or -not (Get-Command java -ErrorAction SilentlyContinue)) {
+        # Проверить нечем — считаем, что адрес подходит: тесты всё равно скажут точнее.
+        return 'OK'
     }
 
     $probe = Join-Path $env:TEMP 'ItDbProbe.java'
@@ -119,13 +127,19 @@ public class ItDbProbe {
 }
 '@ | Set-Content -Path $probe -Encoding ASCII
 
+    $answer = & java -cp $driver.FullName $probe $HostName $Port 'postgres' $User $Password 2>&1
+    return (($answer | Out-String).Trim() -split "`r?`n" | Select-Object -First 1)
+}
+
+function Get-JdbcHost {
     foreach ($candidate in @('127.0.0.1', '[::1]', 'localhost')) {
-        $answer = & java -cp $driver.FullName $probe $candidate $PostgresPort 'postgres' $PostgresUser $PostgresPassword 2>&1
-        if ($answer -contains 'OK') {
+        $answer = Test-DatabaseCandidate -HostName $candidate -Port $PostgresPort `
+            -User $PostgresUser -Password $PostgresPassword
+        if ($answer -eq 'OK') {
             Write-Host "  [ok]   Postgres для тестов доступен по $candidate`:$PostgresPort"
             return $candidate
         }
-        Write-Host "  [i]    $candidate`:$PostgresPort не подходит ($($answer -join ' '))" -ForegroundColor Yellow
+        Write-Host "  [i]    $candidate`:$PostgresPort не подходит ($answer)" -ForegroundColor Yellow
     }
     return 'localhost'
 }
@@ -143,6 +157,19 @@ if ($running -ne 'true') {
 Write-Step '2. Адрес Postgres, по которому ходят тесты'
 if ($DatabaseHost) {
     Write-Host "  [i]    адрес задан вручную: $DatabaseHost"
+    # Заданный вручную адрес всё равно проверяем: на машине с собственным (не docker)
+    # PostgreSQL порт 5432 по IPv4 держит он, и `-DatabaseHost localhost` тихо уводит
+    # тесты в чужой сервер. Симптом — пять ошибок «роль "taxi" не существует» вместо
+    # понятного сообщения, поэтому проверяем здесь и говорим, что делать.
+    $manualProbe = Test-DatabaseCandidate -HostName $DatabaseHost -Port $PostgresPort `
+        -User $PostgresUser -Password $PostgresPassword
+    if ($manualProbe -ne 'OK') {
+        Write-Host "  [!]    $DatabaseHost`:$PostgresPort не принял учётные данные $PostgresUser" -ForegroundColor Red
+        Write-Host '         Похоже, на этом порту отвечает другой Postgres (например, установленный в систему).' -ForegroundColor Yellow
+        Write-Host '         Уберите -DatabaseHost: скрипт сам найдёт адрес контейнера (обычно это [::1]) по учётным данным.' -ForegroundColor Yellow
+        exit 1
+    }
+    Write-Host "  [ok]   Postgres для тестов доступен по $DatabaseHost`:$PostgresPort"
 } else {
     $DatabaseHost = Get-JdbcHost
 }

@@ -1,0 +1,51 @@
+# ---------------------------------------------------------------------------
+# Как git хранит файлы: явные правила вместо надежды на настройки машины.
+#
+# Зачем: у команды разные системы, а у нас в репозитории есть и PowerShell-скрипты
+# (им нужны CRLF и BOM, иначе Windows PowerShell 5.1 читает кириллицу как мусор),
+# и shell-скрипты для сервера (им нужен LF: с CRLF bash на Linux падает на
+# `bad interpreter`). Без этих правил `core.autocrlf=true` на машине разработчика
+# тихо меняет окончания строк, и ломается ровно то, что не проверяется локально.
+# ---------------------------------------------------------------------------
+
+# По умолчанию git сам определяет текстовые файлы и хранит их с LF.
+* text=auto
+
+# Windows-скрипты: в репозитории LF, на диске CRLF.
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.psd1 text eol=crlf
+
+# Shell-скрипты сервера: LF и в репозитории, и на диске (в том числе на Windows).
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Конфиги, которые читают инструменты на Linux в контейнерах.
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+Caddyfile text eol=lf
+*.env.example text eol=lf
+
+# Бинарное: никаких преобразований.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.jar binary
+*.apk binary
+*.aab binary
+*.keystore binary
+*.jks binary
+*.sqlite binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.mp3 binary
+*.mp4 binary

@@ -588,6 +588,7 @@ docker compose --profile app up -d --build
 
 ## Документация
 
+* [`docs/status.md`](docs/status.md) — **промежуточные итоги**: что работает, чем проверено, что не сделано и что делать дальше
 * [`docs/orta.md`](docs/orta.md) — экосистема ORTA: три уровня, платформенные сервисы, двадцать одно направление, QTime, первый этап
 * [`docs/adr/0010-orta-platform-layers.md`](docs/adr/0010-orta-platform-layers.md) — почему вертикали подключаются к платформе, а не строят своё
 * [`docs/taxi-roadmap.md`](docs/taxi-roadmap.md) — план работ по такси: фазы, риски, оценки
