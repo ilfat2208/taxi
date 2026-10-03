@@ -27,4 +27,22 @@ final class PaymentAccess {
                     caller.userId(), payment.getPaymentNumber(), payment.getOwnerUserId());
         }
     }
+
+    /**
+     * Reading is wider than moving money: SUPPORT may open any payment, but only the
+     * owner or an ADMIN may refund one.
+     *
+     * <p>This is the rule the admin panel shows its users — SUPPORT sees the panel in
+     * read-only mode — and a UI-only rule is not a rule: without this check a support
+     * token could still move money with a single curl. The owner keeps the right to
+     * refund their own payment, which is what makes the rider client work.
+     */
+    static void requireRefundAuthority(AuthenticatedUser caller, Payment payment) {
+        require(caller, payment);
+        boolean owner = caller.userId().equals(payment.getOwnerUserId());
+        if (!owner && !caller.isAdmin()) {
+            throw DomainException.forbidden("refund of payment {} requires ADMIN or its owner, caller {} is neither",
+                    payment.getPaymentNumber(), caller.userId());
+        }
+    }
 }

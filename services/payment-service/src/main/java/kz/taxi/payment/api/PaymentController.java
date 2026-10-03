@@ -85,7 +85,9 @@ public class PaymentController {
     @Operation(summary = "Refund a completed payment, fully or partially",
             description = "The refund is credited to the account the money came from, referenced by the refund "
                     + "id, which is what makes a retried refund safe. Cumulative refunds can never exceed the "
-                    + "payment amount; refunding the whole amount reverses the payment. Requires the "
+                    + "payment amount; refunding the whole amount reverses the payment. The owner of the payment "
+                    + "and an ADMIN may refund; SUPPORT reads payments but cannot move money, which is the rule "
+                    + "the admin panel renders as read-only for that role. Requires the "
                     + "Idempotency-Key header.")
     public PaymentDtos.RefundResponse refund(@PathVariable String id,
                                              @Valid @RequestBody PaymentDtos.RefundRequest request) {
@@ -103,8 +105,8 @@ public class PaymentController {
 
     @GetMapping
     @Operation(summary = "List payments, newest first",
-            description = "The caller's own payments; an ADMIN sees every payment. Filter by status to build "
-                    + "an \"in flight\" or \"failed\" view.")
+            description = "The caller's own payments; an operator (ADMIN or SUPPORT) sees every payment. Filter by "
+                    + "status to build an \"in flight\" or \"failed\" view.")
     public PageResponse<PaymentDtos.PaymentResponse> list(
             @Parameter(description = "Zero-based page index") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size, 1..100") @RequestParam(defaultValue = "20") int size,

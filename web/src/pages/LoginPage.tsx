@@ -26,8 +26,10 @@ function redirectTarget(state: unknown): string {
  *
  * Two demo affordances are deliberate and visible: the phone is pre-filled, and the
  * screen states that *any* `+7XXXXXXXXXX` number works with the code `0000`. The
- * role checkboxes exist because this identity provider can mint MERCHANT/ADMIN
- * tokens on request — in production they disappear with the provider.
+ * role checkboxes exist because this identity provider can mint MERCHANT/ADMIN/SUPPORT
+ * tokens on request — in production they disappear with the provider. SUPPORT is
+ * offered next to ADMIN on purpose: the admin panel renders itself read-only for that
+ * role, and the only way to see that is to be able to enter as one.
  */
 export function LoginPage() {
   const { login, isAuthenticated } = useAuth();
@@ -39,6 +41,7 @@ export function LoginPage() {
   const [code, setCode] = useState('');
   const [wantMerchant, setWantMerchant] = useState(false);
   const [wantAdmin, setWantAdmin] = useState(false);
+  const [wantSupport, setWantSupport] = useState(false);
   const [errors, setErrors] = useState<LoginErrors>({});
 
   const mutation = useMutation({
@@ -75,6 +78,9 @@ export function LoginPage() {
     }
     if (wantAdmin) {
       roles.push('ADMIN');
+    }
+    if (wantSupport) {
+      roles.push('SUPPORT');
     }
     mutation.mutate(roles);
   };
@@ -146,9 +152,16 @@ export function LoginPage() {
             <CheckboxField
               id="login-role-admin"
               label="Запросить роль ADMIN"
-              hint="Открывает демо-пополнение счёта на главной"
+              hint="Админ-панель с полным доступом: возвраты, расчёты, назначения, отмены, лимиты"
               checked={wantAdmin}
               onChange={(event) => setWantAdmin(event.target.checked)}
+            />
+            <CheckboxField
+              id="login-role-support"
+              label="Запросить роль SUPPORT"
+              hint="Та же админ-панель, но только для чтения: изменяющие действия скрыты"
+              checked={wantSupport}
+              onChange={(event) => setWantSupport(event.target.checked)}
             />
             <CheckboxField
               id="login-role-merchant"

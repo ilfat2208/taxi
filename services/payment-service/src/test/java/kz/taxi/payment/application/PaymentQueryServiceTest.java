@@ -41,7 +41,9 @@ import static org.mockito.Mockito.when;
  * <p>The distinction these tests pin down: a person may only see their own
  * payments, while another service presenting the internal token may read any
  * payment — because a Kafka listener and a recovery job have no user identity, and
- * refusing them would leave a paid order looking unpaid.
+ * refusing them would leave a paid order looking unpaid. Operators sit on the wide
+ * side of reads (ADMIN and SUPPORT both list everything) and on the narrow side of
+ * writes, which the refund tests in {@code PaymentStateServiceTest} pin down.
  */
 class PaymentQueryServiceTest {
 
@@ -181,6 +183,24 @@ class PaymentQueryServiceTest {
         var result = queries.list(TestPayments.admin("O-1"), PaymentStatus.FAILED, 0, 20);
 
         assertThat(result.items()).hasSize(1);
+        verify(payments, never()).findByOwnerUserIdOrderByCreatedAtDesc(anyString(), any());
+        verify(payments, never()).findByOwnerUserIdAndStatusOrderByCreatedAtDesc(anyString(), any(), any());
+    }
+
+    @Test
+    @DisplayName("SUPPORT also lists every payment: reading is what the operator role is for")
+    void support_lists_everything_but_writes_nothing() {
+        Payment other = completedPayment("U-9", "O-9");
+        when(payments.findAllByOrderByCreatedAtDesc(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(other)));
+
+        var result = queries.list(TestPayments.support("O-2"), null, 0, 20);
+
+        assertThat(result.items()).hasSize(1);
+        assertThat(result.items().get(0).paymentId()).isEqualTo(other.getId());
+        // A support agent holding a payment number must be able to find the row, which is
+        // the whole point of the admin panel; refunds for this role are refused separately
+        // in PaymentStateServiceTest, so the read path can stay wide.
         verify(payments, never()).findByOwnerUserIdOrderByCreatedAtDesc(anyString(), any());
         verify(payments, never()).findByOwnerUserIdAndStatusOrderByCreatedAtDesc(anyString(), any(), any());
     }

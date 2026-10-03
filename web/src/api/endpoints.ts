@@ -241,6 +241,9 @@ export function normalizePayment(raw: unknown): Payment {
     sourceAccountId: optionalStr(payment.sourceAccountId),
     targetAccountId: optionalStr(payment.targetAccountId),
     merchantId: optionalStr(payment.merchantId),
+    // orderId is in PaymentResponse and was dropped here: without it a marketplace payment
+    // could not be traced back to its order, which is the first thing an operator asks.
+    orderId: optionalStr(payment.orderId),
     description: optionalStr(payment.description),
     failureCode: optionalStr(payment.failureCode),
     failureReason: optionalStr(payment.failureReason),
@@ -605,16 +608,25 @@ export function createTransfer(body: TransferRequest, idempotencyKey: string): P
   }).then((raw) => normalizePayment(asRecord(raw).payment !== undefined ? asRecord(raw).payment : raw));
 }
 
+/**
+ * Refund a payment.
+ *
+ * <p>Returns a {@link Refund}, not a {@link Payment}: the service answers with
+ * `RefundResponse{refundId, paymentId, amountMinor, currency, status, reason, createdAt,
+ * updatedAt}`, and running that through `normalizePayment` produced a payment whose id was the
+ * *refund* id — a wrong type that stayed invisible only while nobody read the result. The
+ * payment itself is refetched by the caller, which is the honest way to show its new status.
+ */
 export function refundPayment(
   paymentId: string,
   body: RefundRequest,
   idempotencyKey: string,
-): Promise<Payment> {
+): Promise<Refund> {
   return apiRequest<unknown>(`/v1/payments/${encodeURIComponent(paymentId)}/refund`, {
     method: 'POST',
     body,
     idempotencyKey,
-  }).then((raw) => normalizePayment(asRecord(raw).payment !== undefined ? asRecord(raw).payment : raw));
+  }).then(normalizeRefund);
 }
 
 export function normalizeRefund(raw: unknown): Refund {
@@ -627,7 +639,9 @@ export function normalizeRefund(raw: unknown): Refund {
     status: str(refund.status, 'COMPLETED'),
     reason: optionalStr(refund.reason),
     createdAt: optionalStr(refund.createdAt),
-    completedAt: optionalStr(refund.completedAt),
+    // The service sends updatedAt and nothing else: `completedAt` never arrived from it.
+    completedAt: optionalStr(refund.completedAt ?? refund.updatedAt),
+    updatedAt: optionalStr(refund.updatedAt),
   };
 }
 

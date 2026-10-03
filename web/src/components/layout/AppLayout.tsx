@@ -17,6 +17,7 @@ import {
   OrdersIcon,
   PaymentsIcon,
   ServicesIcon,
+  ShieldIcon,
   StoreIcon,
   TaxiIcon,
   TransferIcon,
@@ -50,6 +51,8 @@ const NAV_ITEMS: NavItem[] = [
   // Desktop-only on purpose: the console is a control room, and the tab bar is
   // already full on phones (`mobile` omitted = sidebar only).
   { to: '/dispatch', label: 'Диспетчерская', icon: DispatchIcon, roles: DISPATCH_ROLES },
+  // Админка тоже только в сайдбаре: это рабочее место, а не экран райдера.
+  { to: '/admin', label: 'Админка', icon: ShieldIcon, roles: ['ADMIN', 'SUPPORT'] },
 ];
 
 function navLinkClass({ isActive }: { isActive: boolean }): string {

@@ -23,6 +23,7 @@ import { DemoGalleryPage } from './demo/DemoGalleryPage';
 import { DemoRolePickerPage } from './demo/DemoRolePickerPage';
 import { DemoWorkspacePage } from './demo/DemoWorkspacePage';
 import { DemoScreenPage } from './demo/DemoScreenPage';
+import { AdminPage } from './admin/AdminPage';
 
 /**
  * Route table.
@@ -66,6 +67,11 @@ export const appRoutes: RouteObject[] = [
     element: <RequireAuth />,
     errorElement: <RouteErrorPage />,
     children: [
+      // Админ-панель — отдельная оболочка (своё меню разделов, шапка с ролью), но
+      // за той же сессией. Роли проверяет сам раздел: без ADMIN/SUPPORT он объясняет,
+      // почему доступ закрыт, вместо пустого экрана.
+      { path: 'admin', element: <AdminPage /> },
+      { path: 'admin/:section', element: <AdminPage /> },
       {
         element: <AppLayout />,
         errorElement: <RouteErrorPage />,

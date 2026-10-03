@@ -356,6 +356,29 @@ class PaymentStateServiceTest {
     }
 
     @Test
+    @DisplayName("SUPPORT reads every payment but cannot refund somebody else's")
+    void support_may_read_but_not_refund() {
+        stubSaves();
+        Payment payment = TestPayments.completed(TestPayments.p2p("U-1", "A-1", "A-2", 100_000));
+        when(payments.findByIdForUpdate(payment.getId())).thenReturn(Optional.of(payment));
+        when(refunds.findByIdempotencyKey(anyString())).thenReturn(Optional.empty());
+
+        // The panel draws itself read-only for this role; the API has to agree, or the
+        // rule would exist only in the browser and one curl would move the money.
+        AuthenticatedUser support = TestPayments.support("O-2");
+        assertThatThrownBy(() -> service.openRefund(support, payment.getId(), 10_000L, "helping", "k-support"))
+                .isInstanceOf(DomainException.class)
+                .extracting(thrown -> ((DomainException) thrown).errorCode())
+                .isEqualTo(CommonErrorCode.FORBIDDEN);
+        verify(refunds, never()).save(any());
+
+        // The owner keeps the right to refund their own payment: the rider client uses it.
+        when(refunds.sumRefunded(payment.getId())).thenReturn(0L);
+        assertThat(service.openRefund(TestPayments.customer("U-1"), payment.getId(), 10_000L, "my own", "k-owner"))
+                .isNotNull();
+    }
+
+    @Test
     @DisplayName("a payment that never completed cannot be refunded")
     void only_completed_payments_can_be_refunded() {
         stubSaves();

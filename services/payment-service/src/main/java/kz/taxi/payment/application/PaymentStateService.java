@@ -224,6 +224,10 @@ public class PaymentStateService {
      * <p>The payment row is locked pessimistically because the cumulative limit is a
      * read-then-write: two concurrent partial refunds would each see only their own
      * amount and together overdraw the payment.
+     *
+     * <p>Moving money out is narrower than reading it: {@link PaymentAccess#requireRefundAuthority}
+     * lets the owner and an ADMIN through and refuses SUPPORT, which is the rule the
+     * admin panel promises when it renders itself read-only for that role.
      */
     @Transactional
     public RefundStart openRefund(AuthenticatedUser caller,
@@ -234,7 +238,7 @@ public class PaymentStateService {
         Payment payment = payments.findByIdForUpdate(paymentId)
                 .orElseThrow(() -> DomainException.of(PaymentErrorCode.PAYMENT_NOT_FOUND,
                         "payment {} not found", paymentId));
-        PaymentAccess.require(caller, payment);
+        PaymentAccess.requireRefundAuthority(caller, payment);
 
         Optional<Refund> existing = refunds.findByIdempotencyKey(idempotencyKey);
         if (existing.isPresent()) {

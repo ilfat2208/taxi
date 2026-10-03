@@ -160,3 +160,12 @@ export function ServicesIcon(props: IconProps) {
     </Icon>
   );
 }
+
+export function ShieldIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3 5 6v5.5c0 4 3 7.6 7 9.5 4-1.9 7-5.5 7-9.5V6Z" />
+      <path d="m9.2 12.2 2 2 3.6-3.9" />
+    </Icon>
+  );
+}

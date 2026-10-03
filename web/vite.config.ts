@@ -7,7 +7,8 @@ import tailwindcss from '@tailwindcss/vite';
  *
  * The dev server proxies `/api` to the gateway so the browser talks to a single
  * origin: no CORS preflight in dev, and the same relative base URL works behind
- * any reverse proxy in production.
+ * any reverse proxy in production. `/actuator` is proxied for the same reason:
+ * the admin overview reads the gateway's own health, which is not part of `/api`.
  */
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -15,6 +16,10 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
+        target: process.env.VITE_GATEWAY_URL ?? 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/actuator': {
         target: process.env.VITE_GATEWAY_URL ?? 'http://localhost:8080',
         changeOrigin: true,
       },

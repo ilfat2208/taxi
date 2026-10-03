@@ -3,6 +3,7 @@ package kz.taxi.payment.application;
 import kz.taxi.common.core.error.DomainException;
 import kz.taxi.common.core.web.PageResponse;
 import kz.taxi.common.security.AuthenticatedUser;
+import kz.taxi.common.security.Roles;
 import kz.taxi.payment.api.dto.PaymentDtos;
 import kz.taxi.payment.domain.Payment;
 import kz.taxi.payment.domain.PaymentErrorCode;
@@ -61,7 +62,17 @@ public class PaymentQueryService {
         return mapper.toDetails(payment, transitions.findByPaymentIdOrderByCreatedAtAsc(paymentId));
     }
 
-    /** Newest first; administrators see every payment, everybody else only their own. */
+    /**
+     * Newest first. An operator — ADMIN or SUPPORT — sees every payment; everybody else
+     * only their own.
+     *
+     * <p>SUPPORT is on the wide side of the list on purpose: {@code get} already lets an
+     * operator read anybody's payment, so restricting the list to ADMIN only ever
+     * produced the same dead end the panel exists to remove — a support agent holding a
+     * payment number could open it but could not find it. Writing money stays with
+     * ADMIN, and that asymmetry is enforced in
+     * {@link PaymentAccess#requireRefundAuthority}, not in this read path.
+     */
     @Transactional(readOnly = true)
     public PageResponse<PaymentDtos.PaymentResponse> list(AuthenticatedUser caller,
                                                           PaymentStatus status,
@@ -69,7 +80,8 @@ public class PaymentQueryService {
                                                           int size) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), clamp(size));
         Page<Payment> result;
-        if (caller != null && caller.isAdmin()) {
+        boolean operator = caller != null && (caller.isAdmin() || caller.hasRole(Roles.SUPPORT));
+        if (operator) {
             result = status == null
                     ? payments.findAllByOrderByCreatedAtDesc(pageable)
                     : payments.findByStatusOrderByCreatedAtDesc(status, pageable);

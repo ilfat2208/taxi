@@ -144,6 +144,8 @@ export interface Payment {
   sourceAccountId: string | null;
   targetAccountId: string | null;
   merchantId: string | null;
+  /** Заказ маркетплейса, если платёж за него: приходит в `PaymentResponse` и его видно в админке. */
+  orderId: string | null;
   description: string | null;
   failureCode: string | null;
   failureReason: string | null;
@@ -171,7 +173,9 @@ export interface Refund {
   status: string;
   reason?: string | null;
   createdAt?: string | null;
+  /** Сервис отдаёт `updatedAt`; сюда же кладётся `completedAt`, если он когда-нибудь появится. */
   completedAt?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface PaymentDetail {

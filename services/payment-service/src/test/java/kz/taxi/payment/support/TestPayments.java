@@ -34,6 +34,11 @@ public final class TestPayments {
         return new AuthenticatedUser(userId, "+77000000000", "Operator", Set.of(Roles.ADMIN));
     }
 
+    /** An operator with read-only authority: sees every payment, refunds none of them. */
+    public static AuthenticatedUser support(String userId) {
+        return new AuthenticatedUser(userId, "+77000000001", "Support", Set.of(Roles.SUPPORT));
+    }
+
     public static PaymentIntent intent(PaymentType type,
                                        String ownerUserId,
                                        String sourceAccountId,
