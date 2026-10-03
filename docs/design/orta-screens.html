@@ -3663,11 +3663,6 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         <div class="between mt-10"><span class="f-sub">Итого · оплата со счёта ORTA · KZT</span><span class="f-money lg">35 400,00 ₸</span></div>
       </div>
 
-      <div class="notice mt-10">
-        <b>Деньги — на готовом ядре</b>
-        Резерв ставится при назначении машины, списание — по завершении перевозки; отмена до подачи освобождает резерв. Механика холда и леджжера уже работает (<code class="mono">account-service</code>, <code class="mono">payment-service</code>), не хватает только вертикали.
-      </div>
-
       <span class="appbar-spacer"></span>
       <div class="btn btn-primary" style="width:100%">Заказать перевозку · 35 400 ₸</div>
       <p class="hint center" style="margin:8px 0 10px">Повтор с тем же <span class="mono">Idempotency-Key</span> не создаст второй заказ</p>
@@ -3677,7 +3672,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
   <div class="cap">
     <div class="cap-line"><span class="cap-num">21</span><span class="cap-title">ORTA Cargo — расчёт и оформление</span><span class="st st-plan">План — макет будущего</span></div>
     <p class="cap-note">
-      <b>В коде направления этого нет</b> — экран показывает смету до заказа: ставка 18 400,00 ₸, грузчики 2 × 6 000,00 ₸, экспедитор 5 000,00 ₸, итог 35 400,00 ₸, и переключатель количества грузчиков. Суммы демонстрационные. Денежный контур здесь опирается на готовое: холд при назначении и списание при завершении — уже работающая механика <code>account-service</code> и <code>payment-service</code> (в поездках такси она проверена e2e: резерв 1 848,00 ₸, списание один раз). Предлагаемые эндпоинты: <code>POST /api/v1/cargo/orders</code> с обязательным <code>Idempotency-Key</code> и <code>POST /api/v1/accounts/internal/holds</code> (последний существует и работает).
+      <b>В коде направления этого нет</b> — экран показывает смету до заказа: ставка 18 400,00 ₸, грузчики 2 × 6 000,00 ₸, экспедитор 5 000,00 ₸, итог 35 400,00 ₸, и переключатель количества грузчиков. Суммы демонстрационные. Денежный контур здесь опирается на готовое: холд при назначении и списание при завершении — уже работающая механика <code>account-service</code> и <code>payment-service</code> (в поездках такси она проверена e2e: резерв 1 848,00 ₸, списание один раз). Предлагаемые эндпоинты: <code>POST /api/v1/cargo/orders</code> с обязательным <code>Idempotency-Key</code> и <code>POST /api/v1/accounts/internal/holds</code> (последний существует и работает). Отмена до подачи освобождает резерв: отмена перевозки не стоит денег.
     </p>
   </div>
 </div>
@@ -4661,7 +4656,6 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
   </div>
 </div>
   </div>
-
   <!-- ---------- client-home-food ---------- -->
   <div class="stage">
   <div class="swrap">
@@ -8588,7 +8582,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">1</span><span class="cap-title">Обзор · <span class="mono">/business/overview</span></span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">79</span><span class="cap-title">Обзор · <span class="mono">/business/overview</span></span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Первый экран смены: четыре KPI (выручка, заказы, средний чек, возвраты), график по дням,
         каналы продаж и список «что требует внимания». Данные складываются из работающих эндпоинтов
@@ -8725,7 +8719,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">2</span><span class="cap-title">Продажи и заказы · список · <span class="mono">/business/orders</span></span><span class="st st-work">Работает</span></div>
+      <div class="cap-line"><span class="cap-num">80</span><span class="cap-title">Продажи и заказы · список · <span class="mono">/business/orders</span></span><span class="st st-work">Работает</span></div>
       <p class="cap-note">
         Список заказов с фильтрами по статусу, точке и периоду, поиском по номеру, телефону и товару,
         выгрузкой и разбором ошибок платежа. Данные и эндпоинт уже работают:
@@ -8874,7 +8868,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">3</span><span class="cap-title">Заказ — карточка и история статусов · <span class="mono">/business/orders/:id</span></span><span class="st st-work">Работает</span></div>
+      <div class="cap-line"><span class="cap-num">81</span><span class="cap-title">Заказ — карточка и история статусов · <span class="mono">/business/orders/:id</span></span><span class="st st-work">Работает</span></div>
       <p class="cap-note">
         Карточка заказа: покупатель и способ получения, позиции с SKU, разбор денег (товары, комиссия
         1,5%, сколько заплатил покупатель, сколько получает мерчант), платёж и полная история статусов.
@@ -9008,7 +9002,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">4</span><span class="cap-title">Возврат и чек · <span class="mono">/business/orders/:id/refund</span></span><span class="st st-work">Работает</span></div>
+      <div class="cap-line"><span class="cap-num">82</span><span class="cap-title">Возврат и чек · <span class="mono">/business/orders/:id/refund</span></span><span class="st st-work">Работает</span></div>
       <p class="cap-note">
         Полный или частичный возврат по позициям с пересчётом комиссии, предупреждением о
         <code>hold-period</code> и нефискальный чек с разбором суммы. Контур работает:
@@ -9146,7 +9140,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">5</span><span class="cap-title">Товары — список и массовые действия · <span class="mono">/business/products</span></span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">83</span><span class="cap-title">Товары — список и массовые действия · <span class="mono">/business/products</span></span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Каталог с фильтрами по статусу и категории, остатком в строке и панелью массовых правок.
         Каталог работает: <code>GET /api/v1/catalog/products?merchantId=</code> (поиск, категория,
@@ -9279,7 +9273,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">6</span><span class="cap-title">Товар — цена, остаток, склад · <span class="mono">/business/products/:id</span></span><span class="st st-work">Работает</span></div>
+      <div class="cap-line"><span class="cap-num">84</span><span class="cap-title">Товар — цена, остаток, склад · <span class="mono">/business/products/:id</span></span><span class="st st-work">Работает</span></div>
       <p class="cap-note">
         Карточка товара: цена, остаток на точке, резерв в невыполненных заказах, доступное количество
         и движения остатка. Работает: <code>GET /api/v1/catalog/products/{id}</code> (товар + остаток),
@@ -9419,7 +9413,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">7</span><span class="cap-title">Услуги и длительность · <span class="mono">/business/services</span></span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">85</span><span class="cap-title">Услуги и длительность · <span class="mono">/business/services</span></span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Каталог услуг с длительностью, ценой, мастерами и сеткой окон, по которой записывается клиент
         (для записи через QTime длительность — не украшение: она определяет, влезает ли услуга в окно).
@@ -9541,7 +9535,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">8</span><span class="cap-title">Финансы — начисления и комиссия · <span class="mono">/business/finance/accruals</span></span><span class="st st-work">Работает</span></div>
+      <div class="cap-line"><span class="cap-num">86</span><span class="cap-title">Финансы — начисления и комиссия · <span class="mono">/business/finance/accruals</span></span><span class="st st-work">Работает</span></div>
       <p class="cap-note">
         Начисления по заказам за период: сколько стоит товар, сколько комиссии платформы, сколько
         получает мерчант и в какой расчёт попал платёж. Данные берутся из работающего контура:
@@ -9666,7 +9660,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">9</span><span class="cap-title">Выплаты: долг PENDING и выплата PAID · <span class="mono">/business/finance/payouts</span></span><span class="st st-work">Работает</span></div>
+      <div class="cap-line"><span class="cap-num">87</span><span class="cap-title">Выплаты: долг PENDING и выплата PAID · <span class="mono">/business/finance/payouts</span></span><span class="st st-work">Работает</span></div>
       <p class="cap-note">
         Три состояния расчёта — выплачено, ждёт счёт, не прошло — с разбором суммы и причиной отказа,
         рядом реквизиты для выплат. Всё это уже работает:
@@ -9782,7 +9776,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">10</span><span class="cap-title">Акты и сверка · <span class="mono">/business/finance/reconciliation</span></span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">88</span><span class="cap-title">Акты и сверка · <span class="mono">/business/finance/reconciliation</span></span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Сверка периода: продажи, возвраты, комиссия, начислено, выплачено, долг и строка расхождения,
         плюс разбор по расчётам с числом покрытых платежей. Основание для сверки работает:
@@ -9880,7 +9874,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">11</span><span class="cap-title">Клиенты, сегменты и повторные продажи · <span class="mono">/business/customers</span></span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">89</span><span class="cap-title">Клиенты, сегменты и повторные продажи · <span class="mono">/business/customers</span></span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         База клиентов с числом заказов, суммой, последним контактом и сегментами, карточка клиента с
         историей покупок и визитов, метрики повторных продаж. Честно: клиентской базы в коде нет —
@@ -10003,7 +9997,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">12</span><span class="cap-title">Записи и расписание · <span class="mono">/business/schedule</span></span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">90</span><span class="cap-title">Записи и расписание · <span class="mono">/business/schedule</span></span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Сводка по мастерам и окнам: загрузка дня, список записей с услугой, мастером, ценой и статусом,
         действия «отметить визит», «перенести», «отменить». Ядро записи работает:
@@ -10123,7 +10117,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">13</span><span class="cap-title">Отзывы и рейтинг · <span class="mono">/business/reviews</span></span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">91</span><span class="cap-title">Отзывы и рейтинг · <span class="mono">/business/reviews</span></span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Сводка оценок, распределение по звёздам, список отзывов с ответами и явные правила: кто может
         оставить отзыв, что делает ответ и как рейтинг влияет на выдачу. Честно: отзывов как API нет —
@@ -10267,7 +10261,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">14</span><span class="cap-title">Сотрудники и роли · <span class="mono">/business/team</span></span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">92</span><span class="cap-title">Сотрудники и роли · <span class="mono">/business/team</span></span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Сотрудники, три роли компании (владелец, администратор, мастер), матрица прав, приглашение по
         ссылке и журнал действий. Честно: в платформе есть только платформенные роли в JWT —
@@ -10399,7 +10393,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">15</span><span class="cap-title">Настройки: точки, часы работы, фискализация, интеграции · <span class="mono">/business/settings</span></span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">93</span><span class="cap-title">Настройки: точки, часы работы, фискализация, интеграции · <span class="mono">/business/settings</span></span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Настройки бизнеса в одном экране: точки с адресами и координатами, часы работы и параметры
         сетки записи, налоги и фискализация, интеграции и API-ключи. Часть данных уже существует:
@@ -10606,7 +10600,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">1</span><span class="cap-title">Календарь дня · <span class="mono">/qtime/day</span></span><span class="st st-dev">В работе — API есть, консоли нет</span></div>
+      <div class="cap-line"><span class="cap-num">94</span><span class="cap-title">Календарь дня · <span class="mono">/qtime/day</span></span><span class="st st-dev">В работе — API есть, консоли нет</span></div>
       <p class="cap-note">
         Колонки мастеров, записи блоками с ценой из снапшота, перерыв 13:00–14:00, линия текущего времени и быстрые действия в блоке. Данные уже есть: <code>GET /api/v1/qtime/specialists/{id}/slots?serviceId&amp;date</code> отдаёт всю сетку дня, включая занятые клетки с причиной, а <code>POST /api/v1/qtime/internal/bookings/{id}/complete</code> закрывает визит. Чего нет: «дня компании» как ответа — <code>GET /api/v1/qtime/bookings</code> отдаёт только свои записи, все чужие видят <code>SUPPORT</code> и <code>ADMIN</code>, а роли <code>MERCHANT</code> календарь компании не отдаётся вовсе. Собирать день из сеток по каждой услуге — это мастеров × услуг запросов, поэтому предлагается <code>GET /api/v1/qtime/companies/{id}/calendar?date=</code>. Демо: салон «Лотос», 3 мастера, Шымкент, пятница 2 октября 2026.
       </p>
@@ -10727,7 +10721,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">2</span><span class="cap-title">Перенос и быстрые действия · <span class="mono">/qtime/day</span></span><span class="st st-plan">План — нет и в API</span></div>
+      <div class="cap-line"><span class="cap-num">95</span><span class="cap-title">Перенос и быстрые действия · <span class="mono">/qtime/day</span></span><span class="st st-plan">План — нет и в API</span></div>
       <p class="cap-note">
         Свободные клетки справа — реальный ответ сетки окон: <code>GET /api/v1/qtime/specialists/{id}/slots?serviceId&amp;date</code> возвращает клетки с <code>available:false</code> и причиной («занято», «перерыв», «не хватает времени»), поэтому окно под перенос ищется по данным, а не на глазок. Самого переноса нет: в агрегате <code>Booking</code> есть только <code>cancel</code>, <code>complete</code> и <code>markNoShow</code>, а эндпоинта <code>reschedule</code> нет; отмена освобождает окно сразу, потому что уникальный индекс <code>booking_slot_unique</code> частичный — только по <code>CONFIRMED</code>. Предлагается <code>POST /api/v1/qtime/bookings/{id}/reschedule</code>: одно событие со старым и новым окном вместо двух. Услуга и цена при переносе не меняются — снапшот в записи остаётся тем, что клиенту назвали.
       </p>
@@ -10928,7 +10922,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">3</span><span class="cap-title">Календарь недели — загрузка · <span class="mono">/qtime/week</span></span><span class="st st-plan">План — эндпоинта недели нет</span></div>
+      <div class="cap-line"><span class="cap-num">96</span><span class="cap-title">Календарь недели — загрузка · <span class="mono">/qtime/week</span></span><span class="st st-plan">План — эндпоинта недели нет</span></div>
       <p class="cap-note">
         Матрица «мастер × день»: записи, загрузка, свободные окна и исключения расписания. Недельного запроса в контракте нет: <code>GET /api/v1/qtime/specialists/{id}/slots?serviceId&amp;date</code> отвечает за один день и одну услугу, поэтому неделя для трёх мастеров салона — минимум 21 запрос, а для 12 мастеров демо-базы — 84. Предлагается <code>GET /api/v1/qtime/companies/{id}/load?from&amp;to</code> (или тот же <code>/calendar</code> с диапазоном). Горизонт записи — 30 дней (<code>QtimeProperties.bookingHorizonDays</code>), дальше сетка закрыта <code>422 OUTSIDE_BOOKING_HORIZON</code>; отсутствие строки в шаблоне — это выходной, а не ошибка. Демо: салон «Лотос», 3 мастера, неделя 5–11 октября 2026.
       </p>
@@ -11045,7 +11039,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">4</span><span class="cap-title">Неделя — конфликты и подбор окна · <span class="mono">/qtime/week</span></span><span class="st st-plan">План — проверок в API нет</span></div>
+      <div class="cap-line"><span class="cap-num">97</span><span class="cap-title">Неделя — конфликты и подбор окна · <span class="mono">/qtime/week</span></span><span class="st st-plan">План — проверок в API нет</span></div>
       <p class="cap-note">
         Четыре конфликта, которые консоль обязана показывать: записи на день отпуска мастера, записи вне смены после правки шаблона, проигранная гонка за окно (<code>409 SLOT_TAKEN</code>) и время ближе минимального запаса (<code>422 BOOKING_TOO_SOON</code>, запас 30 минут — <code>QtimeProperties.minLeadTimeMinutes</code>). Первые два API сегодня не видит: исключение <code>qtime.schedule_exception</code> закрывает день для новых записей и отдаёт пустую сетку, но подтверждённые записи на этот день остаются <code>CONFIRMED</code> и держат окна. Подбор окна справа опирается на настоящий ответ сетки — <code>available</code> и <code>reason</code> («занято», «перерыв», «не хватает времени»), а не на догадку интерфейса.
       </p>
@@ -11173,7 +11167,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">5</span><span class="cap-title">Карточка записи · <span class="mono">/qtime/bookings/{id}</span></span><span class="st st-dev">В работе — API есть, консоли нет</span></div>
+      <div class="cap-line"><span class="cap-num">98</span><span class="cap-title">Карточка записи · <span class="mono">/qtime/bookings/{id}</span></span><span class="st st-dev">В работе — API есть, консоли нет</span></div>
       <p class="cap-note">
         Экран показывает ровно то, что отдаёт <code>GET /api/v1/qtime/bookings/{bookingId}</code>: код <code>QT-…</code>, статус, услугу, длительность и цену снапшотом (<code>durationMinutes</code>, <code>priceMinor</code>, <code>currency</code>), комментарий клиента и причину отмены. Снапшот — не деталь реализации: цена и длительность копируются в запись при создании, поэтому новый прайс не переписывает мартовский визит. Чего нет: имени и телефона клиента (в записи только <code>client_user_id</code> — идентификатор аккаунта ORTA ID) и таблицы истории изменений. События <code>booking.created</code>, <code>booking.cancelled</code>, <code>booking.completed</code> уходят в <code>qtime.events</code> через outbox, но журналом изменений для интерфейса они не являются.
       </p>
@@ -11276,7 +11270,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">6</span><span class="cap-title">Отмена с причиной · <span class="mono">POST /bookings/{id}/cancel</span></span><span class="st st-dev">В работе — API есть, консоли нет</span></div>
+      <div class="cap-line"><span class="cap-num">99</span><span class="cap-title">Отмена с причиной · <span class="mono">POST /bookings/{id}/cancel</span></span><span class="st st-dev">В работе — API есть, консоли нет</span></div>
       <p class="cap-note">
         Отмена работает и освобождает окно сразу: статус меняется на <code>CANCELLED_BY_COMPANY</code>, а уникальность окна держит частичный индекс только по <code>CONFIRMED</code>, поэтому ничего не удаляется и история остаётся целой. Причина необязательна (<code>CancelBookingRequest.reason</code>, до 255 символов), но уходит в событие <code>booking.cancelled</code> как <code>cancelReason</code>; <code>Idempotency-Key</code> учитывается, если передан, — иначе повтор успешной отмены читался бы как <code>409 BOOKING_NOT_CANCELLABLE</code>. <b>Честно про права:</b> связь «мерчант ↔ компания» в QTime не смоделирована, роль <code>MERCHANT</code> считается стороной компании и может отменить <b>любую</b> запись, а не только свою; это документированная дыра в <code>QtimeAccess</code>, а не норма.
       </p>
@@ -11418,7 +11412,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">7</span><span class="cap-title">Мастера — список · <span class="mono">/qtime/masters</span></span><span class="st st-dev">В работе — API есть, консоли нет</span></div>
+      <div class="cap-line"><span class="cap-num">100</span><span class="cap-title">Мастера — список · <span class="mono">/qtime/masters</span></span><span class="st st-dev">В работе — API есть, консоли нет</span></div>
       <p class="cap-note">
         Список мастеров приходит только внутри компании: <code>GET /api/v1/qtime/companies/{companyId}</code> отдаёт <code>specialists</code> (имя, специализация, рейтинг в базисных пунктах, стаж) и <code>services</code> (название, длительность, цена, валюта). Отдельного <code>GET /specialists/{id}</code> нет, создания и правки мастера тоже нет — консоль покажет справочник, но не даст его менять. Нагрузка за неделю и процент загрузки считаются на клиенте по сеткам окон, потому что агрегата в сервисе нет. Демо: салон «Лотос» (3 мастера), а всего в демо-базе 12 мастеров в 4 компаниях Шымкента.
       </p>
@@ -11537,7 +11531,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">8</span><span class="cap-title">Карточка мастера · <span class="mono">/qtime/masters/{id}</span></span><span class="st st-dev">В работе — API есть, консоли нет</span></div>
+      <div class="cap-line"><span class="cap-num">101</span><span class="cap-title">Карточка мастера · <span class="mono">/qtime/masters/{id}</span></span><span class="st st-dev">В работе — API есть, консоли нет</span></div>
       <p class="cap-note">
         Всё, что показывает карточка, лежит в <code>qtime.specialist</code> и приходит внутри ответа компании: имя, специализация, рейтинг в базисных пунктах (49 000 = 4,90, максимум 50 000) и стаж. Деление услуг на личные и общие — это <code>service_item.specialist_id</code>: значение <code>null</code> означает «оказывает любой мастер компании», и та же проверка работает при записи, отвечая <code>400 SERVICE_NOT_OFFERED_BY_SPECIALIST</code>. Чего нет: фотографий, сертификатов, отдельного <code>GET /specialists/{id}</code> и привязки мастера к аккаунту — в таблице нет <code>user_id</code>, поэтому мастер сегодня не может войти в консоль и увидеть свой день. Демо-рейтинги и стаж — из сида, а не из отзывов.
       </p>
@@ -11662,7 +11656,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">9</span><span class="cap-title">Графики работы — шаблон недели</span><span class="st st-plan">План — таблица есть, API нет</span></div>
+      <div class="cap-line"><span class="cap-num">102</span><span class="cap-title">Графики работы — шаблон недели</span><span class="st st-plan">План — таблица есть, API нет</span></div>
       <p class="cap-note">
         Шаблон — таблица <code>qtime.working_hours</code>: одна строка на рабочий день, отсутствие строки и есть выходной, перерыв либо целиком внутри смены, либо отсутствует. Ограничения модели держит база: <code>end_time &gt; start_time</code>, перерыв внутри смены, уникальность <code>(specialist_id, day_of_week)</code>. Интерфейса нет и API нет: сетка окон читает эти строки (<code>SlotService.windowsFor</code>), но эндпоинта на чтение или правку расписания в контракте не появилось, поэтому статус — план, хотя данные и правила уже работают. Шаг сетки, горизонт и минимальный запас времени — не настройки салона, а глобальные <code>QtimeProperties</code>: 30 минут, 30 дней, 30 минут.
       </p>
@@ -11782,7 +11776,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">10</span><span class="cap-title">Исключения расписания · <span class="mono">qtime.schedule_exception</span></span><span class="st st-plan">План — таблица есть, API нет</span></div>
+      <div class="cap-line"><span class="cap-num">103</span><span class="cap-title">Исключения расписания · <span class="mono">qtime.schedule_exception</span></span><span class="st st-plan">План — таблица есть, API нет</span></div>
       <p class="cap-note">
         Отпуск, выходной и дополнительная смена живут в <code>qtime.schedule_exception</code> и уже влияют на сетку: исключение перекрывает недельный шаблон целиком (<code>SlotService.windowsFor</code>), день отпуска отдаёт пустую сетку, а не ошибку. Ограничения честные — одно исключение на <code>(specialist_id, exception_date)</code>, у дополнительной смены часы обязательны, у отпуска часов быть не может. Главный незакрытый вопрос — записи, уже стоящие в этот день: исключение их не отменяет и не переносит, окна продолжают держаться, клиентам никто не звонит. В демо отпуск создаётся сидом на третий день от старта сервиса — он и показан как пример.
       </p>
@@ -11882,7 +11876,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">11</span><span class="cap-title">Услуги и прайс · <span class="mono">/qtime/services</span></span><span class="st st-dev">В работе — API есть, консоли нет</span></div>
+      <div class="cap-line"><span class="cap-num">104</span><span class="cap-title">Услуги и прайс · <span class="mono">/qtime/services</span></span><span class="st st-dev">В работе — API есть, консоли нет</span></div>
       <p class="cap-note">
         Услуги, длительность и цена приходят в <code>GET /api/v1/qtime/companies/{companyId}</code> — это <code>ServiceView</code> с полями <code>durationMinutes</code>, <code>priceMinor</code> и <code>currency</code>. Длительность не украшение: она определяет, какие клетки сетки вообще существуют, и 120-минутное окрашивание не встанет перед обедом, потому что пересечение считается по интервалам, а не по времени начала. Цена хранится в минорных единицах и снапшотится в запись, поэтому правка прайса не переписывает прошлые визиты. Чего нет: в ответе не передаётся признак «общая услуга салона или личная мастера» (в базе это <code>service_item.specialist_id</code>), и операций создания и правки услуг в API тоже нет.
       </p>
@@ -11967,7 +11961,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">12</span><span class="cap-title">Клиенты и повторная запись · <span class="mono">/qtime/clients</span></span><span class="st st-plan">План — базы клиентов нет</span></div>
+      <div class="cap-line"><span class="cap-num">105</span><span class="cap-title">Клиенты и повторная запись · <span class="mono">/qtime/clients</span></span><span class="st st-plan">План — базы клиентов нет</span></div>
       <p class="cap-note">
         Клиентской базы в QTime нет: есть только <code>booking.client_user_id</code> — идентификатор аккаунта ORTA ID без имени и телефона. Историю визитов API отдаёт самому клиенту (<code>GET /api/v1/qtime/bookings</code>), а <code>SUPPORT</code> и <code>ADMIN</code> видят все записи; роли <code>MERCHANT</code> чужие записи не отдаются, то есть салон свою базу сегодня не увидит. Напоминаний нет ни в API, ни в модели: событие <code>booking.created</code> доставляется в Kafka, но центра уведомлений и пушей нет, поэтому «Напомнить» — кнопка без канала. «Постоянный клиент» (3 визита за 90 дней) и повторная запись — предлагаемые правила консоли, а не свойство сервиса. Персональные данные клиента — отдельное решение о доступе и согласии, а не поле в таблице.
       </p>
@@ -12102,7 +12096,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">13</span><span class="cap-title">Отзывы · <span class="mono">/qtime/reviews</span></span><span class="st st-plan">План — отзывов в модели нет</span></div>
+      <div class="cap-line"><span class="cap-num">106</span><span class="cap-title">Отзывы · <span class="mono">/qtime/reviews</span></span><span class="st st-plan">План — отзывов в модели нет</span></div>
       <p class="cap-note">
         Отзывов как сущности в QTime нет: есть только агрегаты <code>company.rating_bp</code> и <code>reviews_count</code> (демо: 4,80 · 312) и <code>specialist.rating_bp</code>. Оценка хранится в базисных пунктах, 50 000 = 5,00, и в демо-базе она проставляется сидом, а не отзывами. Влияние на выдачу при этом настоящее: компании выдаются «best rated first», сортировка идёт по <code>rating_bp desc</code> через индекс <code>company_rating_idx</code>, и это же число клиент видит в приложении. Точка, где отзыв может появиться, уже есть — событие <code>booking.completed</code> публикуется при закрытии визита. Ответ салона, жалобы и модерация — план. Примеры отзывов на экране придуманы для макета и помечены как пример.
       </p>
@@ -12205,7 +12199,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">14</span><span class="cap-title">Отчёты · <span class="mono">/qtime/reports</span></span><span class="st st-plan">План — агрегатов нет</span></div>
+      <div class="cap-line"><span class="cap-num">107</span><span class="cap-title">Отчёты · <span class="mono">/qtime/reports</span></span><span class="st st-plan">План — агрегатов нет</span></div>
       <p class="cap-note">
         Агрегатов в сервисе нет: QTime отдаёт записи и сетки, но не суммы, поэтому отчёт считается на клиенте из <code>GET /api/v1/qtime/bookings</code>. Опоры у него реальные: выручка — по <code>priceMinor</code> закрытых визитов, а не по текущему прайсу, потому что цена копируется в запись при создании; отменённые записи из выручки исключаются, ведь окно они освобождают, а денег не приносят. Неявки пока недостижимы: <code>NO_SHOW</code> есть в <code>BookingStatus</code> и в ограничении статусов, <code>markNoShow</code> есть в агрегате, но ни один эндпоинт его не вызывает. Деньги в QTime не двигаются — предоплаты и связи с ORTA Pay нет, поэтому «выручка» здесь прайсовая стоимость визитов. Цифры месяца в макете — демонстрационные.
       </p>
@@ -12307,7 +12301,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
 
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">15</span><span class="cap-title">Настройки салона и права · <span class="mono">/qtime/settings</span></span><span class="st st-plan">План — модели настроек нет</span></div>
+      <div class="cap-line"><span class="cap-num">108</span><span class="cap-title">Настройки салона и права · <span class="mono">/qtime/settings</span></span><span class="st st-plan">План — модели настроек нет</span></div>
       <p class="cap-note">
         Из перечисленных настроек в модели живут три: адрес с координатами, город и часовой пояс (<code>qtime.company</code>), плюс категория и статус. Шаг сетки (30 минут), горизонт записи (30 дней) и минимальный запас до визита (30 минут) — глобальные <code>QtimeProperties</code>, одинаковые для всех компаний: это спорное место, салоны продают разную гранулярность, и три числа просятся в <code>company</code>. Политики отмены нет вовсе. Права: <code>QtimeAccess.isCompanySide</code> считает стороной компании любую роль <code>MERCHANT</code>, а чтение всех записей отдаёт только <code>SUPPORT</code> и <code>ADMIN</code> — поэтому сегодня MERCHANT может отменить любую запись любой компании и не может прочитать календарь своей. Связь «мерчант ↔ компания» не смоделирована: это незакрытая дыра, а не норма.
       </p>
@@ -12408,7 +12402,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">1</span><span class="cap-title">Поддержка · поиск клиента</span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">109</span><span class="cap-title">Поддержка · поиск клиента</span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Одна строка ищет по телефону, счёту, платежу, поездке и записи. Точечные чтения уже работают:
         <code>GET /api/v1/payments/{id}</code> (владелец, SUPPORT, ADMIN), <code>GET /api/v1/trips?status=&amp;page=&amp;size=</code>,
@@ -12500,7 +12494,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">2</span><span class="cap-title">Поддержка · карточка клиента: счета и операции</span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">110</span><span class="cap-title">Поддержка · карточка клиента: счета и операции</span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Счёт, резервы и выписка читаются ручками <code>GET /api/v1/accounts/{id}</code>,
         <code>GET /api/v1/accounts/{id}/transactions</code> и <code>GET /api/v1/accounts/{id}/holds?status=ACTIVE</code>,
@@ -12599,7 +12593,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">3</span><span class="cap-title">Поддержка · карточка платежа и поездки</span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">111</span><span class="cap-title">Поддержка · карточка платежа и поездки</span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Все три чтения уже разрешены роли SUPPORT: <code>GET /api/v1/payments/{id}</code> с историей переходов,
         <code>GET /api/v1/payments/{id}/refunds</code>, <code>GET /api/v1/trips/{tripId}</code> и <code>GET /api/v1/trips/{tripId}/receipt</code>.
@@ -12693,7 +12687,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">4</span><span class="cap-title">Поддержка · возврат средств с причиной</span><span class="st st-work">Работает</span></div>
+      <div class="cap-line"><span class="cap-num">112</span><span class="cap-title">Поддержка · возврат средств с причиной</span><span class="st st-work">Работает</span></div>
       <p class="cap-note">
         Возврат уже работает в коде: <code>POST /api/v1/payments/{id}/refund</code> с обязательным
         <code>Idempotency-Key</code>, причина обязательна, накопленные возвраты не превышают платёж
@@ -12784,7 +12778,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">5</span><span class="cap-title">Поддержка · чат с клиентом</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">113</span><span class="cap-title">Поддержка · чат с клиентом</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Экрана и сервиса нет: ни обращений, ни сообщений, ни центра уведомлений, ни пушей — события уходят
         в Kafka, и ответ клиенту доставить нечем. Поэтому предлагаемые эндпоинты — только предложение:
@@ -12873,7 +12867,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">6</span><span class="cap-title">Поддержка · аудит чтения: кто смотрел чьи данные</span><span class="st st-work">Работает</span></div>
+      <div class="cap-line"><span class="cap-num">114</span><span class="cap-title">Поддержка · аудит чтения: кто смотрел чьи данные</span><span class="st st-work">Работает</span></div>
       <p class="cap-note">
         Это принцип, а не деталь: каждое успешное чтение чужих данных пишет строку в
         <code>support_audit_record</code> — «данные выданы» и «строка есть» одно событие, а неудачный поиск следа
@@ -12973,7 +12967,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">7</span><span class="cap-title">Пульт · живые метрики: задержка, очереди, DLT, отказы</span><span class="st st-work">Работает</span></div>
+      <div class="cap-line"><span class="cap-num">115</span><span class="cap-title">Пульт · живые метрики: задержка, очереди, DLT, отказы</span><span class="st st-work">Работает</span></div>
       <p class="cap-note">
         Метрики реальны и отдаются каждым сервисом: <code>GET /actuator/prometheus</code>, <code>GET /actuator/metrics</code>,
         плюс бизнес-метрики <code>taxi.payment.outcome{type,status,currency}</code>, <code>taxi.payment.failed{reason}</code>,
@@ -13067,7 +13061,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">8</span><span class="cap-title">Пульт · состояние сервисов и health</span><span class="st st-work">Работает</span></div>
+      <div class="cap-line"><span class="cap-num">116</span><span class="cap-title">Пульт · состояние сервисов и health</span><span class="st st-work">Работает</span></div>
       <p class="cap-note">
         Пробы реальны: <code>GET /actuator/health</code>, <code>/actuator/health/liveness</code>,
         <code>/actuator/health/readiness</code> (probes enabled, <code>show-details: when-authorized</code>),
@@ -13151,7 +13145,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">9</span><span class="cap-title">Пульт · инциденты и деградации</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">117</span><span class="cap-title">Пульт · инциденты и деградации</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Кода нет: реестра инцидентов, дежурств и алертинга в репозитории не существует, Alertmanager и Grafana
         в docker-compose тоже нет. Экран опирается только на то, что уже отдаётся: <code>GET /actuator/health</code>,
@@ -13250,7 +13244,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">10</span><span class="cap-title">Пульт · медленные запросы и журнал correlationId</span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">118</span><span class="cap-title">Пульт · медленные запросы и журнал correlationId</span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Половина экрана уже возможна: correlationId генерируется в шлюзе, едет в <code>X-Correlation-Id</code>, попадает
         в MDC логов и в headers Kafka-событий, а при ошибке возвращается в RFC 7807 вместе с <code>code</code>;
@@ -13344,7 +13338,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">11</span><span class="cap-title">Пульт · сверка инвариантов леджера и расчётов</span><span class="st st-work">Работает</span></div>
+      <div class="cap-line"><span class="cap-num">119</span><span class="cap-title">Пульт · сверка инвариантов леджера и расчётов</span><span class="st st-work">Работает</span></div>
       <p class="cap-note">
         Фоновый job реально работает: расчёт обязан быть подкреплён строками <code>settlement_payment</code>, суммы
         расчёта обязаны сходиться, возвраты не могут превышать платёж, завершённый платёж обязан знать время
@@ -13440,7 +13434,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">12</span><span class="cap-title">Админка · тарифы по городам, зоны и наценки</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">120</span><span class="cap-title">Админка · тарифы по городам, зоны и наценки</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Экрана и таблиц нет — это предложение. Реально существуют только следы тарифа: <code>POST /api/v1/trips/quote</code>
         принимает <code>tariff</code> строкой, комиссия считается в базисных пунктах (<code>commissionBp</code> 1 200 = 12%),
@@ -13537,7 +13531,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">13</span><span class="cap-title">Админка · лимиты и velocity-правила счетов</span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">121</span><span class="cap-title">Админка · лимиты и velocity-правила счетов</span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         API и правила есть, интерфейса нет: лимиты по окнам читаются и меняются ручками
         <code>GET /api/v1/accounts/{id}/limits</code> и <code>PUT /api/v1/accounts/{id}/limits</code> (роль ADMIN),
@@ -13621,7 +13615,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">14</span><span class="cap-title">Админка · роли, доступы и флаги функций</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">122</span><span class="cap-title">Админка · роли, доступы и флаги функций</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Роли и правила в коде есть, интерфейса нет: <code>Roles.java</code>, <code>@PreAuthorize</code>,
         <code>PaymentAccess</code>, <code>InternalApiTokenFilter</code> для <code>/internal/</code>. Роли выдаёт учебный
@@ -13701,7 +13695,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       </div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">15</span><span class="cap-title">Админка · справочники и демо-данные со сбросом</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">123</span><span class="cap-title">Админка · справочники и демо-данные со сбросом</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Экрана нет. Чтением уже отдаются категории каталога <code>GET /api/v1/catalog/categories</code> и компании
         QTime <code>GET /api/v1/qtime/companies</code>, но справочника городов и услуг в коде не существует — Шымкент
@@ -13796,7 +13790,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">1</span><span class="cap-title">Выход на линию с документами</span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">124</span><span class="cap-title">Выход на линию с документами</span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Смену решает сервер: неполный набор — <code>422 DRIVER_DOCUMENTS_INCOMPLETE</code>, просроченный
         документ — <code>422 DRIVER_DOCUMENT_EXPIRED</code>. Смена: <code>POST /api/v1/drivers/me/status</code>.
@@ -13871,7 +13865,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">2</span><span class="cap-title">Карта и ожидание заказа</span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">125</span><span class="cap-title">Карта и ожидание заказа</span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Позиция уходит каждые 4 секунды: <code>POST /api/v1/locations</code>, без сети — пачкой
         <code>POST /api/v1/locations/batch</code>; иначе <code>409 DRIVER_NOT_ON_DUTY</code>. Парк водителю
@@ -13952,7 +13946,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">3</span><span class="cap-title">Оффер: цена, адреса, таймер</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">126</span><span class="cap-title">Оффер: цена, адреса, таймер</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Самый честный пробел: матчинга нет, веер офферов — Ф3. Предлагаемые ручки
         <code>POST /api/v1/drivers/offers/{id}/accept</code> и <code>/decline</code>, событие <code>offer.created</code>.
@@ -14028,7 +14022,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">4</span><span class="cap-title">Маршрут к пассажиру и начало поездки</span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">127</span><span class="cap-title">Маршрут к пассажиру и начало поездки</span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Переходы реальные: <code>POST /api/v1/trips/internal/{tripId}/arrive</code> и <code>/start</code>.
         Автомобиль в <code>driver-service</code> не смоделирован, телефона пассажира нет, отменить поездку
@@ -14092,7 +14086,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">5</span><span class="cap-title">Завершение и сумма к начислению</span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">128</span><span class="cap-title">Завершение и сумма к начислению</span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Завершение списывает деньги и собирает чек: <code>POST /api/v1/trips/internal/{tripId}/complete</code>,
         затем <code>GET /api/v1/trips/{tripId}/receipt</code>; до <code>COMPLETED</code> — <code>409 TRIP_NOT_COMPLETED</code>.
@@ -14167,7 +14161,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">6</span><span class="cap-title">Заработок за смену</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">129</span><span class="cap-title">Заработок за смену</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Агрегата за смену в API нет: сумма к начислению есть только в чеке поездки —
         <code>GET /api/v1/trips/{tripId}/receipt</code>. Предлагаемая ручка:
@@ -14244,7 +14238,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">7</span><span class="cap-title">Документы и продление</span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">130</span><span class="cap-title">Документы и продление</span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Продление — тот же <code>POST /api/v1/drivers/me/documents</code> с видом и датой: повторный документ
         того же вида продлевает существующий. Дата обязательна, иначе правило нечем проверить.
@@ -14328,7 +14322,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">8</span><span class="cap-title">Профиль и рейтинг</span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">131</span><span class="cap-title">Профиль и рейтинг</span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Профиль отдаёт <code>GET /api/v1/drivers/me</code>: смена, рейтинг в базисных пунктах (492 = 4,92),
         поездки, документы. Рейтинг ставит пассажир: <code>POST /api/v1/trips/{tripId}/rate</code>, повтор —
@@ -14400,7 +14394,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">9</span><span class="cap-title">Смена курьера</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">132</span><span class="cap-title">Смена курьера</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Курьерского приложения и сервиса нет: ORTA Delivery на борде — «План — код не начат», курьеров
         в репозитории не существует. Предлагаемые ручки: <code>POST /api/v1/couriers/me/shift</code> и
@@ -14492,7 +14486,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">10</span><span class="cap-title">Список заданий</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">133</span><span class="cap-title">Список заданий</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Заданий курьера в API нет: заказ маркета (<code>GET /api/v1/orders/{id}</code>) знает адрес доставки,
         но не курьера, не точку забора и не вес. Предлагаемые ручки:
@@ -14568,7 +14562,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">11</span><span class="cap-title">Карточка задания, проблема и поддержка</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">134</span><span class="cap-title">Карточка задания, проблема и поддержка</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Карточка задания — план целиком: у курьера нет ни заданий, ни канала связи. Чата поддержки в API нет:
         ручки <code>/api/v1/support/**</code> — доступ оператора к данным с аудитом, а не переписка.
@@ -14639,7 +14633,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">12</span><span class="cap-title">Маршрут доставки</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">135</span><span class="cap-title">Маршрут доставки</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Позиции курьера слать некуда: <code>POST /api/v1/locations</code> принимает только роль
         <code>DRIVER</code> и привязывает по проекции <span class="mono">userId → driverId</span> из
@@ -14698,7 +14692,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">13</span><span class="cap-title">Подтверждение вручения: фото и подпись</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">136</span><span class="cap-title">Подтверждение вручения: фото и подпись</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Фото-подтверждение вручения — план: ни хранилища файлов, ни ручки в API нет. Доставка в
         <code>order-service</code> не смоделирована: там <code>DRAFT → PAID → CONFIRMED</code>, статуса
@@ -14755,7 +14749,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">14</span><span class="cap-title">Деньги за смену</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">137</span><span class="cap-title">Деньги за смену</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Денег за доставку в системе нет: курьерская часть не смоделирована, ставки 500 ₸ за задание и
         60 ₸ за километр — демо-предложение. Механика выплат, которую можно переиспользовать, работает
@@ -14828,7 +14822,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">15</span><span class="cap-title">Мерчант: новые заказы, подтверждение и сборка</span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">138</span><span class="cap-title">Мерчант: новые заказы, подтверждение и сборка</span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Заказы, товары и сток в API реальны (<code>order-service</code>, <code>catalog-service</code>), но своей
         ручки списка заказов у мерчанта нет: <code>GET /api/v1/orders</code> отдаёт заказы покупателя.
@@ -14894,7 +14888,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">16</span><span class="cap-title">Сканер штрихкода и остатки</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">139</span><span class="cap-title">Сканер штрихкода и остатки</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Сканера и поля <span class="mono">barcode</span> у товара нет — только SKU
         (<span class="mono">FOOD-0003</span>). Остаток менять можно: <code>PATCH /api/v1/catalog/products/{id}</code>,
@@ -14961,7 +14955,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">17</span><span class="cap-title">Мерчант: выплаты и долг</span><span class="st st-dev">В работе</span></div>
+      <div class="cap-line"><span class="cap-num">140</span><span class="cap-title">Мерчант: выплаты и долг</span><span class="st st-dev">В работе</span></div>
       <p class="cap-note">
         Расчёты работают: <code>GET /api/v1/settlements?merchantId=</code>, <code>GET /api/v1/settlements/{id}</code>
         со списком платежей, счёт — <code>PATCH /api/v1/merchants/me/payout-account</code>.
@@ -15033,7 +15027,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
       <div class="home-ind"><span></span></div>
     </div>
     <div class="cap">
-      <div class="cap-line"><span class="cap-num">18</span><span class="cap-title">Мерчант: ответ на отзыв</span><span class="st st-plan">План</span></div>
+      <div class="cap-line"><span class="cap-num">141</span><span class="cap-title">Мерчант: ответ на отзыв</span><span class="st st-plan">План</span></div>
       <p class="cap-note">
         Отзывов и ответов в API нет: ни модели, ни ручек — «4,8 · 1 240 продаж» на борде помечено как пример.
         Предлагаемые ручки: <code>GET /api/v1/merchants/me/reviews</code> и <code>POST …/{id}/reply</code>.
@@ -15122,7 +15116,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">1</span><span class="cap-title">ORTA ID — профиль</span><span class="st st-work">Работает</span></div>
+    <div class="cap-line"><span class="cap-num">142</span><span class="cap-title">ORTA ID — профиль</span><span class="st st-work">Работает</span></div>
     <p class="cap-note">
       Работает ровно то, что видно в шапке: вход по телефону и профиль по токену —
       <code>POST /api/v1/auth/token</code> и <code>GET /api/v1/auth/me</code> возвращают
@@ -15194,7 +15188,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">2</span><span class="cap-title">ORTA ID — устройства, сессии, смена телефона</span><span class="st st-plan">План</span></div>
+    <div class="cap-line"><span class="cap-num">143</span><span class="cap-title">ORTA ID — устройства, сессии, смена телефона</span><span class="st st-plan">План</span></div>
     <p class="cap-note">
       Список устройств, отзыв сессии и смена номера — макет: в коде нет ни хранения устройств, ни
       отзыва токена, ни эндпоинтов. Ключевое решение на экране — смена номера требует подтверждения
@@ -15276,7 +15270,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">3</span><span class="cap-title">ORTA ID — согласия и персональные данные</span><span class="st st-plan">План</span></div>
+    <div class="cap-line"><span class="cap-num">144</span><span class="cap-title">ORTA ID — согласия и персональные данные</span><span class="st st-plan">План</span></div>
     <p class="cap-note">
       Ни согласий, ни их журнала в коде нет — это макет. Согласие здесь не галочка, а запись с версией
       редакции, временем, <code>userId</code> и устройством: предлагаемые ручки —
@@ -15379,7 +15373,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">4</span><span class="cap-title">Роли и доступы, веб-консоль платформы</span><span class="st st-dev">В работе</span></div>
+    <div class="cap-line"><span class="cap-num">145</span><span class="cap-title">Роли и доступы, веб-консоль платформы</span><span class="st st-dev">В работе</span></div>
     <p class="cap-note">
       Матрица собрана из работающей модели ролей: <code>platform/common-security-core</code>
       (<code>Roles.java</code>, <code>JwtIssuer.java</code>) выдаёт JWT с ролями и проверяет подпись —
@@ -15484,7 +15478,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     </div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">5</span><span class="cap-title">Бизнес-аккаунт — сотрудники и доступы, веб-консоль</span><span class="st st-plan">План</span></div>
+    <div class="cap-line"><span class="cap-num">146</span><span class="cap-title">Бизнес-аккаунт — сотрудники и доступы, веб-консоль</span><span class="st st-plan">План</span></div>
     <p class="cap-note">
       Макет: мультипользовательского доступа в коде нет — есть один аккаунт с ролью
       <code>MERCHANT</code>. Показано, что именно требуется платформе: роль на организацию,
@@ -15561,7 +15555,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">6</span><span class="cap-title">ORTA Pay — счёт и баланс</span><span class="st st-work">Работает</span></div>
+    <div class="cap-line"><span class="cap-num">147</span><span class="cap-title">ORTA Pay — счёт и баланс</span><span class="st st-work">Работает</span></div>
     <p class="cap-note">
       Эндпоинты: <code>GET /api/v1/accounts</code>, <code>GET /api/v1/accounts/{id}</code>. Три числа
       на карточке — не украшение: <code>availableMinor = balanceMinor − heldMinor</code>
@@ -15627,7 +15621,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">7</span><span class="cap-title">ORTA Wallet — пополнение, карты, баллы</span><span class="st st-work">Работает</span></div>
+    <div class="cap-line"><span class="cap-num">148</span><span class="cap-title">ORTA Wallet — пополнение, карты, баллы</span><span class="st st-work">Работает</span></div>
     <p class="cap-note">
       Пополнение и зачисление на счёт работают: <code>POST /api/v1/accounts/{id}/top-up</code> проводит
       контр-запись через системный счёт-подвеску, и леджжер остаётся сбалансированным. Но это
@@ -15705,7 +15699,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">8</span><span class="cap-title">История операций с фильтрами</span><span class="st st-work">Работает</span></div>
+    <div class="cap-line"><span class="cap-num">149</span><span class="cap-title">История операций с фильтрами</span><span class="st st-work">Работает</span></div>
     <p class="cap-note">
       Выписка — это записи леджжера, а не «журнал приложения»: у каждой операции видны
       <code>operation</code>, <code>direction</code>, сумма, остаток после операции и ссылка на
@@ -15771,7 +15765,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">9</span><span class="cap-title">Лимиты счёта и антифрод по частоте</span><span class="st st-work">Работает</span></div>
+    <div class="cap-line"><span class="cap-num">150</span><span class="cap-title">Лимиты счёта и антифрод по частоте</span><span class="st st-work">Работает</span></div>
     <p class="cap-note">
       Дневное и месячное окна, использование и остаток, плюс контроль частоты операций —
       <code>GET /api/v1/accounts/{id}/limits</code>, <code>PUT /api/v1/accounts/{id}/limits</code>.
@@ -15865,7 +15859,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">10</span><span class="cap-title">Резервы (холды) — почему сумма заморожена</span><span class="st st-work">Работает</span></div>
+    <div class="cap-line"><span class="cap-num">151</span><span class="cap-title">Резервы (холды) — почему сумма заморожена</span><span class="st st-work">Работает</span></div>
     <p class="cap-note">
       Экран отвечает на самый частый вопрос поддержки: почему доступно меньше, чем на счёте.
       Данные — <code>GET /api/v1/accounts/{id}/holds?status=ACTIVE</code>, у каждого резерва видны
@@ -15939,7 +15933,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">11</span><span class="cap-title">Перевод по телефону</span><span class="st st-work">Работает</span></div>
+    <div class="cap-line"><span class="cap-num">152</span><span class="cap-title">Перевод по телефону</span><span class="st st-work">Работает</span></div>
     <p class="cap-note">
       Получатель ищется по номеру, реквизиты не вводятся: <code>POST /api/v1/payments/transfers</code>
       из <code>services/payment-service</code>, поиск счёта — <code>GET /api/v1/accounts/internal/resolve</code>.
@@ -16018,7 +16012,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">12</span><span class="cap-title">Возвраты по платежу</span><span class="st st-work">Работает</span></div>
+    <div class="cap-line"><span class="cap-num">153</span><span class="cap-title">Возвраты по платежу</span><span class="st st-work">Работает</span></div>
     <p class="cap-note">
       Эндпоинты: <code>POST /api/v1/payments/{id}/refund</code> с обязательным
       <code>Idempotency-Key</code> и <code>GET /api/v1/payments/{id}/refunds</code>. Возврат —
@@ -16111,7 +16105,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">13</span><span class="cap-title">ORTA Map — «рядом со мной»</span><span class="st st-dev">В работе</span></div>
+    <div class="cap-line"><span class="cap-num">154</span><span class="cap-title">ORTA Map — «рядом со мной»</span><span class="st st-dev">В работе</span></div>
     <p class="cap-note">
       Работает нижний слой и одна метка из пяти: поиск машин — Redis GEO,
       <code>GET /api/v1/dispatch/nearest?lat&amp;lon&amp;radiusM&amp;limit</code>, живая карта диспетчера в
@@ -16181,7 +16175,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">14</span><span class="cap-title">ORTA Map — выбор адреса</span><span class="st st-plan">План</span></div>
+    <div class="cap-line"><span class="cap-num">155</span><span class="cap-title">ORTA Map — выбор адреса</span><span class="st st-plan">План</span></div>
     <p class="cap-note">
       Макет: геокодера (текст → координаты) и обратного геокодера (координаты → адрес) в коде нет,
       как нет и хранения адресов — это часть ORTA ID. Показаны две честные границы: подобранный
@@ -16236,7 +16230,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">15</span><span class="cap-title">ORTA Map — зоны обслуживания и лицензия карт</span><span class="st st-dev">В работе</span></div>
+    <div class="cap-line"><span class="cap-num">156</span><span class="cap-title">ORTA Map — зоны обслуживания и лицензия карт</span><span class="st st-dev">В работе</span></div>
     <p class="cap-note">
       PostGIS в коде работает — но под треки и геозоны такси, а не под «зоны всех направлений»,
       поэтому контуры на экране помечены как иллюстрация. Отдельным блоком вынесена лицензия:
@@ -16321,7 +16315,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">16</span><span class="cap-title">ORTA AI — ассистент в приложении</span><span class="st st-plan">План</span></div>
+    <div class="cap-line"><span class="cap-num">157</span><span class="cap-title">ORTA AI — ассистент в приложении</span><span class="st st-plan">План</span></div>
     <p class="cap-note">
       AI-слоя в коде нет, и раньше платформы он появиться не может: чтобы предложить окно,
       он вызывает QTime, чтобы посчитать время — ORTA Map, чтобы зарезервировать деньги —
@@ -16384,7 +16378,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">17</span><span class="cap-title">ORTA AI — границы: что требует человека</span><span class="st st-plan">План</span></div>
+    <div class="cap-line"><span class="cap-num">158</span><span class="cap-title">ORTA AI — границы: что требует человека</span><span class="st st-plan">План</span></div>
     <p class="cap-note">
       Экран отвечает на вопрос «что ассистент НЕ делает сам». Критическими признаны действия,
       создающие обязательство или необратимый результат: запись, заказ, резерв и списание денег,
@@ -16463,7 +16457,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">18</span><span class="cap-title">Единые рейтинги и отзывы</span><span class="st st-dev">В работе</span></div>
+    <div class="cap-line"><span class="cap-num">159</span><span class="cap-title">Единые рейтинги и отзывы</span><span class="st st-dev">В работе</span></div>
     <p class="cap-note">
       Работает только часть: рейтинг водителя в <code>services/driver-service</code> (в базисных
       пунктах, вместе с долей принятых заказов) и история продаж продавца. Единой модели нет —
@@ -16542,7 +16536,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">19</span><span class="cap-title">Отзыв: публичность и оспаривание</span><span class="st st-plan">План</span></div>
+    <div class="cap-line"><span class="cap-num">160</span><span class="cap-title">Отзыв: публичность и оспаривание</span><span class="st st-plan">План</span></div>
     <p class="cap-note">
       Макет: модели отзывов в коде нет. Экран фиксирует три решения, которые обычно забывают.
       Публичность профиля выключена по умолчанию — оценка исполнителя видна всегда, история человека
@@ -16633,7 +16627,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">20</span><span class="cap-title">Центр уведомлений</span><span class="st st-dev">В работе</span></div>
+    <div class="cap-line"><span class="cap-num">161</span><span class="cap-title">Центр уведомлений</span><span class="st st-dev">В работе</span></div>
     <p class="cap-note">
       Из работающего здесь только источник событий: транзакционный outbox и Kafka
       (<code>platform/common-kafka/.../KafkaTopics.java</code> — <code>payment.events</code>,
@@ -16705,7 +16699,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">21</span><span class="cap-title">Настройки уведомлений: каналы, темы, тишина</span><span class="st st-plan">План</span></div>
+    <div class="cap-line"><span class="cap-num">162</span><span class="cap-title">Настройки уведомлений: каналы, темы, тишина</span><span class="st st-plan">План</span></div>
     <p class="cap-note">
       Макет целиком: ни настроек, ни каналов, ни хранения истории в коде нет. Три решения на
       экране стоит зафиксировать до разработки: SMS остаётся включённым для денег и безопасности,
@@ -16789,7 +16783,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
     <div class="home-ind"><span></span></div>
   </div>
   <div class="cap">
-    <div class="cap-line"><span class="cap-num">22</span><span class="cap-title">ORTA Search — один поиск по экосистеме</span><span class="st st-dev">В работе</span></div>
+    <div class="cap-line"><span class="cap-num">163</span><span class="cap-title">ORTA Search — один поиск по экосистеме</span><span class="st st-dev">В работе</span></div>
     <p class="cap-note">
       Работает поиск по каталогу: <code>GET /api/v1/catalog/products</code> с
       <code>sort=relevance</code> — полнотекстовый поиск Postgres по <code>search_vector</code>.
@@ -16922,7 +16916,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
         </div>
       </div>
       <div class="cap">
-        <div class="cap-line"><span class="cap-num">1</span><span class="cap-title">Диспетчерская · <span class="mono">/dispatch</span></span><span class="st st-work">Работает (Ф1)</span></div>
+        <div class="cap-line"><span class="cap-num">164</span><span class="cap-title">Диспетчерская · <span class="mono">/dispatch</span></span><span class="st st-work">Работает (Ф1)</span></div>
         <p class="cap-note">
           Счётчики «на линии / с позицией / устаревших», карта со свежими и замолчавшими машинами,
           панель выбранного водителя с телефоном, скоростью, курсом и координатами, список ближайших

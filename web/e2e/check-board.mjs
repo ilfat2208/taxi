@@ -50,6 +50,9 @@ const counts = await page.evaluate(() => {
   }));
   const titles = [...document.querySelectorAll('.cap-title')].map((t) => t.textContent.trim());
   const dupes = titles.filter((t, i) => titles.indexOf(t) !== i);
+  // Номера подписей должны быть сквозными: карта покрытия ссылается именно на них.
+  const nums = [...document.querySelectorAll('.cap-num')].map((n) => n.textContent.trim());
+  const dupNums = nums.filter((n, i) => nums.indexOf(n) !== i);
   return {
     topSections: top.length,
     screens: document.querySelectorAll('.swrap').length,
@@ -66,6 +69,7 @@ const counts = await page.evaluate(() => {
     docWidth: document.documentElement.scrollWidth,
     viewportWidth: window.innerWidth,
     duplicateTitles: [...new Set(dupes)],
+    duplicateNumbers: [...new Set(dupNums)],
     perSection,
   };
 });
@@ -81,6 +85,11 @@ for (const s of counts.perSection) {
 }
 if (counts.duplicateTitles.length > 0) {
   console.log(`[борд] одинаковые названия подписей: ${JSON.stringify(counts.duplicateTitles.slice(0, 8))}`);
+}
+if (counts.duplicateNumbers.length > 0) {
+  console.log(`[борд] ВНИМАНИЕ: номера подписей повторяются (${counts.duplicateNumbers.length}): ${JSON.stringify(counts.duplicateNumbers.slice(0, 10))}`);
+} else {
+  console.log('[борд] номера подписей сквозные, повторов нет');
 }
 
 // Обрезка контента внутри рамок: рамка — фиксированный размер с overflow:hidden,
