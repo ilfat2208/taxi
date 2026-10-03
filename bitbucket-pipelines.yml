@@ -1,0 +1,88 @@
+# ---------------------------------------------------------------------------
+# Bitbucket Pipelines для ORTA.
+#
+# Зачем отдельный файл рядом с .github/workflows/build.yml, а не «одно и то же
+# дважды»: у Bitbucket Free — 50 минут сборки в месяц на весь workspace, а полный
+# набор проверок (Java-реактор + Testcontainers + Docker-образы + Playwright)
+# съедает эти минуты за два прогона. Поэтому здесь тот набор, который реально
+# защищает ветку в PR и укладывается в бюджет:
+#
+#   pull-request  — web (типы, сборка, unit-тесты) и backend (verify всего реактора)
+#   main          — то же самое; полный набор (интеграционные тесты, e2e, образы)
+#                   запускается вручную или по расписанию: custom: full
+#   custom: deploy — выкладка на сервер по SSH (шаг выключен, пока нет хоста)
+#
+# Кэш Maven и pnpm обязателен: без него `verify` реактора заново качает
+# зависимости и не влезает в разумное время.
+# ---------------------------------------------------------------------------
+image: maven:3.9.9-eclipse-temurin-17
+
+definitions:
+  caches:
+    # Пакетный кэш pnpm и локальный репозиторий Maven: обе папки переживают прогон.
+    maven: ~/.m2/repository
+    pnpm: ~/.local/share/pnpm/store
+  steps:
+    - step: &web
+        name: Web (типы, сборка, тесты)
+        image: node:22
+        caches:
+          - pnpm
+        script:
+          - corepack enable
+          - corepack prepare pnpm@11 --activate
+          - cd web
+          - pnpm install --frozen-lockfile
+          # build = tsc --noEmit && vite build: типы проверяются наравне со сборкой.
+          - pnpm run build
+          - pnpm test
+        artifacts:
+          - web/dist/**
+
+    - step: &backend
+        name: Backend (Java 17, unit + сборка jar)
+        caches:
+          - maven
+        script:
+          # `verify` собирает все модули, прогоняет unit-тесты и проверяет, что каждый
+          # сервис действительно превращается в исполняемый jar.
+          - ./mvnw -B -ntp verify -DskipITs
+        artifacts:
+          # Отчёты сохраняем даже при падении: иначе причину видно только в логе шага.
+          - '**/target/surefire-reports/*.txt'
+
+
+pipelines:
+  pull-requests:
+    '**':
+      - step: *web
+      - step: *backend
+
+  branches:
+    main:
+      - step: *web
+      - step: *backend
+
+  custom:
+    # Полный набор: интеграционные тесты на Testcontainers и браузерные сценарии
+    # против поднятого docker compose. Запускать вручную — минуты не бесконечны.
+    full:
+      - step:
+          name: Integration tests (Testcontainers)
+          size: 2x
+          caches:
+            - maven
+          script:
+            - ./mvnw -B -ntp verify -Pintegration
+          artifacts:
+            - '**/target/failsafe-reports/*.txt'
+
+    # Выкладка на сервер по SSH. Пока не включена: нужен хост и переменные
+    # (см. docs/collaboration.md). Раскомментировать, когда сервер появится.
+    deploy:
+      - step:
+          name: Deploy (placeholder)
+          deployment: production
+          script:
+            - echo "Выкладка не настроена: нужен сервер, SSH-ключ и переменные окружения."
+            - echo "Шаги описаны в docs/collaboration.md, раздел «Как выложить приложение»."

@@ -597,6 +597,8 @@ docker compose --profile app up -d --build
 * [`docs/adr/`](docs/adr/) — остальные принятые решения и их альтернативы
 * [`docs/development.md`](docs/development.md) — окружение, тесты, отладка
 * [`docs/mobile.md`](docs/mobile.md) — нативный Android-клиент: сборка, эмулятор, живые тесты
+* [`docs/collaboration.md`](docs/collaboration.md) — как отдать проект команде: репозиторий и роли в Bitbucket, правила PR, Pipelines (`bitbucket-pipelines.yml`) и три способа выложить приложение
+* [`docs/api-client-review.md`](docs/api-client-review.md) — разбор работы с API в трёх чужих приложениях: что перенять, что не копировать
 
 ## Требования
 
