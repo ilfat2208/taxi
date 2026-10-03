@@ -337,7 +337,7 @@ export default function SettlementsSection({ role, canWrite }: AdminSectionProps
           ) : null}
 
           {visible.length > 0 ? (
-            <div className="overflow-x-auto">
+            <div className="relative overflow-x-auto">
               <table className="w-full min-w-[1000px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-ink-200 text-xs text-ink-500 uppercase">

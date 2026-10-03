@@ -339,7 +339,7 @@ function MerchantProducts({
         ) : null}
 
         {data && data.items.length > 0 ? (
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full min-w-[42rem] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-ink-200 text-left text-xs text-ink-500">
@@ -486,7 +486,7 @@ function MerchantPanel({ onPickProduct }: { onPickProduct: (productId: string) =
 
 function ReservationsList({ reservations }: { reservations: SupportReservation[] }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <table className="w-full min-w-[40rem] border-collapse text-sm">
         <thead>
           <tr className="border-b border-ink-200 text-left text-xs text-ink-500">

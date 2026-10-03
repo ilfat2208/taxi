@@ -152,7 +152,7 @@ function LimitsTable({ limits }: { limits: AccountLimits }) {
           description="Обычно приходят два окна — дневное и месячное. Пустой ответ означает, что настроек нет вовсе, и утверждать про счёт «без ограничения» по такому ответу нельзя."
         />
       ) : (
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="w-full min-w-[860px] text-sm">
             <caption className="sr-only">Лимиты исходящих операций по окнам</caption>
             <thead>
@@ -510,7 +510,7 @@ export default function AccountsSection({ role, canWrite }: AdminSectionProps) {
               ) : null}
 
               {ledger.data && ledger.data.items.length > 0 ? (
-                <div className="overflow-x-auto">
+                <div className="relative overflow-x-auto">
                   <table className="w-full min-w-[980px] text-sm">
                     <caption className="sr-only">Выписка леджера по счёту</caption>
                     <thead>
@@ -651,7 +651,7 @@ export default function AccountsSection({ role, canWrite }: AdminSectionProps) {
               ) : null}
 
               {holds.data && holds.data.items.length > 0 ? (
-                <div className="overflow-x-auto">
+                <div className="relative overflow-x-auto">
                   <table className="w-full min-w-[940px] text-sm">
                     <caption className="sr-only">Резервы средств по счёту</caption>
                     <thead>

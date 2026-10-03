@@ -604,7 +604,7 @@ export default function PaymentsSection({ role, canWrite }: AdminSectionProps) {
           ) : null}
 
           {items.length > 0 ? (
-            <div className="overflow-x-auto">
+            <div className="relative overflow-x-auto">
               <table className="w-full min-w-[1080px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-ink-200 text-xs text-ink-500 uppercase">

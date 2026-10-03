@@ -116,7 +116,7 @@ function KpiCard({ label, value, hint }: { label: string; value: string; hint?: 
 
 function DriverTable({ drivers }: { drivers: DispatchDriver[] }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <table className="w-full min-w-[52rem] border-collapse text-sm">
         <caption className="sr-only">Водители на линии и свежесть их позиций</caption>
         <thead>

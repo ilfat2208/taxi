@@ -147,7 +147,7 @@ function useIdSearch(initial = ''): IdSearch {
 
 function ItemsTable({ order }: { order: SupportOrder }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <table className="w-full min-w-[44rem] border-collapse text-sm">
         <caption className="sr-only">Позиции заказа</caption>
         <thead>
@@ -190,7 +190,7 @@ function OrderPaymentsTable({ order }: { order: SupportOrder }) {
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <table className="w-full min-w-[40rem] border-collapse text-sm">
         <caption className="sr-only">Оплаты заказа по мерчантам</caption>
         <thead>
@@ -477,7 +477,7 @@ function OrderReservationsCard({ orderId }: { orderId: string }) {
         ) : null}
 
         {reservations.length > 0 ? (
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full min-w-[36rem] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-ink-200 text-left text-xs text-ink-500">
@@ -529,7 +529,7 @@ function SummaryRows({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <table className="w-full min-w-[46rem] border-collapse text-sm">
         <thead>
           <tr className="border-b border-ink-200 text-left text-xs text-ink-500">

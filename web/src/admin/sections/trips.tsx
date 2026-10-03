@@ -1067,7 +1067,7 @@ export default function TripsSection({ canWrite }: AdminSectionProps) {
           ) : null}
 
           {rows.length > 0 ? (
-            <div className="overflow-x-auto">
+            <div className="relative overflow-x-auto">
               <table className="w-full min-w-[1000px] text-sm">
                 <caption className="sr-only">Поездки по текущему фильтру</caption>
                 <thead>

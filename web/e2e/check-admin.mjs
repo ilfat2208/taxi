@@ -223,6 +223,20 @@ for (const role of roles) {
       problems.push(`${role}/${section.id}: горизонтальная прокрутка документа на ${overflow} px`);
     }
 
+    // Панель десктопная, но открыть её могут и с телефона: проверяем, что на узком экране
+    // страница не разъезжается по горизонтали. Меню при этом становится полосой, а таблицы
+    // уезжают в собственный скролл — это и есть ожидаемое поведение, а не дефект.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(400);
+    const narrowOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    if (narrowOverflow > 1) {
+      problems.push(`${role}/${section.id}: на ширине 390 px горизонтальная прокрутка на ${narrowOverflow} px`);
+    }
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.waitForTimeout(200);
+
     const banner = await page.locator('[data-admin-readonly-banner]').count();
     // Правило «SUPPORT только читает» проверяется по разметке, а не по догадкам о тексте
     // кнопок: изменяющее действие обязано быть помечено `data-admin-write`, и для SUPPORT

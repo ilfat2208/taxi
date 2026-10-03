@@ -60,7 +60,7 @@ export function AdminLayout({
 
       <div className="mx-auto flex max-w-[1500px] flex-col gap-6 px-4 py-6 lg:flex-row lg:px-6">
         <nav aria-label="Разделы админки" className="lg:w-64 lg:shrink-0" data-admin-nav>
-          <ul className="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
+          <ul className="relative flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
             {visible.map((section) => (
               <li key={section.id} className="shrink-0 lg:shrink">
                 <NavLink

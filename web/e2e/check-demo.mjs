@@ -108,7 +108,12 @@ for (const screen of targets) {
   page.on('console', onConsole);
   page.on('pageerror', onPageError);
 
-  const url = screen.realRoute ? `${WEB_URL}${screen.realRoute.replace(/\{(\w+)\}/g, 'demo')}` : `${WEB_URL}/demo/${screen.id}`;
+  // Макет живёт в галерее: `/demo/all/<id>`. Короткий `/demo/<id>` — это адрес роли
+  // (`/demo/:role`), и макет, отправленный туда, получает не рамку, а экран выбора роли:
+  // проверка честно падала на «рамка не появилась» и ждала по 15 секунд на каждом экране.
+  const url = screen.realRoute
+    ? `${WEB_URL}${screen.realRoute.replace(/\{(\w+)\}/g, 'demo')}`
+    : `${WEB_URL}/demo/all/${screen.id}`;
   try {
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     // Ждём рамку только для макетов: настоящие разделы грузят данные сами.
@@ -193,7 +198,7 @@ for (const screen of targets) {
 // Ролевой вход: продукт, а не список макетов. Проверяем, что рабочая область роли
 // открывается, что в ней есть меню экранов и что экран отрисовался без ошибок.
 const roleIds = [...(await readFile('src/demo/roles.ts', 'utf8')).matchAll(/\n    id: '([a-z-]+)'/g)].map((m) => m[1]);
-if (roleIds.length > 0 && only.length === 0) {
+if (roleIds.length > 0 && !process.argv.includes('--no-roles')) {
   const rolePage = await context.newPage();
   const roleProblems = [];
   for (const roleId of roleIds) {
