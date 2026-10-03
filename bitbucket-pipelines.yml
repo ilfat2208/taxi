@@ -77,12 +77,44 @@ pipelines:
           artifacts:
             - '**/target/failsafe-reports/*.txt'
 
-    # Выкладка на сервер по SSH. Пока не включена: нужен хост и переменные
-    # (см. docs/collaboration.md). Раскомментировать, когда сервер появится.
+    # Выкладка на сервер по SSH. Включается, когда в репозитории заведены
+    # переменные (Repository settings → Pipelines → Repository variables):
+    #
+    #   SSH_HOST     адрес сервера               (не секрет)
+    #   SSH_USER     пользователь деплоя         (не секрет)
+    #   SSH_KEY      приватный ключ, Secured     — его публичная половина лежит
+    #                                              в ~deploy/.ssh/authorized_keys
+    #   DEPLOY_PATH  каталог репозитория на сервере, обычно /opt/orta
+    #
+    # Что делает шаг: подтягивает свежий код, пересобирает изменённые образы,
+    # поднимает стек и пересобирает SPA. Миграции Flyway применяют сами сервисы
+    # при старте. Параллелизм сборки ограничен: девять Maven-сборок сразу
+    # укладывают сервер на 4–8 ГБ памяти.
     deploy:
       - step:
-          name: Deploy (placeholder)
+          name: Deploy to production
           deployment: production
           script:
-            - echo "Выкладка не настроена: нужен сервер, SSH-ключ и переменные окружения."
-            - echo "Шаги описаны в docs/collaboration.md, раздел «Как выложить приложение»."
+            - pipe: atlassian/ssh-run:0.4.1
+              variables:
+                SSH_USER: $SSH_USER
+                SERVER: $SSH_HOST
+                MODE: command
+                COMMAND: >-
+                  cd $DEPLOY_PATH &&
+                  git fetch --all &&
+                  git checkout $BITBUCKET_BRANCH &&
+                  git pull --ff-only &&
+                  COMPOSE_PARALLEL_LIMIT=2 docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d --build &&
+                  docker compose --env-file deploy/.env -f deploy/docker-compose.yml --profile build run --rm web-builder &&
+                  docker compose --env-file deploy/.env -f deploy/docker-compose.yml ps
+            - pipe: atlassian/ssh-run:0.4.1
+              variables:
+                SSH_USER: $SSH_USER
+                SERVER: $SSH_HOST
+                MODE: command
+                # Проверка после выкладки: здоровье шлюза и конфигурация для клиентов.
+                COMMAND: >-
+                  curl -fsS http://localhost:8080/actuator/health &&
+                  curl -fsS http://localhost:8080/api/v1/config > /dev/null &&
+                  echo "выкладка проверена"

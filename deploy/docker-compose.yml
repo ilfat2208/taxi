@@ -1,0 +1,330 @@
+# ---------------------------------------------------------------------------
+# ORTA для сервера: то, что реально выкладывается.
+#
+# Почему отдельный файл, а не override к корневому docker-compose.yml: для
+# `ports` compose складывает списки, а не заменяет их, поэтому «убрать наружу
+# порты всех сервисов» через override невозможно — они остались бы открытыми.
+# Здесь ровно один опубликованный вход: Caddy на 80/443, он же терминирует TLS
+# и отдаёт собранное веб-приложение. Всё остальное живёт во внутренней сети.
+#
+# Запуск (см. deploy/README.md):
+#   docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d --build
+# ---------------------------------------------------------------------------
+
+name: orta
+
+x-app-env: &app-env
+  SPRING_PROFILES_ACTIVE: docker
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+  SPRING_DATA_REDIS_HOST: redis
+  SPRING_DATA_REDIS_PORT: 6379
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: 5432
+  POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER обязателен}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD обязателен}
+  JWT_SECRET: ${JWT_SECRET:?JWT_SECRET обязателен — минимум 32 байта}
+  JWT_TTL_SECONDS: ${JWT_TTL_SECONDS:-3600}
+  INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?INTERNAL_API_TOKEN обязателен}
+  # Ограничение памяти JVM: девять сервисов на одном хосте. 55% от лимита
+  # контейнера — heap, остальное метаспейс, стек и буферы. Без этого каждая JVM
+  # считает своей всю память хоста и суммарный RSS съедает сервер.
+  JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=55 -XX:+ExitOnOutOfMemoryError}
+
+# Ротация логов: по умолчанию docker пишет json-file без ограничения, и за месяц
+# логи девяти сервисов забивают диск. 10 МБ × 3 файла на контейнер.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  logging: *logging
+  networks: [orta-net]
+  depends_on:
+    postgres:
+      condition: service_healthy
+    kafka:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+x-common-service: &common-service
+  <<: *service-defaults
+  mem_limit: ${SERVICE_MEM_LIMIT:-700m}
+
+services:
+  # ------------------------------------------------------------------ infra
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: orta-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    # Наружу порт не публикуется: база доступна только из сети compose.
+    # Подключаться с ноутбука — через `ssh -L 5432:localhost:5432 server` и
+    # `docker compose exec postgres psql`.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    shm_size: 256mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    logging: *logging
+    networks: [orta-net]
+
+  kafka:
+    image: apache/kafka:3.8.0
+    container_name: orta-kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT
+      # Внешний слушатель в проде не нужен: продюсеры и консьюмеры — соседи по
+      # сети compose. Меньше поверхностей — меньше поводов открыть порт наружу.
+      KAFKA_LISTENERS: INTERNAL://:29092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_LOG_RETENTION_HOURS: ${KAFKA_LOG_RETENTION_HOURS:-72}
+      CLUSTER_ID: orta-kraft-cluster
+    volumes:
+      - kafkadata:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:29092 >/dev/null 2>&1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+    restart: unless-stopped
+    logging: *logging
+    networks: [orta-net]
+
+  redis:
+    image: redis:7-alpine
+    container_name: orta-redis
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    logging: *logging
+    networks: [orta-net]
+
+  # ------------------------------------------------------- вход и веб-клиент
+  caddy:
+    image: caddy:2-alpine
+    container_name: orta-caddy
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?DOMAIN обязателен — домен, на который выпускается сертификат}
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL обязателен — адрес для Let's Encrypt}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - webdist:/srv:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    restart: unless-stopped
+    logging: *logging
+    networks: [orta-net]
+
+  # Сборка веб-приложения в отдельный том, который читает Caddy. Отдельным
+  # профилем: пересобирать SPA нужно только когда меняется web/, а не на каждом
+  # перезапуске стека.
+  #   docker compose -f deploy/docker-compose.yml run --rm web-builder
+  web-builder:
+    image: node:22-alpine
+    container_name: orta-web-builder
+    profiles: [build]
+    working_dir: /app
+    volumes:
+      - ../web:/app
+      - webdist:/out
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        corepack enable
+        pnpm install --frozen-lockfile
+        pnpm run build
+        rm -rf /out/*
+        cp -r dist/. /out/
+        echo "SPA собрана в том webdist"
+    networks: [orta-net]
+
+  # -------------------------------------------------------------- сервисы
+  api-gateway:
+    <<: *common-service
+    build:
+      context: ..
+      dockerfile: services/api-gateway/Dockerfile
+    container_name: orta-api-gateway
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8080
+      ACCOUNT_SERVICE_URL: http://account-service:8081
+      PAYMENT_SERVICE_URL: http://payment-service:8082
+      CATALOG_SERVICE_URL: http://catalog-service:8083
+      ORDER_SERVICE_URL: http://order-service:8084
+      DRIVER_SERVICE_URL: http://driver-service:8085
+      DISPATCH_SERVICE_URL: http://dispatch-service:8087
+      TRIP_SERVICE_URL: http://trip-service:8086
+      QTIME_SERVICE_URL: http://qtime-service:8088
+    # Порт наружу не публикуется: снаружи в шлюз попадает только Caddy.
+    expose: ["8080"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  account-service:
+    <<: *common-service
+    build:
+      context: ..
+      dockerfile: services/account-service/Dockerfile
+    container_name: orta-account-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_account
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+  payment-service:
+    <<: *common-service
+    build:
+      context: ..
+      dockerfile: services/payment-service/Dockerfile
+    container_name: orta-payment-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_payment
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      ACCOUNT_SERVICE_URL: http://account-service:8081
+      CATALOG_SERVICE_URL: http://catalog-service:8083
+      # В проде деньги держатся перед выплатой мерчанту: мгновенный расчёт — это
+      # демо-режим, а не продукт. Часы можно поставить свои.
+      SETTLEMENT_HOLD_PERIOD: ${SETTLEMENT_HOLD_PERIOD:-24h}
+
+  catalog-service:
+    <<: *common-service
+    build:
+      context: ..
+      dockerfile: services/catalog-service/Dockerfile
+    container_name: orta-catalog-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8083
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_catalog
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+  order-service:
+    <<: *common-service
+    build:
+      context: ..
+      dockerfile: services/order-service/Dockerfile
+    container_name: orta-order-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8084
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_order
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      CATALOG_SERVICE_URL: http://catalog-service:8083
+      PAYMENT_SERVICE_URL: http://payment-service:8082
+
+  driver-service:
+    <<: *common-service
+    build:
+      context: ..
+      dockerfile: services/driver-service/Dockerfile
+    container_name: orta-driver-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8085
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_driver
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+  dispatch-service:
+    <<: *common-service
+    build:
+      context: ..
+      dockerfile: services/dispatch-service/Dockerfile
+    container_name: orta-dispatch-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8087
+
+  trip-service:
+    <<: *common-service
+    build:
+      context: ..
+      dockerfile: services/trip-service/Dockerfile
+    container_name: orta-trip-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8086
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_trip
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      ACCOUNT_SERVICE_URL: http://account-service:8081
+      DISPATCH_SERVICE_URL: http://dispatch-service:8087
+      DRIVER_SERVICE_URL: http://driver-service:8085
+
+  qtime-service:
+    <<: *common-service
+    build:
+      context: ..
+      dockerfile: services/qtime-service/Dockerfile
+    container_name: orta-qtime-service
+    environment:
+      <<: *app-env
+      SERVER_PORT: 8088
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxi_qtime
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      # Демо-данные салонов: на проде выключаются, иначе в каталоге услуг
+      # появляются выдуманные компании.
+      QTIME_DEMO_SEED: ${QTIME_DEMO_SEED:-false}
+
+volumes:
+  pgdata:
+  kafkadata:
+  redisdata:
+  webdist:
+  caddydata:
+  caddyconfig:
+
+networks:
+  orta-net:
+    driver: bridge

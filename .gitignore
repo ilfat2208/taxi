@@ -43,6 +43,9 @@ captures/
 .env.local
 !.env.example
 *.local
+# сервер: секреты и дампы баз живут только на хосте
+deploy/.env
+deploy/backups/
 
 # os
 Thumbs.db
@@ -52,5 +55,12 @@ Thumbs.db
 *.log
 logs/
 
-# ��������� ������� ������ ������-�����
+# служебный каталог сборки дизайн-борда
 .design-fragments/
+
+
+# промежуточные кадры видео-истории (пересобираются: docs/design/story/README.md)
+docs/design/story/frames/
+docs/design/story/audio/
+docs/design/story/_check/
+docs/design/story/render-info.json
