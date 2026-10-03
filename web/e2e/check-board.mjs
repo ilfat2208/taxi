@@ -178,6 +178,53 @@ if (spilled.length > 0) {
   console.log('[борд] за границы рамок ничего не выходит');
 }
 
+// Сжатие флексом. Третий вид дефекта, который не видят ни scrollHeight, ни
+// геометрия: блок сжимается как flex-элемент (например .banner до 18px вместо 73),
+// его содержимое гаснет под собственным overflow:hidden, а рамку он не покидает —
+// потомки внутри сжатого блока. Меряем естественную высоту: временно снимаем
+// flex/height у каждого прямого ребёнка .ph и сравниваем с фактической.
+const squeezed = await page.evaluate(() => {
+  const bad = [];
+  for (const frame of document.querySelectorAll('.phone')) {
+    const ph = frame.querySelector('.ph');
+    if (!ph) continue;
+    const section = frame.closest('section.sec')?.querySelector('.sec-num')?.textContent?.trim() ?? '?';
+    const title = frame.closest('.swrap')?.querySelector('.cap-title')?.textContent?.trim()
+      ?? frame.closest('.stage')?.querySelector('.cap-title')?.textContent?.trim() ?? '?';
+    let worst = null;
+    for (const child of [...ph.children]) {
+      // Карты — иллюстрация, она масштабируется: сжатие .mapbox/.mapcard не дефект.
+      // Пустые по тексту блоки тоже пропускаем — терять в них нечего.
+      const cls = String(child.className || child.tagName);
+      if (/mapbox|mapcard/.test(cls)) continue;
+      if (child.textContent.trim().length === 0) continue;
+      const actual = child.getBoundingClientRect().height;
+      const saved = { flex: child.style.flex, height: child.style.height, minHeight: child.style.minHeight };
+      child.style.flex = 'none';
+      child.style.height = 'auto';
+      child.style.minHeight = '0';
+      const natural = child.getBoundingClientRect().height;
+      child.style.flex = saved.flex;
+      child.style.height = saved.height;
+      child.style.minHeight = saved.minHeight;
+      const diff = Math.round(natural - actual);
+      if (diff > 4 && (!worst || diff > worst.diff)) {
+        worst = { diff, cls: String(child.className || child.tagName).split(' ')[0], actual: Math.round(actual), natural: Math.round(natural) };
+      }
+    }
+    if (worst) bad.push({ section, screen: title, ...worst });
+  }
+  return bad;
+});
+if (squeezed.length > 0) {
+  console.log(`[борд] ВНИМАНИЕ: блоки сжаты флексом на ${squeezed.length} экранах`);
+  for (const s of squeezed.slice(0, 8)) {
+    console.log(`[борд]   раздел ${s.section}: ${s.screen} — .${s.cls} сжат до ${s.actual}px при естественных ${s.natural}px`);
+  }
+} else {
+  console.log('[борд] сжатых флексом блоков нет');
+}
+
 // Скриншоты новых разделов — по одному на контур, чтобы видеть, что вёрстка цела.
 const wanted = [
   'ORTA Business — кабинет бизнеса',
