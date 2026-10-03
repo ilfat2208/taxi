@@ -1,10 +1,14 @@
+import { useState } from 'react';
 import { cx } from '../../lib/cx';
 
 /**
  * Product image with a graceful fallback.
  *
- * Catalog images come from merchant-supplied URLs that may 404, so the fallback is
- * a coloured tile with the product initial rather than a broken-image icon.
+ * Catalog images come from merchant-supplied URLs that may 404 or point at a host that does
+ * not resolve at all (the seeded demo catalogue uses `cdn.taxi.local`, which exists nowhere).
+ * A browser cannot be told to ignore that, so instead of leaving the user with a broken-image
+ * icon the component swaps the `<img>` for a coloured tile with the product initial — the same
+ * tile the products without an image already get.
  */
 export function ProductThumb({
   imageUrl,
@@ -15,12 +19,15 @@ export function ProductThumb({
   title: string;
   className?: string;
 }) {
-  if (imageUrl) {
+  const [failed, setFailed] = useState(false);
+
+  if (imageUrl && !failed) {
     return (
       <img
         src={imageUrl}
         alt=""
         loading="lazy"
+        onError={() => setFailed(true)}
         className={cx('h-full w-full rounded-xl object-cover', className)}
       />
     );

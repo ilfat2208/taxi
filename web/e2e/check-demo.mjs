@@ -30,18 +30,32 @@ const OUT = resolve(process.env.OUT ?? join(tmpdir(), 'orta-demo-check'));
 const REGISTRY = resolve(process.env.REGISTRY ?? 'src/demo/registry.ts');
 const PHONE = process.env.PHONE ?? '+77009990001';
 
-/** Реестр — источник правды: из него берём id, вид экрана и адрес настоящего раздела. */
+/**
+ * Реестр — источник правды: из него берём id, вид экрана и адрес настоящего раздела.
+ *
+ * Читаем записи по одной, а не одним жадным выражением: раньше `realRoute` стоял в
+ * необязательной группе, и движок регулярных выражений спокойно её пропускал — тогда
+ * настоящие страницы приложения (`real-login` и ещё 16) попадали в список макетов,
+ * «не находили рамку» и валили проверку сообщением «ещё не перенесён».
+ */
 async function readRegistry() {
   const text = await readFile(REGISTRY, 'utf8');
-  const screens = [...text.matchAll(/\{\s*"id":\s*"([^"]+)",\s*"kind":\s*"([^"]+)",\s*"section":\s*(\d+)[\s\S]*?"title":\s*"([^"]+)"[\s\S]*?"status":\s*"([^"]+)"[\s\S]*?(?:"realRoute":\s*"([^"]+)")?/g)];
-  return screens.map((m) => ({
-    id: m[1],
-    kind: m[2],
-    section: Number(m[3]),
-    title: m[4],
-    status: m[5],
-    realRoute: m[6] ?? null,
-  }));
+  const blocks = [...text.matchAll(/\{\s*"id":\s*"([^"]+)",[\s\S]*?\n  \}/g)];
+  return blocks.map((match) => {
+    const block = match[0];
+    const field = (name) => {
+      const found = new RegExp(`"${name}":\\s*(?:"([^"]*)"|(\\d+))`).exec(block);
+      return found ? (found[1] ?? found[2] ?? null) : null;
+    };
+    return {
+      id: match[1],
+      kind: field('kind'),
+      section: Number(field('section') ?? 0),
+      title: field('title') ?? match[1],
+      status: field('status') ?? 'Неизвестно',
+      realRoute: field('realRoute'),
+    };
+  });
 }
 
 async function session() {
@@ -65,6 +79,36 @@ async function session() {
   };
 }
 
+/**
+ * Настоящие страницы с идентификатором в адресе (`/payments/{paymentId}`) нельзя открыть
+ * выдуманным `demo`: сервис честно ответит 404, страница покажет «не найдено», и проверка
+ * запишет это как ошибку консоли. Поэтому идентификаторы берём у API — по одному на адрес.
+ * Чего получить не удалось (у демо-клиента пусто), остаётся заглушкой и помечается отдельно.
+ */
+async function realIds(token) {
+  const auth = { Authorization: `Bearer ${token}` };
+  const first = async (path) => {
+    try {
+      const response = await fetch(`${API_URL}${path}`, { headers: auth });
+      if (!response.ok) return null;
+      const body = await response.json();
+      const items = Array.isArray(body) ? body : (body.items ?? []);
+      const item = items[0];
+      if (!item) return null;
+      return item.paymentId ?? item.orderId ?? item.tripId ?? item.productId ?? item.companyId ?? item.id ?? null;
+    } catch {
+      return null;
+    }
+  };
+  return {
+    paymentId: await first('/api/v1/payments?page=0&size=1'),
+    orderId: await first('/api/v1/orders?page=0&size=1'),
+    tripId: await first('/api/v1/trips?page=0&size=1'),
+    productId: await first('/api/v1/catalog/products?page=0&size=1'),
+    companyId: await first('/api/v1/qtime/companies?page=0&size=1'),
+  };
+}
+
 const all = await readRegistry();
 const only = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 
@@ -76,6 +120,9 @@ try {
 } catch (failure) {
   console.log(`[демо] API недоступен (${failure.message}) — настоящие разделы пропускаем`);
 }
+
+const ids = user ? await realIds(user.accessToken) : {};
+const stubbedRoutes = [];
 
 let targets = all.filter((s) => only.length === 0 || only.includes(s.id));
 if (!user) targets = targets.filter((s) => !s.realRoute);
@@ -111,9 +158,16 @@ for (const screen of targets) {
   // Макет живёт в галерее: `/demo/all/<id>`. Короткий `/demo/<id>` — это адрес роли
   // (`/demo/:role`), и макет, отправленный туда, получает не рамку, а экран выбора роли:
   // проверка честно падала на «рамка не появилась» и ждала по 15 секунд на каждом экране.
+  let placeholder = false;
   const url = screen.realRoute
-    ? `${WEB_URL}${screen.realRoute.replace(/\{(\w+)\}/g, 'demo')}`
+    ? `${WEB_URL}${screen.realRoute.replace(/\{(\w+)\}/g, (_, name) => {
+        const real = ids[name];
+        if (real) return real;
+        placeholder = true;
+        return 'demo';
+      })}`
     : `${WEB_URL}/demo/all/${screen.id}`;
+  if (placeholder) stubbedRoutes.push(screen.id);
   try {
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     // Ждём рамку только для макетов: настоящие разделы грузят данные сами.
@@ -184,8 +238,25 @@ for (const screen of targets) {
       }
     }
 
-    if (errors.length > 0) {
-      problems.push({ id: screen.id, reason: `ошибки консоли: ${errors.slice(0, 2).join(' | ')}` });
+    // Заглушка вместо идентификатора: сервер обязан ответить 404, и страница обязана
+    // показать «не найдено». Это проверяемое поведение, а не ошибка консоли.
+    //
+    // `ERR_NAME_NOT_RESOLVED` — то же самое для картинок демо-каталога: они лежат на
+    // `cdn.taxi.local`, которого не существует ни в одном окружении. Страница обязана
+    // показать плитку с буквой вместо битой картинки (`ProductThumb`), а сетевую запись
+    // браузера подавить нельзя — поэтому она не считается проблемой.
+    const relevant = placeholder || screen.realRoute
+      ? errors.filter(
+          (text) =>
+            !/ERR_NAME_NOT_RESOLVED/i.test(text) &&
+            !(
+              placeholder &&
+              /404|Not Found|PAYMENT_NOT_FOUND|ORDER_NOT_FOUND|TRIP_NOT_FOUND|PRODUCT_NOT_FOUND|COMPANY_NOT_FOUND/i.test(text)
+            ),
+        )
+      : errors;
+    if (relevant.length > 0) {
+      problems.push({ id: screen.id, reason: `ошибки консоли: ${relevant.slice(0, 2).join(' | ')}` });
     }
   } catch (failure) {
     problems.push({ id: screen.id, reason: `не открылся: ${failure.message.split('\n')[0]}` });
@@ -244,6 +315,12 @@ for (const p of problems.slice(0, 40)) {
 if (problems.length > 40) console.log(`[демо]   …и ещё ${problems.length - 40}`);
 if (missing.length > 0) {
   console.log(`[демо] ещё не перенесены (${missing.length}): ${missing.slice(0, 15).join(', ')}${missing.length > 15 ? ' …' : ''}`);
+}
+if (stubbedRoutes.length > 0) {
+  console.log(
+    `[демо] без реального идентификатора (${stubbedRoutes.length}): ${stubbedRoutes.join(', ')} — ` +
+      'страницы открыты с заглушкой, сервер ответил 404, и это ожидаемая проверка «не найдено»',
+  );
 }
 const allowMissing = process.argv.includes('--allow-missing');
 if (missing.length > 0 && !allowMissing) {
