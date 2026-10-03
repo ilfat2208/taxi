@@ -441,10 +441,11 @@ scripts/e2e-marketplace.ps1            -> (заморожено) покупка:
 scripts/e2e-settlement.ps1             -> (заморожено) продавец -> продажа -> выплата
 scripts/it-local.ps1                   -> интеграционные тесты на внешней БД: 17 сценариев
                                           (payment 5, order 8, catalog 4), ни одного skipped
-web: pnpm build && pnpm test           -> сборка без ошибок TS, 32 файла / 221 тест
+web: pnpm build && pnpm test           -> сборка без ошибок TS, 38 файлов / 355 тестов
 web: pnpm e2e                          -> 14 браузерных сценариев (Playwright, chromium)
-web: node e2e/check-admin.mjs           -> админ-панель: 9 разделов × 2 роли, 18 загрузок,
-                                          0 проблем — разделы показали данные, а не ошибку
+web: node e2e/check-admin.mjs           -> админ-панель: 11 разделов × 2 роли, 0 проблем,
+                                          плотность считается: 18 плиток и 7 панелей в обзоре,
+                                          12 и 13 в «Пульте», 4–8 плиток в остальных разделах
 curl: SUPPORT -> POST /payments/{id}/refund (чужой платёж)
                                        -> 403 FORBIDDEN «requires ADMIN or its owner»,
                                           при этом SUPPORT видит все 18 платежей (ADMIN — те же 18)
