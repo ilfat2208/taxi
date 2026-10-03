@@ -190,6 +190,46 @@ for (const screen of targets) {
   }
 }
 
+// Ролевой вход: продукт, а не список макетов. Проверяем, что рабочая область роли
+// открывается, что в ней есть меню экранов и что экран отрисовался без ошибок.
+const roleIds = [...(await readFile('src/demo/roles.ts', 'utf8')).matchAll(/\n    id: '([a-z-]+)'/g)].map((m) => m[1]);
+if (roleIds.length > 0 && only.length === 0) {
+  const rolePage = await context.newPage();
+  const roleProblems = [];
+  for (const roleId of roleIds) {
+    const roleErrors = [];
+    const onConsole = (m) => {
+      if (m.type() === 'error') roleErrors.push(m.text());
+    };
+    const onPageError = (e) => roleErrors.push(`pageerror: ${e.message}`);
+    rolePage.on('console', onConsole);
+    rolePage.on('pageerror', onPageError);
+    try {
+      await rolePage.goto(`${WEB_URL}/demo/${roleId}`, { waitUntil: 'domcontentloaded' });
+      await rolePage.waitForTimeout(700);
+      const state = await rolePage.evaluate(() => ({
+        menuLinks: document.querySelectorAll('aside a[href^="/demo/"]').length,
+        hasCaption: document.body.innerText.includes('Эндпоинты и события'),
+        empty: document.body.innerText.trim().length < 200,
+        text: document.body.innerText.replace(/\s+/g, ' ').slice(0, 70),
+      }));
+      if (state.menuLinks === 0) roleProblems.push({ id: roleId, reason: 'в меню роли нет ни одного экрана' });
+      if (!state.hasCaption) roleProblems.push({ id: roleId, reason: 'экран не отрисовался: нет справки под экраном' });
+      if (state.empty) roleProblems.push({ id: roleId, reason: 'страница пустая' });
+      if (roleErrors.length > 0) roleProblems.push({ id: roleId, reason: `ошибки консоли: ${roleErrors.slice(0, 2).join(' | ')}` });
+      console.log(`[демо] роль ${roleId}: экранов в меню ${state.menuLinks} — ${state.text}`);
+    } catch (failure) {
+      roleProblems.push({ id: roleId, reason: `не открылась: ${failure.message.split('\n')[0]}` });
+    } finally {
+      rolePage.off('console', onConsole);
+      rolePage.off('pageerror', onPageError);
+    }
+  }
+  await rolePage.close();
+  for (const p of roleProblems) console.log(`[демо]   роль ${p.id}: ${p.reason}`);
+  problems.push(...roleProblems);
+}
+
 await browser.close();
 
 console.log(`[демо] проверено экранов: ${targets.length}, проблем: ${problems.length}`);

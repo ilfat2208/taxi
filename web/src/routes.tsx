@@ -20,6 +20,8 @@ import { ServiceCompanyPage } from './pages/ServiceCompanyPage';
 import { ServicesPage } from './pages/ServicesPage';
 import { TransferPage } from './pages/TransferPage';
 import { DemoGalleryPage } from './demo/DemoGalleryPage';
+import { DemoRolePickerPage } from './demo/DemoRolePickerPage';
+import { DemoWorkspacePage } from './demo/DemoWorkspacePage';
 import { DemoScreenPage } from './demo/DemoScreenPage';
 
 /**
@@ -55,8 +57,11 @@ export const appRoutes: RouteObject[] = [
   { path: '/login', element: <LoginPage />, errorElement: <RouteErrorPage /> },
   // Демо-макеты открыты без входа: в них нет чужих данных и нет запросов к API —
   // это витрина экранов, и сессия ради неё только мешала бы (см. DemoLayout).
-  { path: '/demo', element: <DemoGalleryPage />, errorElement: <RouteErrorPage /> },
-  { path: '/demo/:screenId', element: <DemoScreenPage />, errorElement: <RouteErrorPage /> },
+  { path: '/demo', element: <DemoRolePickerPage />, errorElement: <RouteErrorPage /> },
+  { path: '/demo/all', element: <DemoGalleryPage />, errorElement: <RouteErrorPage /> },
+  { path: '/demo/all/:screenId', element: <DemoScreenPage />, errorElement: <RouteErrorPage /> },
+  { path: '/demo/:role', element: <DemoWorkspacePage />, errorElement: <RouteErrorPage /> },
+  { path: '/demo/:role/:screenId', element: <DemoWorkspacePage />, errorElement: <RouteErrorPage /> },
   {
     element: <RequireAuth />,
     errorElement: <RouteErrorPage />,

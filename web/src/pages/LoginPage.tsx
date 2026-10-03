@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { isApiError, fieldErrorOf } from '../api/errors';
 import type { Role } from '../api/types';
@@ -8,6 +8,7 @@ import { Alert, ErrorAlert } from '../components/ui/Alerts';
 import { Button } from '../components/ui/Button';
 import { CheckboxField, TextField } from '../components/ui/Field';
 import { DEMO_CODE, DEMO_PHONE, formatPhoneInput, isValidPhone, normalizePhone } from '../lib/phone';
+import { DEMO_ROLES } from '../demo/roles';
 
 interface LoginErrors {
   phone?: string;
@@ -170,6 +171,27 @@ export function LoginPage() {
             Войти
           </Button>
         </form>
+
+        {/* Демо-режим: посмотреть продукт с разных сторон без учётной записи.
+            Данные в макетах демонстрационные, и это сказано в шапке демо-режима. */}
+        <div className="mt-6 rounded-xl border border-ink-200 p-4">
+          <div className="text-sm font-medium text-ink-800">Посмотреть продукт без учётной записи</div>
+          <p className="mt-1 text-xs text-ink-500">
+            Демо-режим: выберите роль — администратора, владельца бизнеса, администратора салона, поддержку,
+            водителя, курьера или клиента — и увидите рабочие экраны этой роли с демонстрационными данными.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {DEMO_ROLES.map((role) => (
+              <Link
+                key={role.id}
+                to={`/demo/${role.id}`}
+                className="rounded-xl bg-ink-100 px-3 py-2 text-xs font-medium text-ink-700"
+              >
+                {role.title}
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
