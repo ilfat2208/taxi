@@ -21,8 +21,10 @@ import kz.taxi.mobile.data.remote.AccountsApi
 import kz.taxi.mobile.data.remote.AuthApi
 import kz.taxi.mobile.data.remote.CartApi
 import kz.taxi.mobile.data.remote.CatalogApi
+import kz.taxi.mobile.data.remote.ConfigApi
 import kz.taxi.mobile.data.remote.OrdersApi
 import kz.taxi.mobile.data.remote.PaymentsApi
+import kz.taxi.mobile.data.repo.ConfigRepository
 import kz.taxi.mobile.data.repo.PaymentsRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -74,6 +76,7 @@ class LiveBackendTest {
     private lateinit var catalogApi: CatalogApi
     private lateinit var cartApi: CartApi
     private lateinit var ordersApi: OrdersApi
+    private lateinit var configRepository: ConfigRepository
 
     @Before
     fun setUp() {
@@ -92,6 +95,7 @@ class LiveBackendTest {
         catalogApi = network.create(CatalogApi::class.java)
         cartApi = network.create(CartApi::class.java)
         ordersApi = network.create(OrdersApi::class.java)
+        configRepository = ConfigRepository(network.create(ConfigApi::class.java))
         log("gateway base URL = ${network.resolvedBaseUrl}")
     }
 
@@ -467,6 +471,44 @@ class LiveBackendTest {
         assertTrue(
             "the order payment must be completed",
             byOrder.status == PaymentStatuses.COMPLETED || byOrder.status == PaymentStatuses.PENDING,
+        )
+    }
+
+    @Test
+    fun `05 the app reads the platform config anonymously instead of hardcoding it`() = runBlocking {
+        // No token: this is the first call the app makes, before a person signs in.
+        session.token = null
+
+        val config = wire("GET /api/v1/config") { configRepository.config(forceRefresh = true).getOrThrow() }
+        log("GET /api/v1/config -> platform=${config.platform?.name} currency=${config.platform?.currency}")
+        assertEquals("ORTA", config.platform?.name)
+        assertEquals("KZT", config.platform?.currency)
+        assertTrue("the platform must publish its roles", config.platform!!.roles.contains(Roles.CUSTOMER))
+
+        val tariffs = wire("tariffs") { configRepository.tariffs().getOrThrow() }
+        tariffs.forEach { tariff ->
+            log("  tariff ${tariff.code}: base=${tariff.baseMinor} perKm=${tariff.perKmMinor} min=${tariff.minFareMinor}")
+        }
+        assertTrue("the price list must arrive from trip-service", tariffs.any { it.code == "ECONOMY" })
+        assertTrue(
+            "every tariff needs a base fare and a minimum, otherwise a client cannot show it",
+            tariffs.all { it.baseMinor > 0 && it.minFareMinor > 0 },
+        )
+
+        val methods = wire("payment methods") { configRepository.methods().getOrThrow() }
+        methods.forEach { method -> log("  method ${method.code} implemented=${method.implemented}") }
+        assertTrue("balance payments must be offered", methods.any { it.code == "BALANCE" && it.implemented })
+        assertTrue(
+            "an unimplemented method must travel with implemented=false, not be invented by the client",
+            methods.none { it.code == "CARD" && it.implemented },
+        )
+
+        val verticals = config.verticals.map { it.code }
+        log("  verticals: $verticals")
+        assertTrue("the taxi vertical must be published", verticals.contains("TAXI"))
+        assertTrue(
+            "the app must be able to learn what it may call without a token",
+            config.anonymousPaths.contains("/api/v1/config"),
         )
     }
 }

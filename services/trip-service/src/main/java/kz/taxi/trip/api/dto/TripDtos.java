@@ -231,4 +231,34 @@ public final class TripDtos {
                                       Instant completedAt,
                                       Instant cancelledAt) {
     }
+
+    // ------------------------------------------------------------------ tariff catalogue
+
+    /**
+     * The price list a client shows before anyone orders a ride.
+     *
+     * <p>Until now a client could only learn a price by asking for a quote on a concrete
+     * route, and the tariff parameters themselves lived in this service's configuration
+     * with no way to read them. That is fine for pricing and useless for a client that has
+     * to draw a tariff picker — and it is exactly the "config" block the reference apps
+     * fetch at startup.
+     *
+     * <p>The catalogue is configuration, not data: it is read from
+     * {@code taxi.trip.tariffs}, and the {@code note} says so, because a reader of this
+     * response otherwise expects a database table behind it.
+     */
+    public record TariffCatalogueResponse(String currency,
+                                          int commissionBp,
+                                          long quoteTtlSeconds,
+                                          List<TariffView> tariffs,
+                                          String note) {
+    }
+
+    /** One tariff with its rates, all in minor units. */
+    public record TariffView(String code,
+                             long baseMinor,
+                             long perKmMinor,
+                             long perMinuteMinor,
+                             long minFareMinor) {
+    }
 }

@@ -136,11 +136,10 @@ export interface ReferenceTariff {
 /**
  * Классы поездки, которые сервис умеет считать.
  *
- * Список взят из enum `Tariff` в `trip-service` (ECONOMY, COMFORT) и совпадает с
- * типом `TripTariff` на клиенте. В API каталога тарифов нет: `GET /api/v1/trips/tariffs`
- * отвечает 404 (`TRIP_NOT_FOUND`, «trip tariffs not found»), а сами цены живут в
- * конфигурации `taxi.trip.tariffs` (`TripProperties`). Поэтому список здесь
- * зафиксирован кодом и подписан в интерфейсе как «из кода, а не из API».
+ * Список приходит из каталога тарифов: `GET /api/v1/trips/tariffs` (публичный, читается
+ * из `taxi.trip.tariffs`). Раньше каталога в API не было и список держался кодом; теперь
+ * он здесь только как запасной вариант, когда сервис не ответил — сам список в интерфейсе
+ * строится из ответа, а подпись говорит, откуда он.
  */
 export const REFERENCE_TARIFFS: readonly ReferenceTariff[] = [
   { value: 'ECONOMY', code: 'ECONOMY', label: 'Эконом' },
@@ -272,7 +271,7 @@ export function quoteFailureHint(error: unknown): string | null {
     case 'FORBIDDEN_TRIP_ACCESS':
       return 'Котировку считает trip-service, и он требует роль CUSTOMER (TripAccess.requireRider): цена привязывается к кошельку, с которого поездка будет оплачена. Токен админ-панели несёт ADMIN/SUPPORT, поэтому сервис отказал. Добавьте роль CUSTOMER на экране входа и войдите заново — расчёт пойдёт по тем же полям.';
     case 'INVALID_TARIFF':
-      return 'Такого класса поездки сервис не знает: список в форме собран из enum Tariff в коде trip-service, потому что каталога тарифов в API нет.';
+      return 'Такого класса поездки сервис не знает: список в форме собран из публичного каталога GET /api/v1/trips/tariffs.';
     case 'INVALID_COORDINATES':
       return 'Сервис отказал в координатах: перед расчётом он проверяет, что точка лежит на Земле (GeoMath.requireValidCoordinates).';
     case 'QUOTE_NOT_FOUND':
@@ -402,10 +401,10 @@ export interface ReferenceApiGap {
  */
 export const REFERENCE_API_GAPS: readonly ReferenceApiGap[] = [
   {
-    title: 'Каталога тарифов нет',
+    title: 'Каталога тарифов по городам нет',
     detail:
-      'Тарифы живут в конфигурации trip-service (taxi.trip.tariffs → TripProperties), а не в API. GET /api/v1/trips/tariffs отвечает 404 TRIP_NOT_FOUND («trip tariffs not found»); без токена шлюз отвечает 401, потому что весь /v1/trips/** закрыт. Увидеть тариф можно только через котировку — она возвращает применённый класс и разбор цены.',
-    checked: 'проверено на стеке: POST /v1/auth/token → GET /v1/trips/tariffs → 404 TRIP_NOT_FOUND',
+      'Сам каталог тарифов теперь публикуется: GET /api/v1/trips/tariffs отдаёт классы ECONOMY и COMFORT с коэффициентами из конфигурации trip-service (taxi.trip.tariffs). Чего нет — привязки тарифа к городу: город один, а цены заданы конфигурацией развёртывания. Наценок (surge) тоже нет: surgeBp в ответе всегда 0.',
+    checked: 'проверено на стеке: GET /v1/trips/tariffs анонимно → 200 с двумя тарифами и комиссией 1200 bp',
   },
   {
     title: 'Зон обслуживания нет',

@@ -198,7 +198,17 @@ taxi:
       - /webjars/**
   gateway:
     trust-forwarded-headers: true
-
+    # Что клиент получает одним вызовом `GET /api/v1/config`: тарифы и способы оплаты
+    # приходят из сервисов, которые ими владеют. Адреса те же, что у маршрутов (одна и та же
+    # переменная окружения), чтобы не появилось второго источника правды.
+    platform-config:
+      trip-service-url: ${TRIP_SERVICE_URL:http://127.0.0.1:8086}
+      payment-service-url: ${PAYMENT_SERVICE_URL:http://127.0.0.1:8082}
+      # Собранная конфигурация переиспользуется: стартовый вызов клиента не должен
+      # превращаться в лавину запросов к сервисам.
+      cache-ttl: ${PLATFORM_CONFIG_CACHE_TTL:30s}
+      # Недоступный сервис не должен задерживать ответ целиком.
+      timeout: ${PLATFORM_CONFIG_TIMEOUT:2s}
 management:
   endpoints:
     web:

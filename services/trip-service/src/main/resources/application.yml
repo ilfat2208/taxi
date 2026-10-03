@@ -91,6 +91,8 @@ taxi:
       - /actuator/info
       - /actuator/prometheus
       - /api/v1/trips/internal/**
+      # Прайс-лист открыт всем: клиент показывает цены до входа, как витрину.
+      - /api/v1/trips/tariffs
       - /v3/api-docs/**
       - /swagger-ui/**
       - /swagger-ui.html

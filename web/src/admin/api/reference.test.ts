@@ -201,12 +201,12 @@ describe('объяснение отказа котировки', () => {
     expect(hint).toContain('экране входа');
   });
 
-  it('на неизвестный класс поездки ссылается на enum Tariff в коде', () => {
+  it('на неизвестный класс поездки ссылается на публичный каталог тарифов', () => {
     const hint = quoteFailureHint(
       new ApiError({ status: 400, code: 'INVALID_TARIFF', title: 'Bad Request', detail: 'unknown tariff' }),
     );
 
-    expect(hint).toContain('enum Tariff');
+    expect(hint).toContain('/api/v1/trips/tariffs');
   });
 
   it('для незнакомой ошибки молчит, чтобы её объяснил humanMessage', () => {

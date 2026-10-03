@@ -8,12 +8,14 @@ import kz.taxi.mobile.data.remote.AccountsApi
 import kz.taxi.mobile.data.remote.AuthApi
 import kz.taxi.mobile.data.remote.CartApi
 import kz.taxi.mobile.data.remote.CatalogApi
+import kz.taxi.mobile.data.remote.ConfigApi
 import kz.taxi.mobile.data.remote.OrdersApi
 import kz.taxi.mobile.data.remote.PaymentsApi
 import kz.taxi.mobile.data.repo.AccountsRepository
 import kz.taxi.mobile.data.repo.AuthRepository
 import kz.taxi.mobile.data.repo.CartRepository
 import kz.taxi.mobile.data.repo.CatalogRepository
+import kz.taxi.mobile.data.repo.ConfigRepository
 import kz.taxi.mobile.data.repo.OrdersRepository
 import kz.taxi.mobile.data.repo.PaymentsRepository
 import kotlinx.coroutines.CoroutineScope
@@ -49,6 +51,9 @@ class AppContainer(context: Context) {
     val catalogRepository = CatalogRepository(network.create(CatalogApi::class.java))
     val cartRepository = CartRepository(network.create(CartApi::class.java))
     val ordersRepository = OrdersRepository(network.create(OrdersApi::class.java))
+
+    /** Tariffs, payment methods and feature flags — read once at startup, not hardcoded. */
+    val configRepository = ConfigRepository(network.create(ConfigApi::class.java))
 
     init {
         // A 401 anywhere in the app clears the persisted session; the navigation layer

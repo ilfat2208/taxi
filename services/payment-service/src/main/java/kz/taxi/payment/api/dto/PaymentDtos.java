@@ -105,4 +105,40 @@ public final class PaymentDtos {
             Instant createdAt,
             Instant updatedAt) {
     }
+
+    // ------------------------------------------------------------------ payment methods
+
+    /**
+     * What a client may offer at checkout.
+     *
+     * <p>The list is short because the platform is honest about its own reach: money moves
+     * between accounts inside ORTA, and card acquiring is not implemented. A client that
+     * drew a "card" button would send a person into a flow that does not exist — so the
+     * unimplemented method travels in this response as a method with
+     * {@code implemented=false} and a reason, and the UI can label it "скоро" instead of
+     * inventing it.
+     *
+     * <p>Fee rates come from {@code taxi.payments.*} — the same numbers the fee calculator
+     * uses, in basis points, so they can never drift from what is actually charged.
+     */
+    public record PaymentMethodsResponse(String currency,
+                                         List<PaymentMethodView> methods,
+                                         int merchantFeeBp,
+                                         int transferFeeBp,
+                                         String note) {
+    }
+
+    /**
+     * One method.
+     *
+     * @param code        stable identifier the client switches on ({@code BALANCE}, {@code CARD})
+     * @param title       what a person reads
+     * @param implemented false means "planned": nothing in the platform executes this yet
+     * @param detail      why it is or is not available, in one sentence
+     */
+    public record PaymentMethodView(String code,
+                                    String title,
+                                    boolean implemented,
+                                    String detail) {
+    }
 }

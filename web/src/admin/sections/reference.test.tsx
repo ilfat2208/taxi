@@ -444,7 +444,7 @@ describe('раздел «Справочники»', () => {
     expect(screen.getByText(/Вы вошли как Поддержка/)).toBeInTheDocument();
 
     // Отсутствующее в API названо словами, а не пустой вкладкой.
-    expect(screen.getByText('Каталога тарифов нет')).toBeInTheDocument();
+    expect(screen.getByText('Каталога тарифов по городам нет')).toBeInTheDocument();
     expect(screen.getByText('Зон обслуживания нет')).toBeInTheDocument();
     expect(screen.getByText('Наценок (surge) как справочника нет')).toBeInTheDocument();
   });

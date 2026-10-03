@@ -11,6 +11,7 @@ import kz.taxi.payment.api.dto.PaymentDtos;
 import kz.taxi.payment.application.PaymentQueryService;
 import kz.taxi.payment.application.PaymentSagaService;
 import kz.taxi.payment.domain.PaymentStatus;
+import kz.taxi.payment.infrastructure.PaymentProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,15 +43,45 @@ public class PaymentController {
     private final PaymentQueryService queries;
     private final CurrentUser currentUser;
     private final IdempotencyGuard idempotencyGuard;
+    private final PaymentProperties properties;
 
     public PaymentController(PaymentSagaService payments,
                              PaymentQueryService queries,
                              CurrentUser currentUser,
-                             IdempotencyGuard idempotencyGuard) {
+                             IdempotencyGuard idempotencyGuard,
+                             PaymentProperties properties) {
         this.payments = payments;
         this.queries = queries;
         this.currentUser = currentUser;
         this.idempotencyGuard = idempotencyGuard;
+        this.properties = properties;
+    }
+
+    /**
+     * Payment methods a client may offer — and which of them actually work.
+     *
+     * <p>Public on purpose: a checkout screen draws its payment options before the person
+     * has entered anything, and a client app cannot hardcode a list that the platform
+     * changes. The unimplemented method is returned rather than omitted, because
+     * "card is coming" and "card does not exist" are different products, and only the
+     * server knows which one is true today.
+     */
+    @GetMapping("/methods")
+    @Operation(summary = "Payment methods",
+            description = "Public list of methods with their availability. Fees are the platform's own rates "
+                    + "in basis points, taken from the same configuration the fee calculator uses.")
+    public PaymentDtos.PaymentMethodsResponse methods() {
+        return new PaymentDtos.PaymentMethodsResponse(
+                kz.taxi.common.core.money.Currency.KZT.name(),
+                List.of(
+                        new PaymentDtos.PaymentMethodView("BALANCE", "Баланс счёта ORTA", true,
+                                "Списание с баланса счёта происходит внутри платформы: эквайринг не нужен"),
+                        new PaymentDtos.PaymentMethodView("CARD", "Банковская карта", false,
+                                "Эквайринг не подключён: в этой версии деньги двигаются только между счетами платформы")),
+                (int) properties.getMerchantFeeBp(),
+                (int) properties.getTransferFeeBp(),
+                "комиссии — конфигурация сервиса (taxi.payments.*), в базисных пунктах: "
+                        + "150 = 1,5 % с мерчантского платежа, переводы между людьми без комиссии");
     }
 
     @PostMapping("/transfers")

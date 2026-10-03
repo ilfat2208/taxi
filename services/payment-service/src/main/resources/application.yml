@@ -95,6 +95,8 @@ taxi:
       - /actuator/info
       - /actuator/prometheus
       - /api/v1/payments/internal/**
+      # Способы оплаты и их доступность — публичная информация для экрана оплаты.
+      - /api/v1/payments/methods
       - /v3/api-docs/**
       - /swagger-ui/**
       - /swagger-ui.html

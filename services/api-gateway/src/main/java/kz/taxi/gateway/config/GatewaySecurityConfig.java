@@ -6,6 +6,7 @@ import kz.taxi.common.security.JwtSupport;
 import kz.taxi.common.security.SecurityMode;
 import kz.taxi.common.security.SecurityProperties;
 import kz.taxi.gateway.auth.JwksController;
+import kz.taxi.gateway.platform.GatewayPublicPaths;
 import kz.taxi.gateway.security.BlockingReactiveJwtDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -151,25 +152,14 @@ public class GatewaySecurityConfig {
                         // the public keys before it has a token to present. Denying it
                         // would make JWKS mode unusable, and it exposes public keys only.
                         .pathMatchers(HttpMethod.GET, JwksController.JWKS_PATH).permitAll()
-                        // Browsing the marketplace is anonymous, exactly like a real
-                        // storefront: a visitor can look at products before signing in.
-                        // GET-only on purpose — creating a product or a merchant profile
-                        // still requires a token at the edge and the MERCHANT role inside
-                        // catalog-service.
+                        // Browsing is anonymous, acting is not — the same reasoning as in a
+                        // real storefront: a visitor looks at prices before signing in.
+                        // The list lives in GatewayPublicPaths because it is also part of
+                        // the answer to `GET /api/v1/config`: a client asks what it may call
+                        // before login, and it must get the paths the edge actually permits,
+                        // not a second hand-written copy of them.
                         .pathMatchers(HttpMethod.GET,
-                                "/api/v1/catalog/products/**",
-                                "/api/v1/catalog/categories",
-                                "/api/v1/merchants/*").permitAll()
-                        // Browsing services is anonymous for the same reason, and it is the
-                        // whole product argument of QTime: a person sees the free windows of
-                        // a salon and only then decides to register. The service already
-                        // treats these two paths as public; without the same decision here
-                        // the contract would say "anonymous" while the edge answered 401.
-                        // GET-only again: taking a window is a POST that needs a token at
-                        // the edge and the CUSTOMER role inside qtime-service.
-                        .pathMatchers(HttpMethod.GET,
-                                "/api/v1/qtime/companies/**",
-                                "/api/v1/qtime/specialists/**").permitAll()
+                                GatewayPublicPaths.ANONYMOUS_GET.toArray(String[]::new)).permitAll()
                         .pathMatchers(publicPaths).permitAll()
                         .anyExchange().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
