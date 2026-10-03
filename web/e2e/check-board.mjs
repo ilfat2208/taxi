@@ -132,6 +132,31 @@ for (const title of wanted) {
   await section.screenshot({ path: resolve(OUT, `${name}.png`) });
 }
 
+// Проверка на ноутбучной ширине: консольные рамки 1024px легко переполняют страницу,
+// и тогда борд начинает скроллиться по горизонтали — этого быть не должно.
+for (const width of [1920, 1440, 1280, 1024]) {
+  const probe = await browser.newPage({ viewport: { width, height: 900 } });
+  await probe.goto(BOARD, { waitUntil: 'load' });
+  await probe.waitForTimeout(400);
+  const m = await probe.evaluate(() => ({
+    doc: document.documentElement.scrollWidth,
+    win: window.innerWidth,
+    wide: [...document.querySelectorAll('.stage')].filter((s) => s.getBoundingClientRect().width > window.innerWidth).length,
+    // кто именно вылезает за окно: класс и правый край
+    offenders: [...document.querySelectorAll('body *')]
+      .map((e) => ({ cls: String(e.className || e.tagName).split(' ')[0], right: Math.round(e.getBoundingClientRect().right) }))
+      .filter((e) => e.right > window.innerWidth + 8)
+      .sort((a, b) => b.right - a.right)
+      .slice(0, 4),
+  }));
+  const mark = m.doc > m.win + 8 ? `ПЕРЕПОЛНЕНИЕ на ${m.doc - m.win}px` : 'ок';
+  console.log(`[борд] ширина ${width}px: документ ${m.doc}px — ${mark}; блоков шире окна: ${m.wide}`);
+  if (m.offenders.length > 0) {
+    console.log(`[борд]   вылезают: ${JSON.stringify(m.offenders)}`);
+  }
+  await probe.close();
+}
+
 console.log(errors.length > 0
   ? `[борд] ошибки консоли (${errors.length}): ${JSON.stringify(errors.slice(0, 5))}`
   : '[борд] ошибок консоли нет');
