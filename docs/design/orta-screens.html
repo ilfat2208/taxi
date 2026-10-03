@@ -11478,7 +11478,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
                   <span class="avatar" style="background:linear-gradient(135deg,#8A6FC0,#6A4FA3)">А</span>
                   <div class="grow">
                     <span class="f-title">Айгуль Смагулова</span>
-                    <span class="f-sub">мастер маникюра · специализация из <span class="mono">qtime.specialist.specialization</span></span>
+                    <span class="f-sub">мастер маникюра · специализация мастера из QTime</span>
                   </div>
                   <div style="text-align:right">
                     <span class="stars">
@@ -11922,7 +11922,7 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
           <div class="tab-top">
             <div>
               <h3>Клиенты</h3>
-              <p>Собираются из записей · ключ — <span class="mono">booking.client_user_id</span> · имён и телефонов в QTime нет</p>
+              <p>Собираются из записей · ключ — <span class="mono">booking.client_user_id</span></p>
             </div>
             <div class="frow" style="gap:8px">
               <span class="chip brand-on" style="padding:6px 11px">Все</span>
@@ -11932,43 +11932,34 @@ table.cov code{font-family:var(--mono);font-size:11.5px;background:var(--ink-100
             </div>
           </div>
 
-          <div class="tab-grid">
-            <div class="cover-wrap">
-              <table class="cov">
-                <thead>
-                  <tr><th style="width:230px">Клиент</th><th style="width:100px">Визитов</th><th style="width:150px">Последний визит</th><th style="width:180px">Любимый мастер</th><th style="width:130px">Сумма визитов</th><th>Действие</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td><span class="mono">demo-client-1</span><br><span class="small">постоянный: 4 визита за 90 дней</span></td><td class="n">4</td><td class="n">2 окт, 10:30</td><td>Динара Ахметова</td><td class="n">39 000 ₸</td><td><span class="link">Повторить запись</span></td></tr>
-                  <tr><td><span class="mono">01J8ZCQ7Y4R3F0N5G8K2M9QW1T</span><br><span class="small">постоянный: 5 визитов</span></td><td class="n">5</td><td class="n">28 сен, 16:00</td><td>Айгуль Смагулова</td><td class="n">31 500 ₸</td><td><span class="link">Повторить запись</span></td></tr>
-                  <tr><td><span class="mono">01M3XZ5DXRHACB56BANH5SX5</span><br><span class="small">3 визита</span></td><td class="n">3</td><td class="n">21 сен, 12:00</td><td>Жанар Оспанова</td><td class="n">25 000 ₸</td><td><span class="link">Повторить запись</span></td></tr>
-                  <tr><td><span class="mono">demo-client-7</span><br><span class="small">первый визит</span></td><td class="n">1</td><td class="n">18 сен, 11:00</td><td>Динара Ахметова</td><td class="n">6 000 ₸</td><td><span class="link">Напомнить</span></td></tr>
-                  <tr><td><span class="mono">demo-client-9</span><br><span class="small">отменил дважды</span></td><td class="n">2</td><td class="n">10 сен, 15:00</td><td>Айгуль Смагулова</td><td class="n">0 ₸</td><td><span class="link">Повторить запись</span></td></tr>
-                </tbody>
-              </table>
-            </div>
+          <div class="cover-wrap">
+            <table class="cov">
+              <thead>
+                <tr><th style="width:220px">Клиент</th><th style="width:90px">Визитов</th><th style="width:150px">Последний визит</th><th style="width:170px">Любимый мастер</th><th style="width:130px">Сумма визитов</th><th>Действие</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="mono">demo-client-1</span><br><span class="small">постоянный: 4 визита за 90 дней</span></td><td class="n">4</td><td class="n">2 окт, 10:30</td><td>Динара Ахметова</td><td class="n">39 000 ₸</td><td><span class="link">Повторить</span></td></tr>
+                <tr><td><span class="mono">01J8…9QW1T</span><br><span class="small">постоянный: 5 визитов</span></td><td class="n">5</td><td class="n">28 сен, 16:00</td><td>Айгуль Смагулова</td><td class="n">31 500 ₸</td><td><span class="link">Повторить</span></td></tr>
+                <tr><td><span class="mono">01M3…H5SX5</span><br><span class="small">3 визита</span></td><td class="n">3</td><td class="n">21 сен, 12:00</td><td>Жанар Оспанова</td><td class="n">25 000 ₸</td><td><span class="link">Повторить</span></td></tr>
+                <tr><td><span class="mono">demo-client-7</span><br><span class="small">первый визит</span></td><td class="n">1</td><td class="n">18 сен, 11:00</td><td>Динара Ахметова</td><td class="n">6 000 ₸</td><td><span class="link">Напомнить</span></td></tr>
+                <tr><td><span class="mono">demo-client-9</span><br><span class="small">отменил дважды</span></td><td class="n">2</td><td class="n">10 сен, 15:00</td><td>Айгуль Смагулова</td><td class="n">0 ₸</td><td><span class="link">Повторить</span></td></tr>
+              </tbody>
+            </table>
+          </div>
 
-            <div class="panel">
-              <h4>Чего у клиентской базы нет</h4>
-              <div class="nlist">
-                <div class="nl"><span class="nl-n">Таблица клиента</span><span class="pill" style="font-size:10px;padding:1px 7px">нет</span></div>
-                <div class="nl"><span class="nl-n">Имя и телефон</span><span class="pill bad" style="font-size:10px;padding:1px 7px">нет</span></div>
-                <div class="nl"><span class="nl-n">История визитов</span><span class="pill warn" style="font-size:10px;padding:1px 7px">только своя</span></div>
-                <div class="nl"><span class="nl-n">Напоминания</span><span class="pill" style="font-size:10px;padding:1px 7px">нет</span></div>
-                <div class="nl"><span class="nl-n">Метка «постоянный»</span><span class="pill" style="font-size:10px;padding:1px 7px">не модель</span></div>
-              </div>
-              <div class="divider"></div>
-              <p class="small">
-                История визитов отдаётся самому клиенту, а <code>SUPPORT</code> и <code>ADMIN</code>
-                видят все записи. Роли <code>MERCHANT</code> чужие записи не отдаются, поэтому базу
-                клиентов салона консоль сегодня нарисовать не может.
-              </p>
-              <div class="notice bad">
-                <b>Персональные данные — отдельное решение, а не поле в таблице</b>
-                Телефон и имя клиента лежат в ORTA ID, а не в QTime. Прежде чем показывать их салону,
-                нужно решить, на каком основании и с чьим согласием. Пока решения нет, «Позвонить» и
-                «Напомнить» — кнопки без данных.
-              </div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px">
+            <div class="notice">
+              <b>Чего у клиентской базы нет</b>
+              Таблицы клиента нет — есть только <code>booking.client_user_id</code>. Имени и телефона
+              в QTime тоже нет: они лежат в ORTA ID. Метка «постоянный» (3 визита за 90 дней) и
+              повторная запись — предлагаемые правила консоли, а не свойство сервиса.
+            </div>
+            <div class="notice bad">
+              <b>История визитов и персональные данные — два разных вопроса</b>
+              Историю API отдаёт самому клиенту, а <code>SUPPORT</code> и <code>ADMIN</code> видят все
+              записи; роли <code>MERCHANT</code> чужие записи не отдаются, поэтому салон свою базу
+              сегодня не увидит. Показывать ли салону имя и телефон — решение о доступе и согласии,
+              а не поле в таблице; напоминаний нет ни в API, ни в модели.
             </div>
           </div>
         </div>

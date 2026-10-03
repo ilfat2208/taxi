@@ -93,8 +93,11 @@ const clipped = await page.evaluate(() => {
   for (const frame of document.querySelectorAll('.phone')) {
     const section = frame.closest('section.sec');
     const num = section?.querySelector('.sec-num')?.textContent?.trim() ?? '?';
-    const title = frame.closest('.stage')?.querySelector('.cap-title')?.textContent?.trim()
-      ?? frame.closest('.swrap')?.querySelector('.cap-title')?.textContent?.trim() ?? '?';
+    // Подпись экрана: сначала своя у .swrap (мобильный экран), и только потом у .stage.
+    // Иначе у фрагментов, чьи экраны завёрнуты в один общий .stage, все кадры
+    // подписываются первой попавшейся подписью.
+    const title = frame.closest('.swrap')?.querySelector('.cap-title')?.textContent?.trim()
+      ?? frame.closest('.stage')?.querySelector('.cap-title')?.textContent?.trim() ?? '?';
     const isConsole = frame.classList.contains('tablet');
     const panes = isConsole
       ? frame.querySelectorAll('.tab-main, .panel, .cover-wrap')
@@ -125,6 +128,45 @@ if (clipped.length > 0) {
   }
 } else {
   console.log('[борд] обрезки контента нет ни в телефонах, ни в консолях');
+}
+
+// Геометрическая проверка: любой потомок рамки, чей прямоугольник выходит за её
+// границы, уже обрезан overflow:hidden — даже если он не .panel и нигде не
+// скроллится (так был пропущен длинный немаркируемый токен в флекс-строке).
+const spilled = await page.evaluate(() => {
+  const bad = [];
+  for (const frame of document.querySelectorAll('.phone')) {
+    const fr = frame.getBoundingClientRect();
+    const section = frame.closest('section.sec')?.querySelector('.sec-num')?.textContent?.trim() ?? '?';
+    // Подпись экрана: сначала своя у .swrap (мобильный экран), и только потом у .stage.
+    // Иначе у фрагментов, чьи экраны завёрнуты в один общий .stage, все кадры
+    // подписываются первой попавшейся подписью.
+    const title = frame.closest('.swrap')?.querySelector('.cap-title')?.textContent?.trim()
+      ?? frame.closest('.stage')?.querySelector('.cap-title')?.textContent?.trim() ?? '?';
+    let worst = null;
+    for (const el of frame.querySelectorAll('*')) {
+      // Внутренние узлы SVG (rect/path/use) дают прямоугольники в своих координатах
+      // и дают ложные «выходы за рамку» — проверяем только HTML-элементы.
+      if (!(el instanceof HTMLElement)) continue;
+      const r = el.getBoundingClientRect();
+      const overRight = Math.round(r.right - fr.right);
+      const overBottom = Math.round(r.bottom - fr.bottom);
+      const over = Math.max(overRight, overBottom);
+      if (over > 4 && (!worst || over > worst.over)) {
+        worst = { over, overRight, overBottom, cls: String(el.className || el.tagName).split(' ')[0] };
+      }
+    }
+    if (worst) bad.push({ section, screen: title, ...worst });
+  }
+  return bad;
+});
+if (spilled.length > 0) {
+  console.log(`[борд] ВНИМАНИЕ: за границы рамки выходят элементы на ${spilled.length} экранах`);
+  for (const s of spilled.slice(0, 8)) {
+    console.log(`[борд]   раздел ${s.section}: ${s.screen} — .${s.cls} выходит на ${s.over}px (вправо ${s.overRight}, вниз ${s.overBottom})`);
+  }
+} else {
+  console.log('[борд] за границы рамок ничего не выходит');
 }
 
 // Скриншоты новых разделов — по одному на контур, чтобы видеть, что вёрстка цела.
