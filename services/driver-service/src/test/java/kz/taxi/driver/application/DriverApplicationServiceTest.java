@@ -43,7 +43,28 @@ import static org.mockito.Mockito.when;
 class DriverApplicationServiceTest {
 
     private static final String USER_ID = "U-1";
+
+    /**
+     * Когда «сейчас» для самих фикстур: момент выпуска документов и профиля.
+     *
+     * <p>Это не проверка срока — это подпись «когда выдан документ», и она может быть
+     * зафиксирована: домен сравнивает сроки с тем `now`, который ему передают.
+     */
     private static final Instant NOW = Instant.parse("2026-10-02T09:00:00Z");
+
+    /**
+     * Срок действия документов, которые обязаны быть действительными.
+     *
+     * <p>Считается от настоящих часов, а не от {@link #NOW}: {@code changeStatus} в сервисе
+     * берёт {@code Instant.now()}, поэтому фикстура с абсолютной датой однажды истекает и
+     * тест начинает падать по календарю. Именно так и случилось: документ, выданный «вчера
+     * плюс сутки», перестал быть действительным 3 октября 2026 года в 09:00 UTC, и
+     * `publishes_going_online` упал на ровном месте.
+     */
+    private static final Instant VALID_UNTIL = Instant.now().plus(Duration.ofDays(30));
+
+    /** Срок действия документа, который обязан быть просрочен — тоже относительно часов. */
+    private static final Instant EXPIRED_AT = Instant.now().minus(Duration.ofDays(1));
 
     @Mock
     private DriverRepository driverRepository;
@@ -63,9 +84,9 @@ class DriverApplicationServiceTest {
 
     private static List<DriverDocument> validDocuments(String driverId) {
         return List.of(
-                DriverDocument.issue(driverId, DocumentKind.DRIVING_LICENCE, NOW.plus(Duration.ofDays(300)), NOW),
-                DriverDocument.issue(driverId, DocumentKind.VEHICLE_INSPECTION, NOW.plus(Duration.ofDays(90)), NOW),
-                DriverDocument.issue(driverId, DocumentKind.MEDICAL_CHECK, NOW.plus(Duration.ofDays(1)), NOW));
+                DriverDocument.issue(driverId, DocumentKind.DRIVING_LICENCE, VALID_UNTIL, NOW),
+                DriverDocument.issue(driverId, DocumentKind.VEHICLE_INSPECTION, VALID_UNTIL, NOW),
+                DriverDocument.issue(driverId, DocumentKind.MEDICAL_CHECK, VALID_UNTIL, NOW));
     }
 
     // ------------------------------------------------------------------ registration
@@ -184,9 +205,9 @@ class DriverApplicationServiceTest {
         Driver driver = driver();
         when(driverRepository.findByUserId(USER_ID)).thenReturn(Optional.of(driver));
         when(documentRepository.findByDriverIdOrderByKindAsc(driver.getId())).thenReturn(List.of(
-                DriverDocument.issue(driver.getId(), DocumentKind.DRIVING_LICENCE, NOW.plus(Duration.ofDays(30)), NOW),
-                DriverDocument.issue(driver.getId(), DocumentKind.VEHICLE_INSPECTION, NOW.plus(Duration.ofDays(30)), NOW),
-                DriverDocument.issue(driver.getId(), DocumentKind.MEDICAL_CHECK, NOW.minus(Duration.ofDays(1)), NOW)));
+                DriverDocument.issue(driver.getId(), DocumentKind.DRIVING_LICENCE, VALID_UNTIL, NOW),
+                DriverDocument.issue(driver.getId(), DocumentKind.VEHICLE_INSPECTION, VALID_UNTIL, NOW),
+                DriverDocument.issue(driver.getId(), DocumentKind.MEDICAL_CHECK, EXPIRED_AT, NOW)));
 
         assertThatThrownBy(() -> service.changeStatus(USER_ID, DriverStatus.ONLINE))
                 .isInstanceOfSatisfying(DomainException.class,
@@ -201,8 +222,8 @@ class DriverApplicationServiceTest {
     void renews_existing_document() {
         Driver driver = driver();
         DriverDocument existing = DriverDocument.issue(
-                driver.getId(), DocumentKind.MEDICAL_CHECK, NOW.plus(Duration.ofDays(1)), NOW);
-        Instant extended = NOW.plus(Duration.ofDays(30));
+                driver.getId(), DocumentKind.MEDICAL_CHECK, VALID_UNTIL, NOW);
+        Instant extended = VALID_UNTIL;
         when(driverRepository.findByUserId(USER_ID)).thenReturn(Optional.of(driver));
         when(documentRepository.findByDriverIdAndKind(driver.getId(), DocumentKind.MEDICAL_CHECK))
                 .thenReturn(Optional.of(existing));
@@ -223,7 +244,7 @@ class DriverApplicationServiceTest {
                 .thenReturn(Optional.empty());
         when(documentRepository.save(any(DriverDocument.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        DriverDocument result = service.issueDocument(USER_ID, DocumentKind.DRIVING_LICENCE, NOW.plus(Duration.ofDays(365)));
+        DriverDocument result = service.issueDocument(USER_ID, DocumentKind.DRIVING_LICENCE, VALID_UNTIL);
 
         assertThat(result.getDriverId()).isEqualTo(driver.getId());
         assertThat(result.getKind()).isEqualTo(DocumentKind.DRIVING_LICENCE);
